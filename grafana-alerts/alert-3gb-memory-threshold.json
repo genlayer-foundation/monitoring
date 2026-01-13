@@ -1,0 +1,75 @@
+{
+  "annotations": {
+    "description": "At least 3 validators have memory allocation above 3GB.",
+    "summary": "Multiple validators experiencing critical memory usage (>3GB)"
+  },
+  "condition": "B",
+  "data": [
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "count(go_memstats_alloc_bytes{validator_name!=\"\"} > 3e9)",
+        "instant": true,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "A"
+      },
+      "queryType": "instant",
+      "refId": "A",
+      "relativeTimeRange": {
+        "from": 60
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                3
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "B",
+        "type": "classic_conditions"
+      },
+      "refId": "B",
+      "relativeTimeRange": {}
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "df9u4m9b9rz7kc",
+  "for": "5m0s",
+  "id": 3,
+  "labels": {
+    "component": "validator",
+    "severity": "critical",
+    "threshold": "3gb"
+  },
+  "noDataState": "NoData",
+  "orgID": 1,
+  "provenance": "api",
+  "ruleGroup": "Validator Memory Alerts",
+  "title": "High Memory Usage: 3+ Validators Above 3GB",
+  "uid": "dfa1nypsvkglcc",
+  "updated": "2026-01-13T14:01:46.000Z"
+}
