@@ -1,0 +1,75 @@
+{
+  "annotations": {
+    "description": "One or more validators have exhausted their GenVM permits (current permits = 0). This indicates the GenVM execution pool is saturated and new requests cannot be processed.",
+    "summary": "Validator(s) GenVM permits exhausted"
+  },
+  "condition": "B",
+  "data": [
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "count(genlayer_node_genvm_permits_current == 0)",
+        "instant": true,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "A"
+      },
+      "queryType": "instant",
+      "refId": "A",
+      "relativeTimeRange": {
+        "from": 60
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                1
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "B",
+        "type": "classic_conditions"
+      },
+      "refId": "B",
+      "relativeTimeRange": {}
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "dfa1v9yck3ny8b",
+  "for": "1m0s",
+  "id": 5,
+  "labels": {
+    "asimov-alert": "true",
+    "component": "genvm",
+    "severity": "critical"
+  },
+  "noDataState": "OK",
+  "orgID": 1,
+  "provenance": "api",
+  "ruleGroup": "Node Performance Alerts",
+  "title": "GenVM Permits Exhausted: Permits Reached Zero",
+  "uid": "bfa2cinxy13wgf",
+  "updated": "2026-01-13T17:17:57.000Z"
+}

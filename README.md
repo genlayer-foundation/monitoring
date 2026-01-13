@@ -42,6 +42,18 @@ Located in: `grafana-alerts/`
 
 This alert detects when nodes are falling behind blockchain sync by checking if the blocks_behind metric increased over a 5-minute window. Any increase indicates the node is falling further behind.
 
+### Node Performance Alerts
+
+#### GenVM Permits Exhausted: Permits Reached Zero
+- **File**: `alert-genvm-permits-exhausted.json`
+- **UID**: `bfa2cinxy13wgf`
+- **Severity**: Critical
+- **Condition**: Triggers when any validator's `genlayer_node_genvm_permits_current` equals 0
+- **Query**: `count(genlayer_node_genvm_permits_current == 0)`
+- **Duration**: 1 minute
+
+This alert detects when validators have exhausted their GenVM execution permits, indicating the execution pool is saturated and cannot process new requests.
+
 ### Validator Memory Alerts
 
 Three alert rules monitor Go memory usage across validators:
@@ -80,6 +92,10 @@ All validator memory alerts:
 
 **Node Sync Alert Labels:**
 - `component`: "node-sync"
+- `severity`: "critical"
+
+**Node Performance Alert Labels:**
+- `component`: "genvm"
 - `severity`: "critical"
 
 **Validator Memory Alert Labels:**
@@ -170,6 +186,7 @@ monitoring/
 └── grafana-alerts/                              # Alert rule configurations
     ├── README.md                                # Detailed alert documentation
     ├── alert-node-blocks-behind-increasing.json # Node sync alert
+    ├── alert-genvm-permits-exhausted.json       # GenVM performance alert
     ├── alert-1gb-memory-threshold.json          # Memory alerts
     ├── alert-2gb-memory-threshold.json
     └── alert-3gb-memory-threshold.json
