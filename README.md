@@ -28,9 +28,21 @@ GenLayer uses Grafana Cloud for comprehensive monitoring and alerting across the
 
 ## Alert Rules
 
-### Validator Memory Alerts
-
 Located in: `grafana-alerts/`
+
+### Node Sync Alerts
+
+#### Node Falling Behind: Blocks Behind Increasing
+- **File**: `alert-node-blocks-behind-increasing.json`
+- **UID**: `afa2b791io0sgb`
+- **Severity**: Critical
+- **Condition**: Triggers when any node's `genlayer_node_blocks_behind` metric has increased over the last 5 minutes
+- **Query**: `count(increase(genlayer_node_blocks_behind[5m]) > 0)`
+- **Duration**: 5 minutes (pending after condition is met)
+
+This alert detects when nodes are falling behind blockchain sync by checking if the blocks_behind metric increased over a 5-minute window. Any increase indicates the node is falling further behind.
+
+### Validator Memory Alerts
 
 Three alert rules monitor Go memory usage across validators:
 
@@ -63,10 +75,16 @@ All validator memory alerts:
 - **Folder**: GenLayer Labs (`dfa1v9yck3ny8b`)
 - **Rule Group**: Validator Memory Alerts
 
-**Labels:**
-- `asimov-alert`: "true" (routing label)
+**Common Labels:**
+- `asimov-alert`: "true" (routing label for all alerts)
+
+**Node Sync Alert Labels:**
+- `component`: "node-sync"
+- `severity`: "critical"
+
+**Validator Memory Alert Labels:**
 - `component`: "validator"
-- `severity`: "warning" or "critical"
+- `severity`: "warning" (1GB) or "critical" (2GB, 3GB)
 - `threshold`: "1gb", "2gb", or "3gb"
 
 ## Notification Routing
@@ -98,6 +116,28 @@ To import dashboards into Grafana:
 
 ## Monitored Metrics
 
+### GenLayer Node Metrics
+
+The following GenLayer-specific metrics are available via `genlayer_node_*`:
+
+**Sync Status:**
+- `genlayer_node_blocks_behind` - Number of blocks the node is behind the network
+- `genlayer_node_synced` - Boolean indicating if node is synced (0 or 1)
+- `genlayer_node_latest_block` - Latest block number known to the node
+- `genlayer_node_synced_block` - Latest block the node has synced
+- `genlayer_node_processing_block` - Block currently being processed
+
+**Performance:**
+- `genlayer_node_cpu_usage_percent` - CPU usage percentage
+- `genlayer_node_memory_usage_bytes` - Memory usage in bytes
+- `genlayer_node_memory_percent` - Memory usage percentage
+- `genlayer_node_disk_usage_bytes` - Disk usage in bytes
+
+**Transactions:**
+- `genlayer_node_transactions_accepted_synced_total` - Total accepted synced transactions
+- `genlayer_node_transactions_activated_total` - Total activated transactions
+- `genlayer_node_genvm_executions` - Number of GenVM executions
+
 ### Go Runtime Metrics
 
 The following Go runtime metrics are available from validators via `go_memstats_*`:
@@ -123,13 +163,14 @@ See `grafana-alerts/README.md` for a complete list of available Go metrics.
 
 ```
 monitoring/
-├── README.md                           # This file
-├── dashboards/                         # Grafana dashboard configurations
+├── README.md                                    # This file
+├── dashboards/                                  # Grafana dashboard configurations
 │   ├── general_monitor.json
 │   └── whoispushing.json
-└── grafana-alerts/                     # Alert rule configurations
-    ├── README.md                       # Detailed alert documentation
-    ├── alert-1gb-memory-threshold.json
+└── grafana-alerts/                              # Alert rule configurations
+    ├── README.md                                # Detailed alert documentation
+    ├── alert-node-blocks-behind-increasing.json # Node sync alert
+    ├── alert-1gb-memory-threshold.json          # Memory alerts
     ├── alert-2gb-memory-threshold.json
     └── alert-3gb-memory-threshold.json
 ```

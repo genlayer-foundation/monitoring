@@ -1,0 +1,75 @@
+{
+  "annotations": {
+    "description": "One or more nodes have been continuously falling behind. The blocks_behind metric increased over the last 5 minutes, indicating sync issues.",
+    "summary": "Node(s) falling behind blockchain sync"
+  },
+  "condition": "B",
+  "data": [
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "count(increase(genlayer_node_blocks_behind[5m]) > 0)",
+        "instant": true,
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "A"
+      },
+      "queryType": "instant",
+      "refId": "A",
+      "relativeTimeRange": {
+        "from": 60
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                1
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "B",
+        "type": "classic_conditions"
+      },
+      "refId": "B",
+      "relativeTimeRange": {}
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "dfa1v9yck3ny8b",
+  "for": "5m0s",
+  "id": 4,
+  "labels": {
+    "asimov-alert": "true",
+    "component": "node-sync",
+    "severity": "critical"
+  },
+  "noDataState": "OK",
+  "orgID": 1,
+  "provenance": "api",
+  "ruleGroup": "Node Sync Alerts",
+  "title": "Node Falling Behind: Blocks Behind Increasing",
+  "uid": "afa2b791io0sgb",
+  "updated": "2026-01-13T17:12:05.000Z"
+}

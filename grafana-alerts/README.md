@@ -1,10 +1,23 @@
 # Grafana Alert Rules
 
-This folder contains Grafana alert rule configurations for monitoring validator memory usage.
+This folder contains Grafana alert rule configurations for monitoring GenLayer nodes and validators.
 
 ## Alert Rules
 
-### 1. High Memory Usage: 3+ Validators Above 1GB
+### Node Sync Alerts
+
+#### 1. Node Falling Behind: Blocks Behind Increasing
+- **File**: `alert-node-blocks-behind-increasing.json`
+- **UID**: `afa2b791io0sgb`
+- **Severity**: Critical
+- **Condition**: Triggers when any node's `genlayer_node_blocks_behind` metric has increased over the last 5 minutes
+- **Duration**: 5 minutes (pending after condition is met)
+- **Query**: `count(increase(genlayer_node_blocks_behind[5m]) > 0)`
+- **Description**: Detects when one or more nodes are falling behind blockchain sync by checking if the blocks_behind metric increased over a 5-minute window. Any increase indicates the node is falling further behind.
+
+### Validator Memory Alerts
+
+#### 1. High Memory Usage: 3+ Validators Above 1GB
 - **File**: `alert-1gb-memory-threshold.json`
 - **UID**: `dfa1nyolt0cg0b`
 - **Severity**: Warning
@@ -12,7 +25,7 @@ This folder contains Grafana alert rule configurations for monitoring validator 
 - **Duration**: 5 minutes
 - **Query**: `count(go_memstats_alloc_bytes{validator_name!=""} > 1e9)`
 
-### 2. High Memory Usage: 3+ Validators Above 2GB
+#### 2. High Memory Usage: 3+ Validators Above 2GB
 - **File**: `alert-2gb-memory-threshold.json`
 - **UID**: `efa1nyp7dfxfkb`
 - **Severity**: Critical
@@ -20,7 +33,7 @@ This folder contains Grafana alert rule configurations for monitoring validator 
 - **Duration**: 5 minutes
 - **Query**: `count(go_memstats_alloc_bytes{validator_name!=""} > 2e9)`
 
-### 3. High Memory Usage: 3+ Validators Above 3GB
+#### 3. High Memory Usage: 3+ Validators Above 3GB
 - **File**: `alert-3gb-memory-threshold.json`
 - **UID**: `dfa1nypsvkglcc`
 - **Severity**: Critical
@@ -42,7 +55,13 @@ All alerts are configured to:
 
 ## Labels
 
-All alerts include the following labels:
+All alerts include the `asimov-alert: "true"` label for routing to Slack.
+
+**Node Sync Alerts:**
+- `component`: "node-sync"
+- `severity`: "critical"
+
+**Validator Memory Alerts:**
 - `component`: "validator"
 - `severity`: "warning" (1GB) or "critical" (2GB, 3GB)
 - `threshold`: "1gb", "2gb", or "3gb"

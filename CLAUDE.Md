@@ -1,0 +1,1 @@
+Always save all changes done in Grafana to the corresponding JSON file
