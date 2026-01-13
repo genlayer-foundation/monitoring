@@ -1,9 +1,10 @@
 {
   "annotations": {
-    "description": "One or more nodes have been continuously falling behind. The blocks_behind metric increased over the last 5 minutes, indicating sync issues.",
-    "summary": "Node(s) falling behind blockchain sync"
+    "description": "One or more nodes have been continuously falling behind. The blocks_behind metric increased over the last 5 minutes, indicating sync issues.\n\nAffected nodes: {{ range $k, $v := $values.AffectedNodes.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }}{{ end }}{{ end }}",
+    "nodes_count": "{{ $values.NodesCount.Value }} nodes with increasing blocks_behind",
+    "summary": "{{ $values.NodesCount.Value }} node(s) falling behind blockchain sync"
   },
-  "condition": "B",
+  "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
@@ -11,12 +12,13 @@
         "expr": "count(increase(genlayer_node_blocks_behind[5m]) > 0)",
         "instant": true,
         "intervalMs": 1000,
+        "legendFormat": "Nodes Falling Behind Count",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "A"
+        "refId": "NodesCount"
       },
       "queryType": "instant",
-      "refId": "A",
+      "refId": "NodesCount",
       "relativeTimeRange": {
         "from": 300
       }
@@ -34,14 +36,31 @@
             }
           }
         ],
-        "expression": "A",
+        "expression": "NodesCount",
         "intervalMs": 1000,
         "maxDataPoints": 43200,
-        "refId": "B",
+        "refId": "Threshold",
         "type": "threshold"
       },
-      "refId": "B",
+      "refId": "Threshold",
       "relativeTimeRange": {}
+    },
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "increase(genlayer_node_blocks_behind[5m]) > 0",
+        "instant": true,
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }}",
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "AffectedNodes"
+      },
+      "queryType": "instant",
+      "refId": "AffectedNodes",
+      "relativeTimeRange": {
+        "from": 300
+      }
     }
   ],
   "execErrState": "Alerting",

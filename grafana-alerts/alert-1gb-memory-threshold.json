@@ -1,9 +1,10 @@
 {
   "annotations": {
-    "description": "At least 3 validators have memory allocation above 1GB.",
-    "summary": "Multiple validators experiencing high memory usage (>1GB)"
+    "description": "At least 3 validators have memory allocation above 1GB.\n\nAffected validators: {{ range $k, $v := $values.AffectedValidators.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }} {{ end }}{{ end }}",
+    "summary": "{{ $values.ValidatorsCount.Value }} validators experiencing high memory usage (>1GB)",
+    "validators_count": "{{ $values.ValidatorsCount.Value }} validators above 1GB memory threshold"
   },
-  "condition": "B",
+  "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
@@ -11,12 +12,13 @@
         "expr": "count(go_memstats_alloc_bytes{validator_name!=\"\"} > 1e9)",
         "instant": true,
         "intervalMs": 1000,
+        "legendFormat": "Validators Above 1GB",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "A"
+        "refId": "ValidatorsCount"
       },
       "queryType": "instant",
-      "refId": "A",
+      "refId": "ValidatorsCount",
       "relativeTimeRange": {
         "from": 60
       }
@@ -37,7 +39,7 @@
             },
             "query": {
               "params": [
-                "A"
+                "ValidatorsCount"
               ]
             },
             "reducer": {
@@ -49,15 +51,32 @@
         ],
         "intervalMs": 1000,
         "maxDataPoints": 43200,
-        "refId": "B",
+        "refId": "Threshold",
         "type": "classic_conditions"
       },
-      "refId": "B",
+      "refId": "Threshold",
       "relativeTimeRange": {}
+    },
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "go_memstats_alloc_bytes{validator_name!=\"\"} > 1e9",
+        "instant": true,
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }}",
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "AffectedValidators"
+      },
+      "queryType": "instant",
+      "refId": "AffectedValidators",
+      "relativeTimeRange": {
+        "from": 60
+      }
     }
   ],
   "execErrState": "Alerting",
-  "folderUID": "df9u4m9b9rz7kc",
+  "folderUID": "dfa1v9yck3ny8b",
   "for": "5m0s",
   "id": 1,
   "labels": {

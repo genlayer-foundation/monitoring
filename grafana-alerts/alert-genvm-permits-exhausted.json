@@ -1,9 +1,10 @@
 {
   "annotations": {
-    "description": "One or more validators have exhausted their GenVM permits (current permits = 0). This indicates the GenVM execution pool is saturated and new requests cannot be processed.",
-    "summary": "Validator(s) GenVM permits exhausted"
+    "description": "One or more validators have exhausted their GenVM permits (current permits = 0). This indicates the GenVM execution pool is saturated and new requests cannot be processed.\n\nAffected validators: {{ range $k, $v := $values.AffectedValidators.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }} {{ end }}{{ end }}",
+    "summary": "{{ $values.ValidatorsCount.Value }} validator(s) GenVM permits exhausted",
+    "validators_affected": "{{ $values.ValidatorsCount.Value }} validators with exhausted permits"
   },
-  "condition": "B",
+  "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
@@ -11,12 +12,13 @@
         "expr": "count(genlayer_node_genvm_permits_current == 0)",
         "instant": true,
         "intervalMs": 1000,
+        "legendFormat": "Validators with 0 Permits",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "A"
+        "refId": "ValidatorsCount"
       },
       "queryType": "instant",
-      "refId": "A",
+      "refId": "ValidatorsCount",
       "relativeTimeRange": {
         "from": 60
       }
@@ -31,29 +33,34 @@
                 1
               ],
               "type": "gt"
-            },
-            "operator": {
-              "type": "and"
-            },
-            "query": {
-              "params": [
-                "A"
-              ]
-            },
-            "reducer": {
-              "params": [],
-              "type": "last"
-            },
-            "type": "query"
+            }
           }
         ],
+        "expression": "ValidatorsCount",
         "intervalMs": 1000,
         "maxDataPoints": 43200,
-        "refId": "B",
-        "type": "classic_conditions"
+        "refId": "Threshold",
+        "type": "threshold"
       },
-      "refId": "B",
+      "refId": "Threshold",
       "relativeTimeRange": {}
+    },
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "genlayer_node_genvm_permits_current == 0",
+        "instant": true,
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }}",
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "AffectedValidators"
+      },
+      "queryType": "instant",
+      "refId": "AffectedValidators",
+      "relativeTimeRange": {
+        "from": 60
+      }
     }
   ],
   "execErrState": "Alerting",
