@@ -1,0 +1,72 @@
+{
+  "annotations": {
+    "baseline_warnings": "{{ $values.BaselineWarnings.Value }} warnings (2 hours ago)",
+    "current_warnings": "{{ $values.CurrentWarnings.Value }} warnings in last 10 minutes",
+    "description": "Warning count is {{ $values.CurrentWarnings.Value }}, which is 10x higher than baseline ({{ $values.BaselineWarnings.Value }} warnings 2 hours ago). This indicates increased warning activity.\n\nAffected validator: {{ $labels.validator_name }}",
+    "summary": "Warning burst detected: {{ $values.CurrentWarnings.Value }} warnings on {{ $labels.validator_name }} (baseline: {{ $values.BaselineWarnings.Value }})"
+  },
+  "condition": "Threshold",
+  "data": [
+    {
+      "datasourceUid": "grafanacloud-logs",
+      "model": {
+        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} |~ \"(?i)(warn|warning)\" !~ \"(?i)(error|exception|panic|fatal)\" [10m]))",
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }} current warnings",
+        "maxDataPoints": 43200,
+        "queryType": "instant",
+        "refId": "CurrentWarnings"
+      },
+      "queryType": "instant",
+      "refId": "CurrentWarnings",
+      "relativeTimeRange": {
+        "from": 600
+      }
+    },
+    {
+      "datasourceUid": "grafanacloud-logs",
+      "model": {
+        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} |~ \"(?i)(warn|warning)\" !~ \"(?i)(error|exception|panic|fatal)\" [10m]))",
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }} baseline",
+        "maxDataPoints": 43200,
+        "queryType": "instant",
+        "refId": "BaselineWarnings"
+      },
+      "queryType": "instant",
+      "refId": "BaselineWarnings",
+      "relativeTimeRange": {
+        "from": 7800,
+        "to": 7200
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "expression": "$CurrentWarnings > ($BaselineWarnings * 10)",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "Threshold",
+        "type": "math"
+      },
+      "refId": "Threshold",
+      "relativeTimeRange": {}
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "dfa1v9yck3ny8b",
+  "for": "2m0s",
+  "id": 8,
+  "labels": {
+    "asimov-alert": "true",
+    "component": "logs",
+    "severity": "warning"
+  },
+  "noDataState": "OK",
+  "orgID": 1,
+  "provenance": "api",
+  "ruleGroup": "Log Analysis Alerts",
+  "title": "Warning Burst Detected in Logs",
+  "uid": "afa5btj4e7k74a",
+  "updated": "2026-01-14T16:55:50.755Z"
+}
