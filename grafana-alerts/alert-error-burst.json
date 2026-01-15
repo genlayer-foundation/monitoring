@@ -10,7 +10,7 @@
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} |~ \"(?i)(error|exception|panic|fatal)\" [10m]))",
+        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"error\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} current errors",
         "maxDataPoints": 43200,
@@ -26,7 +26,7 @@
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} |~ \"(?i)(error|exception|panic|fatal)\" [10m]))",
+        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"error\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} baseline",
         "maxDataPoints": 43200,
