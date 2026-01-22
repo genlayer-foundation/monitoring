@@ -1,0 +1,87 @@
+{
+  "annotations": {
+    "description": "Validator {{ $labels.validator_name }} is not responding to scrape requests. The node may be down or unreachable.",
+    "summary": "Validator {{ $labels.validator_name }} is down"
+  },
+  "condition": "Threshold",
+  "data": [
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "up{validator_name!=\"\"}",
+        "instant": true,
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }}",
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "UpStatus"
+      },
+      "queryType": "instant",
+      "refId": "UpStatus",
+      "relativeTimeRange": {
+        "from": 60
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "expression": "UpStatus",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "reducer": "last",
+        "refId": "Reduce",
+        "type": "reduce"
+      },
+      "refId": "Reduce",
+      "relativeTimeRange": {}
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                1
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": []
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "expression": "Reduce",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "refId": "Threshold",
+        "type": "threshold"
+      },
+      "refId": "Threshold",
+      "relativeTimeRange": {}
+    }
+  ],
+  "execErrState": "Alerting",
+  "folderUID": "dfa1v9yck3ny8b",
+  "for": "1m0s",
+  "id": 9,
+  "labels": {
+    "asimov-alert": "true",
+    "component": "validator",
+    "severity": "critical"
+  },
+  "noDataState": "Alerting",
+  "orgID": 1,
+  "provenance": "api",
+  "ruleGroup": "Node Performance Alerts",
+  "title": "Validator Down",
+  "uid": "afa2validator-down"
+}
