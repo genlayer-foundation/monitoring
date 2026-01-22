@@ -1,24 +1,23 @@
 {
   "annotations": {
-    "description": "At least 3 validators have memory allocation above 2GB.\n\nAffected validators: {{ range $k, $v := $values.AffectedValidators.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }} {{ end }}{{ end }}",
-    "summary": "{{ $values.ValidatorsCount.Value }} validators experiencing high memory usage (>2GB)",
-    "validators_count": "{{ $values.ValidatorsCount.Value }} validators above 2GB memory threshold"
+    "description": "Validator {{ $labels.validator_name }} has memory allocation above 2GB (current: {{ $values.MemoryUsage.Value | printf \"%.0f\" }} bytes).",
+    "summary": "High memory usage on {{ $labels.validator_name }} (>2GB)"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
       "model": {
-        "expr": "count(go_memstats_alloc_bytes{validator_name!=\"\"} > 2e9)",
+        "expr": "go_memstats_alloc_bytes{validator_name!=\"\"}",
         "instant": true,
         "intervalMs": 1000,
-        "legendFormat": "Validators Above 2GB",
+        "legendFormat": "{{ validator_name }}",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "ValidatorsCount"
+        "refId": "MemoryUsage"
       },
       "queryType": "instant",
-      "refId": "ValidatorsCount",
+      "refId": "MemoryUsage",
       "relativeTimeRange": {
         "from": 60
       }
@@ -30,7 +29,7 @@
           {
             "evaluator": {
               "params": [
-                3
+                2000000000
               ],
               "type": "gt"
             },
@@ -39,7 +38,7 @@
             },
             "query": {
               "params": [
-                "ValidatorsCount"
+                "MemoryUsage"
               ]
             },
             "reducer": {
@@ -56,23 +55,6 @@
       },
       "refId": "Threshold",
       "relativeTimeRange": {}
-    },
-    {
-      "datasourceUid": "grafanacloud-prom",
-      "model": {
-        "expr": "go_memstats_alloc_bytes{validator_name!=\"\"} > 2e9",
-        "instant": true,
-        "intervalMs": 1000,
-        "legendFormat": "{{ validator_name }}",
-        "maxDataPoints": 43200,
-        "range": false,
-        "refId": "AffectedValidators"
-      },
-      "queryType": "instant",
-      "refId": "AffectedValidators",
-      "relativeTimeRange": {
-        "from": 60
-      }
     }
   ],
   "execErrState": "Alerting",
@@ -84,11 +66,10 @@
     "severity": "critical",
     "threshold": "2gb"
   },
-  "noDataState": "NoData",
+  "noDataState": "OK",
   "orgID": 1,
   "provenance": "api",
   "ruleGroup": "Validator Memory Alerts",
-  "title": "High Memory Usage: 3+ Validators Above 2GB",
-  "uid": "efa1nyp7dfxfkb",
-  "updated": "2026-01-13T14:01:45.000Z"
+  "title": "High Memory Usage: Validator Above 2GB",
+  "uid": "efa1nyp7dfxfkb"
 }
