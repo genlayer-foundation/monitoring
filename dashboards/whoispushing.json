@@ -108,25 +108,12 @@
       },
       "id": 1,
       "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "footer": {
+          "enablePagination": false,
+          "show": false
         },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "12.4.0-20160616057.patch2",
       "targets": [
@@ -135,15 +122,14 @@
             "type": "loki",
             "uid": "grafanacloud-logs"
           },
-          "direction": "backward",
           "editorMode": "code",
           "expr": "count by (validator_name, instance) (count_over_time({instance!=\"\"}[5m]))\nor\ncount by (validator_name, instance) (count_over_time({validator_name!=\"\"}[5m]))\n",
-          "queryType": "range",
+          "queryType": "instant",
           "refId": "A"
         }
       ],
       "title": "Logs",
-      "type": "piechart"
+      "type": "table"
     }
   ],
   "preload": false,
