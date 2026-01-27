@@ -56,19 +56,12 @@
       },
       "id": 2,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "footer": {
+          "enablePagination": false,
+          "show": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "12.4.0-20160616057.patch2",
       "targets": [
@@ -77,13 +70,14 @@
           "expr": "count by (validator_name) (up)",
           "interval": "",
           "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
+          "instant": true,
+          "refId": "A",
+          "format": "table"
         }
       ],
       "timeFrom": "5m",
       "title": "Metrics",
-      "type": "gauge"
+      "type": "table"
     },
     {
       "datasource": {
