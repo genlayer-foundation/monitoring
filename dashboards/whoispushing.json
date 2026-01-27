@@ -143,7 +143,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count by (instance) (\n  count_over_time({instance!=\"\"}[5m])\n)\n",
+          "expr": "count by (validator_name, instance) (count_over_time({instance!=\"\"}[5m]))\nor\ncount by (validator_name, instance) (count_over_time({validator_name!=\"\"}[5m]))\n",
           "queryType": "range",
           "refId": "A"
         }
