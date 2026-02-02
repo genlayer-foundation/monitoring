@@ -1,0 +1,2084 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 13,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<img width=\"200px\" src=\"https://www.5elementsnodes.com/wp-content/uploads/2025/07/Gen_White.webp\" />",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^A.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Current"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^B.*"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Finalized"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 2
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n.result\n| ltrimstr(\"0x\")\n| .[0:64] as $w\n| [ { Current: ($w | hex2int) } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"data\": \"0x900cf0cf\"\n    },\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n((.result // \"0x\") | ltrimstr(\"0x\") | .[0:64]) as $w\n| [ { Finalized: ($w | hex2int) } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\"data\":\"0xb3f05b97\"},\n    \"latest\"\n  ]\n}\n",
+            "headers": [
+              {
+                "key": "header-key",
+                "value": "header-value"
+              }
+            ],
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Epoch",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 2
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\ndef as_array:\n  if type == \"array\" then . else [.] end;\n\ndef byid($id):\n  (as_array\n   | map(select(type==\"object\" and ((.id|tostring) == ($id|tostring))))\n   | .[0] // {});\n\ndef clamp_nonneg:\n  if . > 0 then . else 0 end;\n\n. as $resp\n| ($resp | byid(1)) as $r1\n| ($resp | byid(2)) as $r2\n| ($resp | byid(3)) as $r3\n| ($resp | byid(4)) as $r4\n| ($resp | byid(5)) as $r5\n\n| (($r1.result // \"0x\") | ltrimstr(\"0x\") | .[0:64] | hex2int) as $epoch\n| (($r4.result.timestamp // \"0x0\") | ltrimstr(\"0x\") | hex2int) as $now\n| (($r5.result // \"0x\") | ltrimstr(\"0x\") | .[0:64] | hex2int) as $dur_s\n\n| (($r2.result // \"0x\") | ltrimstr(\"0x\") | words) as $odd\n| (($r3.result // \"0x\") | ltrimstr(\"0x\") | words) as $even\n| (($odd[0] // \"0\") | hex2int) as $odd_start\n| (($even[0] // \"0\") | hex2int) as $even_start\n| (if ($epoch % 2) == 1 then $odd_start else $even_start end) as $start\n\n| ($start + $dur_s) as $next\n| (($next - $now) | clamp_nonneg) as $remain_s\n\n| [ {\n    \"Epoch duration (min)\": (($dur_s / 60) | floor),\n    \"Next epoch in (min)\": (($remain_s / 60) | floor)\n  } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "[\n  {\n    \"jsonrpc\": \"2.0\",\n    \"id\": 1,\n    \"method\": \"eth_call\",\n    \"params\": [\n      { \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\", \"data\": \"0x900cf0cf\" },\n      \"latest\"\n    ]\n  },\n  {\n    \"jsonrpc\": \"2.0\",\n    \"id\": 2,\n    \"method\": \"eth_call\",\n    \"params\": [\n      { \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\", \"data\": \"0xfafebac5\" },\n      \"latest\"\n    ]\n  },\n  {\n    \"jsonrpc\": \"2.0\",\n    \"id\": 3,\n    \"method\": \"eth_call\",\n    \"params\": [\n      { \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\", \"data\": \"0x96be02a7\" },\n      \"latest\"\n    ]\n  },\n  {\n    \"jsonrpc\": \"2.0\",\n    \"id\": 4,\n    \"method\": \"eth_getBlockByNumber\",\n    \"params\": [\"latest\", false]\n  },\n  {\n    \"jsonrpc\": \"2.0\",\n    \"id\": 5,\n    \"method\": \"eth_call\",\n    \"params\": [\n      { \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\", \"data\": \"0x1bc2359a\" },\n      \"latest\"\n    ]\n  }\n]\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        }
+      ],
+      "title": "Epoch",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 8
+              },
+              {
+                "color": "#EAB839",
+                "value": 16
+              },
+              {
+                "color": "green",
+                "value": 32
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n.result\n| ltrimstr(\"0x\")\n| .[0:64] as $w\n| [ { count: ($w | hex2int) } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"data\": \"0x0d2bd909\"\n    },\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        }
+      ],
+      "title": "Joined validators",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "hideFrom": {
+              "viz": false
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vStake"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 97
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 846
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 21,
+        "x": 3,
+        "y": 6
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "website"
+          }
+        ]
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | { validator: (\"0x\" + ($w[2+$i][24:64])) }\n  ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"data\": \"0xd2d49c4b\"\n    },\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Joined validators list",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "vShares B": true,
+              "vStake B": true,
+              "validator": false,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "orderByMode": "manual",
+            "renameByName": {
+              "moniker B": "moniker",
+              "validator": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 0,
+        "y": 14
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n(.result // \"0x\")\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ { count: $len } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\"data\":\"0x6461cf5600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        }
+      ],
+      "title": "Banned validators",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "hideFrom": {
+              "viz": false
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "permanentlyBanned"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 151
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "untilEpochBanned"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 331
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 851
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moniker"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 630
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 21,
+        "x": 3,
+        "y": 14
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | (2 + ($i*3)) as $base\n    | {\n        validator: (\"0x\" + ($w[$base][24:64])),\n        untilEpochBanned: ($w[$base+1] | hex2int),\n        permanentlyBanned: (($w[$base+2] | hex2int) == 1)\n      }\n  ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"data\": \"0x6461cf5600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "body_content_type": "text/plain",
+            "body_type": "raw",
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Banned validators list",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "vShares B": true,
+              "vStake B": true,
+              "validator": false,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "dShares B": 4,
+              "dStake B": 5,
+              "eBanned B": 6,
+              "ePrimed B": 7,
+              "email B": 8,
+              "github B": 9,
+              "live B": 10,
+              "logoUri B": 11,
+              "moniker B": 1,
+              "operator B": 12,
+              "owner B": 13,
+              "permanentlyBanned A": 2,
+              "status B": 14,
+              "telegram B": 15,
+              "twitter B": 16,
+              "untilEpochBanned A": 3,
+              "vShares B": 17,
+              "vStake B": 18,
+              "validator": 0,
+              "website B": 19
+            },
+            "renameByName": {
+              "moniker B": "moniker",
+              "permanentlyBanned A": "permanentlyBanned",
+              "untilEpochBanned A": "untilEpochBanned"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 0,
+        "y": 22
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n(.result // \"0x\")\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ { count: $len } ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        }
+      ],
+      "title": "Quarantined validators",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "hideFrom": {
+              "viz": false
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 853
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moniker"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 627
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "permanentlyBanned"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 156
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 21,
+        "x": 3,
+        "y": 22
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "pagination_mode": "none",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | (2 + ($i*3)) as $base\n    | {\n        validator: (\"0x\" + ($w[$base][24:64])),\n        untilEpochBanned: ($w[$base+1] | hex2int),\n        permanentlyBanned: (($w[$base+2] | hex2int) == 1)\n      }\n  ]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"data\": \"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Quarantined validators list",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "moniker B": false,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "vShares B": true,
+              "vStake B": true,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "dShares B": 4,
+              "dStake B": 5,
+              "eBanned B": 6,
+              "ePrimed B": 7,
+              "email B": 8,
+              "github B": 9,
+              "live B": 10,
+              "logoUri B": 11,
+              "moniker B": 1,
+              "operator B": 12,
+              "owner B": 13,
+              "permanentlyBanned A": 2,
+              "status B": 14,
+              "telegram B": 15,
+              "twitter B": 16,
+              "untilEpochBanned A": 3,
+              "vShares B": 17,
+              "vStake B": 18,
+              "validator": 0,
+              "website B": 19
+            },
+            "renameByName": {
+              "moniker B": "moniker",
+              "permanentlyBanned A": "permanentlyBanned",
+              "untilEpochBanned A": "untilEpochBanned"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blockNumber"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 249
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "operator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 370
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "txHash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 580
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 93
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amountTokens"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 355
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 367
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epoch"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 153
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delegatorRewards"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 196
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validatorRewards"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 182
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moniker"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 534
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| map(\n    . as $l\n    | ($l.data | ltrimstr(\"0x\") | words) as $w\n    | {\n        blockNumber: ($l.blockNumber | ltrimstr(\"0x\") | hex2int),\n        txHash: $l.transactionHash,\n        validator: (\"0x\" + ($w[0][24:64])),\n        epoch: ($w[1] | hex2int),\n        validatorRewards: ((($w[2] | hex2int) / 1e18)),\n        delegatorRewards: ((($w[2] | hex2int) / 1e18))\n      }\n  )\n| sort_by(.blockNumber)\n| (if length > 50 then .[-50:] else . end)\n| reverse\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x1a0000\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"topics\":[\"0x6c1cb63d5812a028b3c1ad393faa0c59424882349a370bf5d0560466ff2dc74c\"]\n    }\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Last Validator Prime",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "vShares B": true,
+              "vStake B": true,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "blockNumber A": 1,
+              "dShares B": 7,
+              "dStake B": 8,
+              "delegatorRewards A": 2,
+              "eBanned B": 9,
+              "ePrimed B": 10,
+              "email B": 11,
+              "epoch A": 4,
+              "github B": 12,
+              "live B": 13,
+              "logoUri B": 14,
+              "moniker B": 5,
+              "operator B": 15,
+              "owner B": 16,
+              "status B": 17,
+              "telegram B": 18,
+              "twitter B": 19,
+              "txHash A": 6,
+              "vShares B": 20,
+              "vStake B": 21,
+              "validator": 0,
+              "validatorRewards A": 3,
+              "website B": 22
+            },
+            "renameByName": {
+              "blockNumber A": "blockNumber",
+              "delegatorRewards A": "delegatorRewards",
+              "epoch A": "epoch",
+              "moniker B": "moniker",
+              "txHash A": "txHash",
+              "validatorRewards A": "validatorRewards"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blockNumber"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "operator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 530
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "txHash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 569
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 93
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amountTokens"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 112
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 368
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moniker"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 538
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| map(\n    . as $l\n    | ($l.data | ltrimstr(\"0x\") | words) as $w\n    | {\n        blockNumber: ($l.blockNumber | ltrimstr(\"0x\") | hex2int),\n        txHash: $l.transactionHash,\n        operator: (\"0x\" + ($w[0][24:64])),\n        validator: (\"0x\" + ($w[1][24:64])),\n        amountTokens: ((($w[2] | hex2int) / 1e18))\n      }\n  )\n| sort_by(.blockNumber)\n| (if length > 50 then .[-50:] else . end)\n| reverse\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x1a0000\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x03f410748ebdb4026a6b8299e9b6603a273709d1\",\n      \"topics\":[\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]\n    }\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Last Validator Join",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "vShares B": true,
+              "vStake B": true,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "amountTokens A": 1,
+              "blockNumber A": 2,
+              "dShares B": 6,
+              "dStake B": 7,
+              "eBanned B": 8,
+              "ePrimed B": 9,
+              "email B": 10,
+              "github B": 11,
+              "live B": 12,
+              "logoUri B": 13,
+              "moniker B": 4,
+              "operator A": 3,
+              "operator B": 14,
+              "owner B": 15,
+              "status B": 16,
+              "telegram B": 17,
+              "twitter B": 18,
+              "txHash A": 5,
+              "vShares B": 19,
+              "vStake B": 20,
+              "validator": 0,
+              "website B": 21
+            },
+            "renameByName": {
+              "amountTokens A": "amountTokens",
+              "blockNumber A": "blockNumber",
+              "moniker B": "moniker",
+              "operator A": "operator",
+              "txHash A": "txHash"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blockNumber"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "operator"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "txHash"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amountTokens"
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def t0: .topics[0];\n\n[\n  {\n    Total: ((.result // []) | length),\n    FromIdleness: ((.result // []) | map(select(t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\")) | length),\n    Enacted: ((.result // []) | map(select(t0 == \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\")) | length)\n  }\n]\n",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x1a0000\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x0b6d9d169ded9271d4a18d71d44203e5efb795fe\",\n      \"topics\":[\n        [\n          \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\",\n          \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\"\n        ]\n      ]\n    }\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        }
+      ],
+      "title": "Slashing events count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blockNumber"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 165
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "operator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 370
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "txHash"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 571
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amount"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 93
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "amountTokens"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 355
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epoch"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 436
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "event"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 196
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "txId"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "percentage"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 183
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 1145
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moniker"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 352
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "percentage A"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 128
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "12.4.0-21024277089.patch2",
+      "targets": [
+        {
+          "columns": [],
+          "computed_columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "pagination_mode": "none",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\ndef addr_from_topic:\n  \"0x\" + (.[26:66]);\n\n(.result // [])\n| (if length == 0 then [] else\n    map(\n      . as $l\n      | ($l.topics[0]) as $t0\n      | ($l.topics[1] | ltrimstr(\"0x\") | addr_from_topic) as $validator\n      | ($l.data | ltrimstr(\"0x\") | words) as $w\n      | {\n          blockNumber: ($l.blockNumber | ltrimstr(\"0x\") | hex2int),\n          txHash: $l.transactionHash,\n          event: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                  then \"SlashedFromIdleness\" else \"SlashEnacted\" end),\n          validator: $validator,\n          txId: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                 then (\"0x\" + $w[0]) else null end),\n          epoch: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                 then ($w[1] | hex2int) else ($w[0] | hex2int) end),\n          percentage: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                      then ($w[2] | hex2int) else null end)\n        }\n    )\n    | sort_by(.blockNumber)\n    | (if length > 15 then .[-15:] else . end)\n    | reverse\n  end)",
+          "source": "url",
+          "type": "json",
+          "url": "https://genlayer-testnet.rpc.caldera.xyz/http",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x1a0000\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x0b6d9d169ded9271d4a18d71d44203e5efb795fe\",\n      \"topics\":[\n        [\n          \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\",\n          \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\"\n        ]\n      ]\n    }\n  ]\n}\n",
+            "headers": [],
+            "method": "POST",
+            "params": []
+          }
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": ".validators",
+          "source": "url",
+          "type": "json",
+          "url": "https://asimov.5elementsnodes.com/genlayer/validators.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Last slashing events",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "validator",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "dShares B": true,
+              "dStake B": true,
+              "eBanned B": true,
+              "ePrimed B": true,
+              "email B": true,
+              "github B": true,
+              "live B": true,
+              "logoUri B": true,
+              "moniker B": false,
+              "operator B": true,
+              "owner B": true,
+              "status B": true,
+              "telegram B": true,
+              "twitter B": true,
+              "txId A": true,
+              "vShares B": true,
+              "vStake B": true,
+              "website B": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "blockNumber A": 2,
+              "dShares B": 8,
+              "dStake B": 9,
+              "eBanned B": 10,
+              "ePrimed B": 11,
+              "email B": 12,
+              "epoch A": 3,
+              "event A": 1,
+              "github B": 13,
+              "live B": 14,
+              "logoUri B": 15,
+              "moniker B": 4,
+              "operator B": 16,
+              "owner B": 17,
+              "percentage A": 5,
+              "status B": 18,
+              "telegram B": 19,
+              "twitter B": 20,
+              "txHash A": 6,
+              "txId A": 7,
+              "vShares B": 21,
+              "vStake B": 22,
+              "validator": 0,
+              "website B": 23
+            },
+            "orderByMode": "manual",
+            "renameByName": {
+              "blockNumber A": "blockNumber",
+              "epoch A": "epoch",
+              "event A": "event",
+              "moniker B": "moniker",
+              "percentage A": "percentage",
+              "txHash A": "txHash"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Chain Metrics | Smart Contract",
+  "uid": "in6h2x2",
+  "version": 19,
+  "weekStart": ""
+}
