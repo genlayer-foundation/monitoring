@@ -1,0 +1,2166 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2beta1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "dezbt57",
+    "generation": 9,
+    "creationTimestamp": "2026-03-11T15:16:24Z",
+    "labels": {},
+    "annotations": {}
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "spec": {},
+            "labels": {
+              "grafana.app/export-label": "grafana-1"
+            }
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Epoch",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n.result\n| ltrimstr(\"0x\")\n| .[0:64] as $w\n| [ { Current: ($w | hex2int) } ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\n      \"data\": \"0x900cf0cf\"\n    },\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n((.result // \"0x\") | ltrimstr(\"0x\") | .[0:64]) as $w\n| [ { Finalized: ($w | hex2int) } ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\"data\":\"0xb3f05b97\"},\n    \"latest\"\n  ]\n}\n",
+                          "headers": [
+                            {
+                              "key": "header-key",
+                              "value": "header-value"
+                            }
+                          ],
+                          "method": "POST"
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {},
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "^A.*"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Current"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byRegexp",
+                      "options": "^B.*"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Finalized"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Last slashing events",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "pagination_mode": "none",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int: ascii_downcase | explode | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\ndef words: [range(0; length; 64) as $i | .[$i:$i+64]];\ndef addr_from_topic: \"0x\" + (.[26:66]);\n\n(.result // [])\n| (if length == 0 then []\n   else\n     map(\n       . as $l\n       | ($l.topics[0]) as $t0\n       | ($l.topics[1] | ltrimstr(\"0x\") | addr_from_topic) as $validator\n       | ($l.data | ltrimstr(\"0x\") | words) as $w\n       | {\n           blockNumber: ($l.blockNumber | ltrimstr(\"0x\") | hex2int),\n           txHash: $l.transactionHash,\n           event: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                   then \"SlashedFromIdleness\"\n                   else \"SlashEnacted\"\n                   end),\n           validator: $validator,\n           txId: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                  then (\"0x\" + $w[0])\n                  else null\n                  end),\n           epoch: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                  then ($w[1] | hex2int)\n                  else ($w[0] | hex2int)\n                  end),\n           percentage: (if $t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\"\n                        then ($w[2] | hex2int)\n                        else null\n                        end)\n         }\n     )\n     | sort_by(.blockNumber)\n     | (if length > 15 then .[-15:] else . end)\n     | reverse\n   end)\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x43ae\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x8972DEcd4B499436BbD903BA5F1Eae1a701Afe5a\",\n      \"topics\":[\n        [\n          \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\",\n          \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\"\n        ]\n      ]\n    }\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": ".validators",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://bradbury.5elementsnodes.com/genlayer/validators-bradbury.json",
+                        "url_options": {
+                          "data": "",
+                          "method": "GET"
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "validator",
+                      "mode": "outerTabular"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "dShares B": false,
+                        "dStake B": false,
+                        "description B": true,
+                        "eBanned B": true,
+                        "ePrimed B": true,
+                        "email B": true,
+                        "github B": true,
+                        "live B": false,
+                        "logoUri B": true,
+                        "moniker B": false,
+                        "operator B": true,
+                        "owner B": true,
+                        "status B": true,
+                        "telegram B": true,
+                        "twitter B": true,
+                        "txId A": true,
+                        "vShares B": true,
+                        "vStake B": true,
+                        "website B": true
+                      },
+                      "includeByName": {},
+                      "indexByName": {
+                        "blockNumber A": 2,
+                        "dShares B": 8,
+                        "dStake B": 9,
+                        "eBanned B": 10,
+                        "ePrimed B": 11,
+                        "email B": 12,
+                        "epoch A": 3,
+                        "event A": 1,
+                        "github B": 13,
+                        "live B": 14,
+                        "logoUri B": 15,
+                        "moniker B": 4,
+                        "operator B": 16,
+                        "owner B": 17,
+                        "percentage A": 5,
+                        "status B": 18,
+                        "telegram B": 19,
+                        "twitter B": 20,
+                        "txHash A": 6,
+                        "txId A": 7,
+                        "vShares B": 21,
+                        "vStake B": 22,
+                        "validator": 0,
+                        "website B": 23
+                      },
+                      "orderByMode": "manual",
+                      "renameByName": {
+                        "blockNumber A": "blockNumber",
+                        "dShares B": "Shares",
+                        "dStake B": "Stake",
+                        "epoch A": "epoch",
+                        "event A": "event",
+                        "live B": "Slashed",
+                        "moniker B": "Validator",
+                        "percentage A": "percentage",
+                        "txHash A": "txHash",
+                        "validator": "Validator address"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "sortBy",
+                  "spec": {
+                    "id": "sortBy",
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "field": "Slashed"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "enablePagination": false,
+                "showHeader": true,
+                "sortBy": []
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "false": {
+                          "text": "False",
+                          "color": "green",
+                          "index": 0
+                        },
+                        "true": {
+                          "text": "True",
+                          "color": "red",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "blockNumber"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 165
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "operator"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 370
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "txHash"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 571
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "amount"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 93
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "amountTokens"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 355
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "epoch"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 436
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 196
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "txId"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 260
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "percentage"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 183
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "validator"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 1145
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "moniker"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 352
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "percentage A"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 128
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Validator address"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 665
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Slashed"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Slashing events count",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def t0: .topics[0];\n\n[\n  {\n    Total: ((.result // []) | length),\n    FromIdleness: ((.result // []) | map(select(t0 == \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\")) | length),\n    Enacted: ((.result // []) | map(select(t0 == \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\")) | length)\n  }\n]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_getLogs\",\n  \"params\":[\n    {\n      \"fromBlock\":\"0x43ae\",\n      \"toBlock\":\"latest\",\n      \"address\":\"0x8972DEcd4B499436BbD903BA5F1Eae1a701Afe5a\",\n      \"topics\":[\n        [\n          \"0x04173640a8102913cf3540e52f9d6d78ce7dcf5ca36252ec4b66a57325e76120\",\n          \"0xce0fb8cdb70dc98c87f1cc721bf4c7457c107596f205b8e742fcd57e2a64865c\"\n        ]\n      ]\n    }\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "blue"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "blockNumber"
+                    },
+                    "properties": []
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "operator"
+                    },
+                    "properties": []
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "txHash"
+                    },
+                    "properties": []
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "amount"
+                    },
+                    "properties": []
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "amountTokens"
+                    },
+                    "properties": []
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Epoch",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\ndef as_array:\n  if type == \"array\" then . else [.] end;\n\ndef byid($id):\n  (as_array\n   | map(select(type==\"object\" and ((.id|tostring) == ($id|tostring))))\n   | .[0] // {});\n\ndef clamp_nonneg:\n  if . > 0 then . else 0 end;\n\n. as $resp\n| ($resp | byid(1)) as $r1\n| ($resp | byid(2)) as $r2\n| ($resp | byid(3)) as $r3\n| ($resp | byid(4)) as $r4\n| ($resp | byid(5)) as $r5\n\n| (($r1.result // \"0x\") | ltrimstr(\"0x\") | .[0:64] | hex2int) as $epoch\n| (($r4.result.timestamp // \"0x0\") | ltrimstr(\"0x\") | hex2int) as $now\n| (($r5.result // \"0x\") | ltrimstr(\"0x\") | .[0:64] | hex2int) as $dur_s\n\n| (($r2.result // \"0x\") | ltrimstr(\"0x\") | words) as $odd\n| (($r3.result // \"0x\") | ltrimstr(\"0x\") | words) as $even\n| (($odd[0] // \"0\") | hex2int) as $odd_start\n| (($even[0] // \"0\") | hex2int) as $even_start\n| (if ($epoch % 2) == 1 then $odd_start else $even_start end) as $start\n\n| ($start + $dur_s) as $next\n| (($next - $now) | clamp_nonneg) as $remain_s\n\n| [ {\n    \"Epoch duration (min)\": (($dur_s / 60) | floor),\n    \"Next epoch in (min)\": (($remain_s / 60) | floor)\n  } ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "[ { \"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [ { \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\", \"data\": \"0x900cf0cf\" }, \"latest\" ] }, { \"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"eth_call\", \"params\": [ { \"to\": \"0x63Fa5E0bb10fb6fA98F44726C5518223F767687A\", \"data\": \"0xfafebac5\" }, \"latest\" ] }, { \"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"eth_call\", \"params\": [ { \"to\": \"0x63Fa5E0bb10fb6fA98F44726C5518223F767687A\", \"data\": \"0x96be02a7\" }, \"latest\" ] }, { \"jsonrpc\": \"2.0\", \"id\": 4, \"method\": \"eth_getBlockByNumber\", \"params\": [\"latest\", false] }, { \"jsonrpc\": \"2.0\", \"id\": 5, \"method\": \"eth_call\", \"params\": [ { \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\", \"data\": \"0x1bc2359a\" }, \"latest\" ] } ]",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "horizontal",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "text": {},
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                },
+                "content": "<img width=\"200px\" src=\"https://www.5elementsnodes.com/wp-content/uploads/2025/07/Gen_White.webp\" />",
+                "mode": "markdown"
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          },
+          "transparent": true
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Joined validators",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "pagination_mode": "none",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\n.result\n| ltrimstr(\"0x\")\n| .[64:128] as $w\n| { count: ($w | hex2int) }",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\n      \"data\": \"0x799e4e8b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 8,
+                        "color": "red"
+                      },
+                      {
+                        "value": 16,
+                        "color": "#EAB839"
+                      },
+                      {
+                        "value": 32,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Joined validators list",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int: ascii_downcase | explode | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\ndef words: [range(0; length; 64) as $i | .[$i:$i+64]];\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | { validator: (\"0x\" + ($w[2+$i][24:64])) }\n  ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\n      \"data\": \"0x799e4e8b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": ".validators\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://bradbury.5elementsnodes.com/genlayer/validators-bradbury.json",
+                        "url_options": {
+                          "data": "",
+                          "method": "GET"
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "validator",
+                      "mode": "outerTabular"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "dShares B": true,
+                        "dStake B": true,
+                        "description B": true,
+                        "eBanned B": true,
+                        "ePrimed B": true,
+                        "email B": true,
+                        "github B": true,
+                        "live B": true,
+                        "logoUri B": true,
+                        "operator B": true,
+                        "owner B": true,
+                        "status B": true,
+                        "telegram B": true,
+                        "twitter B": true,
+                        "vShares B": true,
+                        "vStake B": true,
+                        "validator": false,
+                        "website B": true
+                      },
+                      "includeByName": {},
+                      "indexByName": {
+                        "dShares B": 2,
+                        "dStake B": 3,
+                        "eBanned B": 4,
+                        "ePrimed B": 5,
+                        "email B": 6,
+                        "github B": 7,
+                        "live B": 8,
+                        "logoUri B": 9,
+                        "moniker B": 1,
+                        "operator B": 10,
+                        "owner B": 11,
+                        "status B": 12,
+                        "telegram B": 13,
+                        "twitter B": 14,
+                        "vShares B": 15,
+                        "vStake B": 16,
+                        "validator": 0,
+                        "website B": 17
+                      },
+                      "orderByMode": "manual",
+                      "renameByName": {
+                        "ePrimed B": "Primed",
+                        "moniker B": "Validator",
+                        "validator": "Validator address"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "sortBy",
+                  "spec": {
+                    "id": "sortBy",
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "desc": false,
+                          "field": "moniker"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "enablePagination": false,
+                "frameIndex": 0,
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "desc": false,
+                    "displayName": "website"
+                  }
+                ]
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "False",
+                          "color": "red",
+                          "index": 0
+                        },
+                        "1": {
+                          "text": "True",
+                          "color": "green",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "hideFrom": {
+                      "viz": false
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "vStake"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 97
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "validator"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 846
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Primed"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      },
+                      {
+                        "id": "custom.align",
+                        "value": "left"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Validator address"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 457
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Banned validators list",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | (2 + ($i*3)) as $base\n    | {\n        validator: (\"0x\" + ($w[$base][24:64])),\n        untilEpochBanned: ($w[$base+1] | hex2int),\n        permanentlyBanned: (($w[$base+2] | hex2int) == 1)\n      }\n  ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\n      \"data\": \"0x6461cf5600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": ".validators",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://bradbury.5elementsnodes.com/genlayer/validators-bradbury.json",
+                        "url_options": {
+                          "body_content_type": "text/plain",
+                          "body_type": "raw",
+                          "data": "",
+                          "method": "GET"
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "validator",
+                      "mode": "inner"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "dShares B": true,
+                        "dStake B": true,
+                        "description B": true,
+                        "eBanned B": true,
+                        "ePrimed B": true,
+                        "email B": true,
+                        "github B": true,
+                        "live B": false,
+                        "logoUri B": true,
+                        "operator B": true,
+                        "owner B": true,
+                        "status B": true,
+                        "telegram B": true,
+                        "twitter B": true,
+                        "vShares B": true,
+                        "vStake B": true,
+                        "validator": false,
+                        "website B": true
+                      },
+                      "includeByName": {},
+                      "indexByName": {
+                        "dShares B": 4,
+                        "dStake B": 5,
+                        "eBanned B": 6,
+                        "ePrimed B": 7,
+                        "email B": 8,
+                        "github B": 9,
+                        "live B": 10,
+                        "logoUri B": 11,
+                        "moniker B": 1,
+                        "operator B": 12,
+                        "owner B": 13,
+                        "permanentlyBanned A": 2,
+                        "status B": 14,
+                        "telegram B": 15,
+                        "twitter B": 16,
+                        "untilEpochBanned A": 3,
+                        "vShares B": 17,
+                        "vStake B": 18,
+                        "validator": 0,
+                        "website B": 19
+                      },
+                      "renameByName": {
+                        "live B": "Banned",
+                        "moniker B": "Validator",
+                        "permanentlyBanned A": "permanentlyBanned",
+                        "untilEpochBanned A": "untilEpochBanned",
+                        "validator": "Validator address"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "sortBy",
+                  "spec": {
+                    "id": "sortBy",
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "desc": false,
+                          "field": "Banned"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "enablePagination": false,
+                "showHeader": true,
+                "sortBy": []
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "false": {
+                          "text": "False",
+                          "color": "green",
+                          "index": 0
+                        },
+                        "true": {
+                          "text": "True",
+                          "color": "red",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "hideFrom": {
+                      "viz": false
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Banned"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Quarantined validators list",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "pagination_mode": "none",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n.result\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ range(0; $len) as $i\n    | (2 + ($i*3)) as $base\n    | {\n        validator: (\"0x\" + ($w[$base][24:64])),\n        untilEpochBanned: ($w[$base+1] | hex2int),\n        permanentlyBanned: (($w[$base+2] | hex2int) == 1)\n      }\n  ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"eth_call\",\n  \"params\": [\n    {\n      \"to\": \"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\n      \"data\": \"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"\n    },\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": ".validators",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://bradbury.5elementsnodes.com/genlayer/validators-bradbury.json",
+                        "url_options": {
+                          "data": "",
+                          "method": "GET"
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "B",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "validator",
+                      "mode": "inner"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "dShares B": true,
+                        "dStake B": true,
+                        "description B": true,
+                        "eBanned B": true,
+                        "ePrimed B": true,
+                        "email B": true,
+                        "github B": true,
+                        "live B": false,
+                        "logoUri B": true,
+                        "moniker B": false,
+                        "operator B": true,
+                        "owner B": true,
+                        "status B": true,
+                        "telegram B": true,
+                        "twitter B": true,
+                        "vShares B": true,
+                        "vStake B": true,
+                        "website B": true
+                      },
+                      "includeByName": {},
+                      "indexByName": {
+                        "dShares B": 4,
+                        "dStake B": 5,
+                        "eBanned B": 6,
+                        "ePrimed B": 7,
+                        "email B": 8,
+                        "github B": 9,
+                        "live B": 10,
+                        "logoUri B": 11,
+                        "moniker B": 1,
+                        "operator B": 12,
+                        "owner B": 13,
+                        "permanentlyBanned A": 2,
+                        "status B": 14,
+                        "telegram B": 15,
+                        "twitter B": 16,
+                        "untilEpochBanned A": 3,
+                        "vShares B": 17,
+                        "vStake B": 18,
+                        "validator": 0,
+                        "website B": 19
+                      },
+                      "renameByName": {
+                        "live B": "Quarantined",
+                        "moniker B": "Validator",
+                        "permanentlyBanned A": "permanentlyBanned",
+                        "untilEpochBanned A": "untilEpochBanned",
+                        "validator": "Validator address"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "sortBy",
+                  "spec": {
+                    "id": "sortBy",
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "field": "Quarantined"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "enablePagination": false,
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "false": {
+                          "text": "False",
+                          "color": "green",
+                          "index": 0
+                        },
+                        "true": {
+                          "text": "True",
+                          "color": "red",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "hideFrom": {
+                      "viz": false
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "validator"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 853
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "moniker"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 627
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "permanentlyBanned"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 156
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Validator address"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 463
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Validator"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 453
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Quarantined"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Banned validators",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n(.result // \"0x\")\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ { count: $len } ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\"data\":\"0x6461cf5600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Quarantined validators",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "yesoreyeram-infinity-datasource",
+                      "version": "v0",
+                      "spec": {
+                        "columns": [],
+                        "computed_columns": [],
+                        "filters": [],
+                        "format": "table",
+                        "global_query_id": "",
+                        "parser": "jq-backend",
+                        "root_selector": "def hex2int:\n  ascii_downcase | explode\n  | reduce .[] as $c (0; . * 16 + ((\"0123456789abcdef\"|explode) | index($c)));\n\ndef words:\n  [range(0; length; 64) as $i | .[$i:$i+64]];\n\n(.result // \"0x\")\n| ltrimstr(\"0x\")\n| words as $w\n| ($w[1] | hex2int) as $len\n| [ { count: $len } ]\n",
+                        "source": "url",
+                        "type": "json",
+                        "url": "https://zksync-os-testnet-genlayer.zksync.dev/",
+                        "url_options": {
+                          "body_content_type": "application/json",
+                          "body_type": "raw",
+                          "data": "{\n  \"jsonrpc\":\"2.0\",\n  \"id\":1,\n  \"method\":\"eth_call\",\n  \"params\":[\n    {\"to\":\"0x4A4449E617F8D10FDeD0b461CadEf83939E821A5\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\n    \"latest\"\n  ]\n}\n",
+                          "headers": [],
+                          "method": "POST",
+                          "params": []
+                        }
+                      },
+                      "labels": {
+                        "grafana.app/export-label": "yesoreyeram-infinity-datasource-1"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-22843068776.patch2",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "orange"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 2,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-13"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 2,
+              "width": 12,
+              "height": 4,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 2,
+              "width": 12,
+              "height": 4,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-12"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 6,
+              "width": 3,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 3,
+              "y": 6,
+              "width": 21,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 14,
+              "width": 3,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 3,
+              "y": 14,
+              "width": 21,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-4"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 22,
+              "width": 3,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 3,
+              "y": 22,
+              "width": 21,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-5"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 30,
+              "width": 24,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-11"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 35,
+              "width": 24,
+              "height": 9,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-10"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-1h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Chain Metrics | Smart Contract | Bradbury",
+    "variables": []
+  }
+}
