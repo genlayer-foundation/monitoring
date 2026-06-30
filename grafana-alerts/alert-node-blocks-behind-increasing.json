@@ -1,26 +1,43 @@
 {
   "annotations": {
-    "description": "One or more nodes have been continuously falling behind. The blocks_behind metric increased over the last 5 minutes, indicating sync issues.\n\nAffected nodes: {{ range $k, $v := $values.AffectedNodes.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }}{{ end }}{{ end }}",
-    "nodes_count": "{{ $values.NodesCount.Value }} nodes with increasing blocks_behind",
-    "summary": "{{ $values.NodesCount.Value }} node(s) falling behind blockchain sync"
+    "description": "{{ if $labels.validator_name }}Node has been behind the chain head for 5+ minutes. May have sync or connectivity issues.\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Node sync alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}{{ $labels.validator_name }} is {{ if $values.BlocksBehind }}{{ $values.BlocksBehind.Value | printf \"%.0f\" }}{{ else }}N/A{{ end }} blocks behind{{ if $labels.network }} ({{ $labels.network }}){{ end }}{{ else }}Node sync alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
       "model": {
-        "expr": "count(increase(genlayer_node_blocks_behind[5m]) > 0)",
+        "expr": "genlayer_node_blocks_behind{validator_name!=\"\"}",
         "instant": true,
         "intervalMs": 1000,
-        "legendFormat": "Nodes Falling Behind Count",
+        "legendFormat": "{{ validator_name }}",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "NodesCount"
+        "refId": "BlocksBehind"
       },
       "queryType": "instant",
-      "refId": "NodesCount",
+      "refId": "BlocksBehind",
       "relativeTimeRange": {
-        "from": 300
+        "from": 60,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "expression": "BlocksBehind",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "reducer": "last",
+        "refId": "Reduce",
+        "type": "reduce"
+      },
+      "queryType": "",
+      "refId": "Reduce",
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
       }
     },
     {
@@ -30,53 +47,52 @@
           {
             "evaluator": {
               "params": [
-                0
+                3
               ],
               "type": "gt"
-            }
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": []
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
           }
         ],
-        "expression": "NodesCount",
+        "expression": "Reduce",
         "intervalMs": 1000,
         "maxDataPoints": 43200,
         "refId": "Threshold",
         "type": "threshold"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
-    },
-    {
-      "datasourceUid": "grafanacloud-prom",
-      "model": {
-        "expr": "increase(genlayer_node_blocks_behind[5m]) > 0",
-        "instant": true,
-        "intervalMs": 1000,
-        "legendFormat": "{{ validator_name }}",
-        "maxDataPoints": 43200,
-        "range": false,
-        "refId": "AffectedNodes"
-      },
-      "queryType": "instant",
-      "refId": "AffectedNodes",
       "relativeTimeRange": {
-        "from": 300
+        "from": 0,
+        "to": 0
       }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "5m0s",
-  "id": 4,
+  "for": "5m",
+  "id": 29,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "node-sync",
     "severity": "critical"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Node Sync Alerts",
-  "title": "Node Falling Behind: Blocks Behind Increasing",
-  "uid": "afa2b791io0sgb",
-  "updated": "2026-01-13T17:22:56.000Z"
+  "title": "Node Falling Behind",
+  "uid": "afa2b791io0sgb"
 }

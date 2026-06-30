@@ -1,16 +1,14 @@
 {
   "annotations": {
-    "baseline_errors": "{{ $values.BaselineErrors.Value }} errors (2 hours ago)",
-    "current_errors": "{{ $values.CurrentErrors.Value }} errors in last 10 minutes",
-    "description": "Error count is {{ $values.CurrentErrors.Value }}, which is 10x higher than baseline ({{ $values.BaselineErrors.Value }} errors 2 hours ago). This indicates a significant error spike.\n\nAffected validator: {{ $labels.validator_name }}",
-    "summary": "Error burst detected: {{ $values.CurrentErrors.Value }} errors on {{ $labels.validator_name }} (baseline: {{ $values.BaselineErrors.Value }})"
+    "description": "{{ if $labels.validator_name }}{{ if $values.CurrentErrors }}{{ $values.CurrentErrors.Value }}{{ else }}N/A{{ end }} errors in last 10 min vs {{ if $values.BaselineErrors }}{{ $values.BaselineErrors.Value }}{{ else }}N/A{{ end }} errors 2h ago (10x+ spike) on {{ $labels.validator_name }}\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Error burst alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}Error burst: {{ if $values.CurrentErrors }}{{ $values.CurrentErrors.Value }}{{ else }}N/A{{ end }} errors on {{ $labels.validator_name }}{{ if $labels.network }} ({{ $labels.network }}){{ end }} (baseline: {{ if $values.BaselineErrors }}{{ $values.BaselineErrors.Value }}{{ else }}N/A{{ end }}){{ else }}Error burst alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"error\" [10m]))",
+        "expr": "sum by(validator_name, network) (count_over_time({validator_name=~\".+\"} | json | network!=\"\" | level=\"error\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} current errors",
         "maxDataPoints": 43200,
@@ -20,13 +18,14 @@
       "queryType": "instant",
       "refId": "CurrentErrors",
       "relativeTimeRange": {
-        "from": 600
+        "from": 600,
+        "to": 0
       }
     },
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"error\" [10m]))",
+        "expr": "sum by(validator_name, network) (count_over_time({validator_name=~\".+\"} | json | network!=\"\" | level=\"error\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} baseline",
         "maxDataPoints": 43200,
@@ -49,24 +48,29 @@
         "refId": "Threshold",
         "type": "math"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "2m0s",
-  "id": 7,
+  "for": "2m",
+  "id": 11,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "logs",
     "severity": "critical"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Log Analysis Alerts",
   "title": "Error Burst Detected in Logs",
-  "uid": "ffa5bs9e9mgw0d",
-  "updated": "2026-01-14T16:55:25.630Z"
+  "uid": "ffa5bs9e9mgw0d"
 }

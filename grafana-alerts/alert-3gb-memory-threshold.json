@@ -1,7 +1,7 @@
 {
   "annotations": {
-    "description": "Validator {{ $labels.validator_name }} has memory allocation above 3GB (current: {{ $values.MemoryUsage.Value | printf \"%.0f\" }} bytes).",
-    "summary": "Critical memory usage on {{ $labels.validator_name }} (>3GB)"
+    "description": "{{ if $labels.validator_name }}Memory allocation above 3GB threshold for 5+ minutes. Node at risk of OOM. Restart recommended.\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Memory alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}Critical memory on {{ $labels.validator_name }}: {{ if $values.MemoryGB }}{{ $values.MemoryGB.Value | printf \"%.2f\" }}{{ else }}N/A{{ end }} GB{{ if $labels.network }} ({{ $labels.network }}){{ end }}{{ else }}Memory alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
@@ -19,7 +19,25 @@
       "queryType": "instant",
       "refId": "MemoryUsage",
       "relativeTimeRange": {
-        "from": 60
+        "from": 60,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "expression": "MemoryUsage",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "reducer": "last",
+        "refId": "Reduce",
+        "type": "reduce"
+      },
+      "queryType": "",
+      "refId": "Reduce",
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
       }
     },
     {
@@ -37,9 +55,7 @@
               "type": "and"
             },
             "query": {
-              "params": [
-                "MemoryUsage"
-              ]
+              "params": []
             },
             "reducer": {
               "params": [],
@@ -48,28 +64,54 @@
             "type": "query"
           }
         ],
+        "expression": "Reduce",
         "intervalMs": 1000,
         "maxDataPoints": 43200,
         "refId": "Threshold",
-        "type": "classic_conditions"
+        "type": "threshold"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "grafanacloud-prom",
+      "model": {
+        "expr": "go_memstats_alloc_bytes{validator_name!=\"\"} / 1073741824",
+        "instant": true,
+        "intervalMs": 1000,
+        "legendFormat": "{{ validator_name }}",
+        "maxDataPoints": 43200,
+        "range": false,
+        "refId": "MemoryGB"
+      },
+      "queryType": "instant",
+      "refId": "MemoryGB",
+      "relativeTimeRange": {
+        "from": 60,
+        "to": 0
+      }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "5m0s",
-  "id": 3,
+  "for": "5m",
+  "id": 26,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
     "component": "validator",
     "severity": "critical",
     "threshold": "3gb"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Validator Memory Alerts",
-  "title": "High Memory Usage: Validator Above 3GB",
+  "title": "Critical Memory Usage (>3GB)",
   "uid": "dfa1nypsvkglcc"
 }

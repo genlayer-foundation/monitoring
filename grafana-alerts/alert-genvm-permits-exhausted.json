@@ -1,26 +1,43 @@
 {
   "annotations": {
-    "description": "One or more validators have exhausted their GenVM permits (current permits = 0). This indicates the GenVM execution pool is saturated and new requests cannot be processed.\n\nAffected validators: {{ range $k, $v := $values.AffectedValidators.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }} {{ end }}{{ end }}",
-    "summary": "{{ $values.ValidatorsCount.Value }} validator(s) GenVM permits exhausted",
-    "validators_affected": "{{ $values.ValidatorsCount.Value }} validators with exhausted permits"
+    "description": "{{ if $labels.validator_name }}GenVM execution pool saturated. New requests cannot be processed until existing executions complete.\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}GenVM Permits alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}{{ $labels.validator_name }} GenVM permits exhausted ({{ if $values.Permits }}{{ $values.Permits.Value | printf \"%.0f\" }}{{ else }}0{{ end }} available){{ if $labels.network }} ({{ $labels.network }}){{ end }}{{ else }}GenVM Permits alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
       "model": {
-        "expr": "count(genlayer_node_genvm_permits_current == 0)",
+        "expr": "genlayer_node_genvm_permits_current{validator_name!=\"\"}",
         "instant": true,
         "intervalMs": 1000,
-        "legendFormat": "Validators with 0 Permits",
+        "legendFormat": "{{ validator_name }}",
         "maxDataPoints": 43200,
         "range": false,
-        "refId": "ValidatorsCount"
+        "refId": "Permits"
       },
       "queryType": "instant",
-      "refId": "ValidatorsCount",
+      "refId": "Permits",
       "relativeTimeRange": {
-        "from": 60
+        "from": 60,
+        "to": 0
+      }
+    },
+    {
+      "datasourceUid": "__expr__",
+      "model": {
+        "expression": "Permits",
+        "intervalMs": 1000,
+        "maxDataPoints": 43200,
+        "reducer": "last",
+        "refId": "Reduce",
+        "type": "reduce"
+      },
+      "queryType": "",
+      "refId": "Reduce",
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
       }
     },
     {
@@ -32,51 +49,50 @@
               "params": [
                 1
               ],
-              "type": "gt"
-            }
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": []
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
           }
         ],
-        "expression": "ValidatorsCount",
+        "expression": "Reduce",
         "intervalMs": 1000,
         "maxDataPoints": 43200,
         "refId": "Threshold",
         "type": "threshold"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
-    },
-    {
-      "datasourceUid": "grafanacloud-prom",
-      "model": {
-        "expr": "genlayer_node_genvm_permits_current == 0",
-        "instant": true,
-        "intervalMs": 1000,
-        "legendFormat": "{{ validator_name }}",
-        "maxDataPoints": 43200,
-        "range": false,
-        "refId": "AffectedValidators"
-      },
-      "queryType": "instant",
-      "refId": "AffectedValidators",
       "relativeTimeRange": {
-        "from": 60
+        "from": 0,
+        "to": 0
       }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "1m0s",
-  "id": 5,
+  "for": "1m",
+  "id": 27,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "genvm",
     "severity": "critical"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Node Performance Alerts",
-  "title": "GenVM Permits Exhausted: Permits Reached Zero",
-  "uid": "bfa2cinxy13wgf",
-  "updated": "2026-01-13T17:17:57.000Z"
+  "title": "GenVM Permits Exhausted",
+  "uid": "bfa2cinxy13wgf"
 }

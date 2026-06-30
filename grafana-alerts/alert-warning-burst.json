@@ -1,16 +1,14 @@
 {
   "annotations": {
-    "baseline_warnings": "{{ $values.BaselineWarnings.Value }} warnings (2 hours ago)",
-    "current_warnings": "{{ $values.CurrentWarnings.Value }} warnings in last 10 minutes",
-    "description": "Warning count is {{ $values.CurrentWarnings.Value }}, which is 10x higher than baseline ({{ $values.BaselineWarnings.Value }} warnings 2 hours ago). This indicates increased warning activity.\n\nAffected validator: {{ $labels.validator_name }}",
-    "summary": "Warning burst detected: {{ $values.CurrentWarnings.Value }} warnings on {{ $labels.validator_name }} (baseline: {{ $values.BaselineWarnings.Value }})"
+    "description": "{{ if $labels.validator_name }}{{ if $values.CurrentWarnings }}{{ $values.CurrentWarnings.Value }}{{ else }}N/A{{ end }} warnings in last 10 min vs {{ if $values.BaselineWarnings }}{{ $values.BaselineWarnings.Value }}{{ else }}N/A{{ end }} warnings 2h ago (10x+ spike) on {{ $labels.validator_name }}\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Warning burst alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}Warning burst: {{ if $values.CurrentWarnings }}{{ $values.CurrentWarnings.Value }}{{ else }}N/A{{ end }} warnings on {{ $labels.validator_name }}{{ if $labels.network }} ({{ $labels.network }}){{ end }} (baseline: {{ if $values.BaselineWarnings }}{{ $values.BaselineWarnings.Value }}{{ else }}N/A{{ end }}){{ else }}Warning burst alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"warning\" [10m]))",
+        "expr": "sum by(validator_name, network) (count_over_time({validator_name=~\".+\"} | json | network!=\"\" | level=\"warning\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} current warnings",
         "maxDataPoints": 43200,
@@ -20,13 +18,14 @@
       "queryType": "instant",
       "refId": "CurrentWarnings",
       "relativeTimeRange": {
-        "from": 600
+        "from": 600,
+        "to": 0
       }
     },
     {
       "datasourceUid": "grafanacloud-logs",
       "model": {
-        "expr": "sum by(validator_name) (count_over_time({validator_name=~\".+\"} | json | level=\"warning\" [10m]))",
+        "expr": "sum by(validator_name, network) (count_over_time({validator_name=~\".+\"} | json | network!=\"\" | level=\"warning\" [10m]))",
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }} baseline",
         "maxDataPoints": 43200,
@@ -49,24 +48,29 @@
         "refId": "Threshold",
         "type": "math"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "2m0s",
-  "id": 8,
+  "for": "2m",
+  "id": 12,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "logs",
     "severity": "warning"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Log Analysis Alerts",
   "title": "Warning Burst Detected in Logs",
-  "uid": "afa5btj4e7k74a",
-  "updated": "2026-01-14T16:55:50.755Z"
+  "uid": "afa5btj4e7k74a"
 }

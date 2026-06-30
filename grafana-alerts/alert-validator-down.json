@@ -1,14 +1,14 @@
 {
   "annotations": {
-    "description": "Validator {{ $labels.validator_name }} is not responding to scrape requests. The node may be down or unreachable.",
-    "summary": "Validator {{ $labels.validator_name }} is down"
+    "description": "{{ if $labels.validator_name }}Was reporting metrics but stopped responding to scrape requests. Node may be down or unreachable.\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Validator Down alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}Validator {{ $labels.validator_name }} is down{{ if $labels.network }} ({{ $labels.network }}){{ end }}{{ else }}Validator Down alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
     {
       "datasourceUid": "grafanacloud-prom",
       "model": {
-        "expr": "up{validator_name!=\"\"}",
+        "expr": "(up{validator_name!=\"\"} == 0 and on(instance, job, validator_name) max_over_time(up{validator_name!=\"\"}[24h]) == 1) * on(validator_name) group_left(network) (max by(validator_name, network)(genlayer_node_info) * 0 + 1)",
         "instant": true,
         "intervalMs": 1000,
         "legendFormat": "{{ validator_name }}",
@@ -19,7 +19,8 @@
       "queryType": "instant",
       "refId": "UpStatus",
       "relativeTimeRange": {
-        "from": 60
+        "from": 86400,
+        "to": 0
       }
     },
     {
@@ -32,8 +33,12 @@
         "refId": "Reduce",
         "type": "reduce"
       },
+      "queryType": "",
       "refId": "Reduce",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
     },
     {
       "datasourceUid": "__expr__",
@@ -65,22 +70,28 @@
         "refId": "Threshold",
         "type": "threshold"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
-  "for": "1m0s",
-  "id": 9,
+  "for": "1m",
+  "id": 22,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "validator",
     "severity": "critical"
   },
-  "noDataState": "Alerting",
+  "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Node Performance Alerts",
   "title": "Validator Down",
   "uid": "afa2validator-down"

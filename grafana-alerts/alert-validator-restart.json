@@ -1,8 +1,7 @@
 {
   "annotations": {
-    "description": "One or more validators have restarted. The uptime counter was reset, indicating the node process restarted.\n\nRestarted validators: {{ range $k, $v := $values.RestartedValidators.Labels }}{{ if eq $k \"validator_name\" }}{{ $v }} {{ end }}{{ end }}",
-    "summary": "Validator restart detected",
-    "validators_affected": "{{ $values.RestartCount.Value }} validator(s) restarted in the last 2 minutes"
+    "description": "{{ if $labels.validator_name }}Uptime counter reset detected — node process restarted in the last 2 minutes.\n\nhttps://genlayerfoundation.grafana.net/d/validator-overview/validator-overview?var-validator_name={{ $labels.validator_name }}&var-network={{ $labels.network }}{{ else }}Validator restart alert error — ignore this notification{{ end }}",
+    "summary": "{{ if $labels.validator_name }}Validator {{ $labels.validator_name }} restarted{{ if $labels.network }} ({{ $labels.network }}){{ end }}{{ else }}Validator restart alert error — ignore this notification{{ end }}"
   },
   "condition": "Threshold",
   "data": [
@@ -20,7 +19,8 @@
       "queryType": "instant",
       "refId": "RestartCount",
       "relativeTimeRange": {
-        "from": 120
+        "from": 120,
+        "to": 0
       }
     },
     {
@@ -42,8 +42,12 @@
         "refId": "Threshold",
         "type": "threshold"
       },
+      "queryType": "",
       "refId": "Threshold",
-      "relativeTimeRange": {}
+      "relativeTimeRange": {
+        "from": 0,
+        "to": 0
+      }
     },
     {
       "datasourceUid": "grafanacloud-prom",
@@ -59,24 +63,26 @@
       "queryType": "instant",
       "refId": "RestartedValidators",
       "relativeTimeRange": {
-        "from": 120
+        "from": 120,
+        "to": 0
       }
     }
   ],
   "execErrState": "Alerting",
   "folderUID": "dfa1v9yck3ny8b",
   "for": "0s",
-  "id": 6,
+  "id": 15,
+  "isPaused": false,
+  "keep_firing_for": "0s",
   "labels": {
-    "asimov-alert": "true",
     "component": "validator",
     "severity": "warning"
   },
   "noDataState": "OK",
+  "notification_settings": null,
   "orgID": 1,
-  "provenance": "api",
+  "record": null,
   "ruleGroup": "Node Performance Alerts",
   "title": "Validator Restart Detected",
-  "uid": "afa2gxdezjyf4f",
-  "updated": "2026-01-13T18:07:22.569Z"
+  "uid": "afa2gxdezjyf4f"
 }
