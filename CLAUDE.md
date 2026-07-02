@@ -27,8 +27,11 @@ anything the MCP doesn't support.
 - **5ElementsNodes / Asimov / Bradbury** folders (editor handle `d5en12eb`) =
   5Elements' own dashboards (WOS family, Chain Metrics, LLM). Ours per the user,
   but treat as reference.
-- **Retire** the broken root orphans `asimov-wall-of-shame` (old stub) and
-  `genlayer-fleet-overview` (deprecated `exported_network` label).
+- **Retired**: `asimov-wall-of-shame` (dead stub) was deleted from Grafana on
+  2026-07-01 (repo copy removed too). Still to retire: `genlayer-fleet-overview`
+  (deprecated `exported_network` label) and the `fede/*` scratch boards
+  (`fedngdj`/`fe75g2b`/`feb9fvx`, JSON kept in `dashboards/fede/`) — deletion
+  pending explicit user confirmation.
 
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
