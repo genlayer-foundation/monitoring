@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 325718533095424,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -31,11 +31,10 @@
       },
       "id": 100,
       "options": {
-        "content": "**Wall of Shame — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Metrics SHAME* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Logs SHAME* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *In Portal* Yes/No · *Participating* active / quarantined / not participating (live, on-chain) · *Metrics/Logs* ON/SHAME/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
+        "content": "**Wall of Shame — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Metrics SHAME* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Logs SHAME* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/SHAME/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
         "mode": "markdown"
       },
       "title": "Legend",
-      "transparent": false,
       "type": "text"
     },
     {
@@ -43,6 +42,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "All validators known for $network: union of the portal roster, nodes reporting to Grafana, and the live on-chain active set (distinct node addresses). Superseded wallets (inactive, with a live sibling wallet under the same account/name) are dropped in the roster query itself.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -64,7 +64,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 3,
         "x": 0,
         "y": 7
       },
@@ -119,9 +119,9 @@
           },
           "filters": [],
           "format": "table",
-          "parser": "backend",
+          "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "",
+          "root_selector": "[ .[] | select(.network==\"$network\") ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1})",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
@@ -184,7 +184,6 @@
         }
       ],
       "title": "Total",
-      "type": "stat",
       "transformations": [
         {
           "id": "formatString",
@@ -226,13 +225,14 @@
           }
         }
       ],
-      "description": "All validators known for $network: union of the portal roster, nodes reporting to Grafana, and the live on-chain active set (distinct node addresses)."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Portal validators for $network whose name or account contains 'GenLayer' (Foundation/Labs-run nodes).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -255,7 +255,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 6,
+        "x": 3,
         "y": 7
       },
       "id": 21,
@@ -302,14 +302,14 @@
         }
       ],
       "title": "Internal",
-      "type": "stat",
-      "description": "Portal validators for $network whose name or account contains 'GenLayer' (Foundation/Labs-run nodes)."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Validators in the live on-chain active set (Staking.activeValidators()), read from the chain on each load.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -332,7 +332,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 9,
+        "x": 6,
         "y": 7
       },
       "id": 10,
@@ -393,14 +393,14 @@
         }
       ],
       "title": "On-chain active",
-      "type": "stat",
-      "description": "Validators in the live on-chain active set (Staking.activeValidators()), read from the chain on each load."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Portal roster validators with status=active for $network. May differ from on-chain active (portal syncs periodically).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -423,7 +423,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 12,
+        "x": 9,
         "y": 7
       },
       "id": 22,
@@ -470,14 +470,14 @@
         }
       ],
       "title": "Portal: active",
-      "type": "stat",
-      "description": "Portal roster validators with status=active for $network. May differ from on-chain active (portal syncs periodically)."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Portal roster validators with status=quarantined for $network.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -500,7 +500,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 15,
+        "x": 12,
         "y": 7
       },
       "id": 23,
@@ -537,7 +537,7 @@
           "method": "POST",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ( .result | ltrimstr(\"0x\") | .[128:] as $h | [ range(0; (($h | length) / 192)) as $i | $h[$i*192:$i*192+64] ] | map(select(length == 64)) | length ) }]",
+          "root_selector": "[{ \"c\": ( def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end)); .result | ltrimstr(\"0x\") | .[128:] as $h | [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ] | map(select(.node != \"0x0000000000000000000000000000000000000000\")) | map(select(.perm or (.until_epoch > $current_epoch))) | length ) }]",
           "source": "url",
           "type": "json",
           "url": "https://zksync-os-testnet-genlayer.zksync.dev",
@@ -556,14 +556,14 @@
         }
       ],
       "title": "Quarantined",
-      "type": "stat",
-      "description": "On-chain quarantined validators (Staking.getAllQuarantinedValidators) for $network — read live from the chain, not the portal."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Portal roster validators with status=inactive for $network, deduped to one row per fully-inactive operator (inactive wallets superseded by a live wallet under the same account/name are dropped in the query).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -586,7 +586,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 18,
+        "x": 15,
         "y": 7
       },
       "id": 24,
@@ -622,7 +622,7 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") | select(.status==\"inactive\") ] | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") ] | group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end) | map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end ) | (add // []) | map(select(.status==\"inactive\")) | length) }]",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
@@ -633,14 +633,14 @@
         }
       ],
       "title": "Inactive",
-      "type": "stat",
-      "description": "Portal roster validators with status=inactive for $network."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
+      "description": "Portal roster validators with status=banned for $network.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -663,7 +663,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 21,
+        "x": 18,
         "y": 7
       },
       "id": 25,
@@ -710,14 +710,91 @@
         }
       ],
       "title": "Banned",
-      "type": "stat",
-      "description": "Portal roster validators with status=banned for $network."
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "description": "Graduated portal validators (Validator role, expected on both testnets) with no wallet linked on $network — synthetic status='missing' roster rows from the portal. Either the operator isn't running here or their wallet isn't linked to their portal account (factory getWalletsForOperator is the definitive absence check).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 7
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "c",
+              "text": "c",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\" and .status==\"missing\") ] | length) }]",
+          "source": "url",
+          "type": "json",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Missing",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "grafanacloud-prom"
       },
+      "description": "Nodes emitting Prometheus metrics in the last 5 min for $network.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -775,14 +852,14 @@
         }
       ],
       "title": "Reporting (metrics)",
-      "type": "stat",
-      "description": "Nodes emitting Prometheus metrics in the last 5 min for $network."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "On-chain active but NOT emitting metrics — the core shame.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -927,14 +1004,80 @@
           }
         }
       ],
-      "type": "stat",
-      "description": "On-chain active but NOT emitting metrics — the core shame."
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+      },
+      "description": "Nodes shipping logs to Loki in the last 5 min for $network.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" [5m])))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "queryType": "instant",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Reporting (logs)",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "On-chain active but NOT shipping logs to Loki (last 5 min).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1022,7 +1165,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | network=\"$network\" [5m]))",
+          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" [5m]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1080,14 +1223,14 @@
           }
         }
       ],
-      "type": "stat",
-      "description": "On-chain active but NOT shipping logs to Loki (last 5 min)."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "On-chain active validators reporting the latest version ($latest_version) for $network.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1197,7 +1340,6 @@
         }
       ],
       "title": "Version OK · $latest_version",
-      "type": "stat",
       "transformations": [
         {
           "id": "formatString",
@@ -1246,13 +1388,14 @@
           }
         }
       ],
-      "description": "On-chain active validators reporting the latest version ($latest_version) for $network."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "On-chain active validators reporting metrics but running an older version than $latest_version.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1362,7 +1505,6 @@
         }
       ],
       "title": "Version behind",
-      "type": "stat",
       "transformations": [
         {
           "id": "formatString",
@@ -1427,13 +1569,14 @@
           }
         }
       ],
-      "description": "On-chain active validators reporting metrics but running an older version than $latest_version."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
+      "description": "On-chain active validators NOT reporting metrics, so their version can't be tracked.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1530,7 +1673,6 @@
         }
       ],
       "title": "Version unknown",
-      "type": "stat",
       "transformations": [
         {
           "id": "formatString",
@@ -1579,14 +1721,14 @@
           }
         }
       ],
-      "description": "On-chain active validators NOT reporting metrics, so their version can't be tracked."
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "Live on-chain active set (Staking.activeValidators()) reconciled against the portal roster and Grafana by node address. Lists ALL portal validators for $network (active + inactive + quarantined), plus any node reporting/active but not in the portal. Participating: active = in the live on-chain active set, not active = not. In Portal: Yes/No. Metrics/Logs: ON = reporting last 5m, SHAME = on-chain active but not reporting, - = not applicable (not active and not reporting). Blocks Behind from metrics. Worst-first.",
+      "description": "Live on-chain active set (Staking.activeValidators()) reconciled against the portal roster and Grafana, joined by node address. Lists ALL portal validators for $network (active + inactive + quarantined), any node reporting/active but not in the portal, and graduated validators with no wallet on this network (MISSING). Roster is deduped at the datasource: inactive wallets superseded by a live wallet under the same account/name are dropped; a fully-inactive operator keeps one row. Name: single merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address. Identity: on-chain getIdentity() completeness (OK / missing: moniker/logo/description), computed here from the roster's raw fields. Linked: whether the wallet is attributed to a portal account (linked / NOT LINKED). In Portal: Yes/No (has a roster row on this network). Participating (live on-chain): active / quarantined / MISSING (graduated but no wallet here) / not participating. Metrics/Logs: ON = reporting last 5m, SHAME = on-chain active but not reporting, - = not applicable. Version: OK/behind vs the latest version seen in the wild. Blocks Behind from metrics. Rows sorted worst-first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1626,36 +1768,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "On-chain"
+              "options": "Name"
             },
             "properties": [
               {
                 "id": "custom.width",
-                "value": 180
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Portal"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 180
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Metrics name"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 200
+                "value": 260
               }
             ]
           },
@@ -1753,6 +1871,11 @@
                         "color": "orange",
                         "index": 3,
                         "text": "quarantined"
+                      },
+                      "4": {
+                        "color": "red",
+                        "index": 5,
+                        "text": "MISSING"
                       }
                     },
                     "type": "value"
@@ -2048,6 +2171,122 @@
                 "value": true
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Identity"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 210
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-": {
+                        "color": "#808080",
+                        "index": 1,
+                        "text": "-"
+                      },
+                      "OK": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "OK"
+                      }
+                    },
+                    "type": "value"
+                  },
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "#808080",
+                        "index": 2,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  },
+                  {
+                    "options": {
+                      "pattern": "(missing:.*)",
+                      "result": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Linked"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-": {
+                        "color": "#808080",
+                        "index": 2,
+                        "text": "-"
+                      },
+                      "NOT LINKED": {
+                        "color": "red",
+                        "index": 1,
+                        "text": "NOT LINKED"
+                      },
+                      "linked": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "linked"
+                      }
+                    },
+                    "type": "value"
+                  },
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "#808080",
+                        "index": 3,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -2104,13 +2343,31 @@
               "selector": "network",
               "text": "network",
               "type": "string"
-            }
-          ],
-          "computed_columns": [
+            },
             {
-              "selector": "1",
+              "selector": "rone",
               "text": "rone",
               "type": "number"
+            },
+            {
+              "selector": "identity",
+              "text": "identity",
+              "type": "string"
+            },
+            {
+              "selector": "misone",
+              "text": "misone",
+              "type": "number"
+            },
+            {
+              "selector": "linked_txt",
+              "text": "linked_txt",
+              "type": "string"
+            },
+            {
+              "selector": "pref_name",
+              "text": "pref_name",
+              "type": "string"
             }
           ],
           "datasource": {
@@ -2119,9 +2376,9 @@
           },
           "filters": [],
           "format": "table",
-          "parser": "backend",
+          "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "",
+          "root_selector": "[ .[] | select(.network==\"$network\") ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then (.account_name + \" (portal)\") elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end)} | del(.linked, .moniker, .logo_uri, .has_description))",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
@@ -2136,7 +2393,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "genlayer_node_blocks_behind{network=\"$network\"} * on(validator_name) group_left(node, version) genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"$network\"}",
+          "expr": "max by (node) (genlayer_node_blocks_behind{network=\"$network\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -2149,7 +2406,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | network=\"$network\" [5m]))",
+          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" [5m]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -2163,7 +2420,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by(node)(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"$network\"}) * 0 - 1",
+          "expr": "max by (node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"$network\"}) * 0 - 1",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -2244,7 +2501,7 @@
           "method": "POST",
           "parser": "jq-backend",
           "refId": "Q",
-          "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/192)) as $i | .[$i*192:($i*192)+64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_quarantined: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
+          "root_selector": "def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end));\n.result | ltrimstr(\"0x\") | .[128:] as $h\n| [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ]\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))\n| map(select(.perm or (.until_epoch > $current_epoch)))\n| map({node: .node, onchain_quarantined: 1})",
           "source": "url",
           "type": "json",
           "url": "https://zksync-os-testnet-genlayer.zksync.dev",
@@ -2342,6 +2599,22 @@
               "right": "0"
             },
             "mode": "binary",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "misflag",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "misone A",
+                "misone",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            },
             "replaceFields": false
           }
         },
@@ -2652,6 +2925,19 @@
         {
           "id": "calculateField",
           "options": {
+            "alias": "mis_s",
+            "binary": {
+              "left": "misflag",
+              "operator": "*",
+              "right": "10000000000000"
+            },
+            "mode": "binary",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
             "alias": "severity",
             "mode": "reduceRow",
             "reduce": {
@@ -2660,7 +2946,8 @@
                 "m2_s",
                 "m3_s",
                 "ver_s",
-                "Value #B"
+                "Value #B",
+                "mis_s"
               ],
               "reducer": "sum"
             },
@@ -2749,14 +3036,73 @@
         {
           "id": "calculateField",
           "options": {
+            "alias": "mis4",
+            "binary": {
+              "left": "misflag",
+              "operator": "*",
+              "right": "4"
+            },
+            "mode": "binary",
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
             "alias": "PartCode",
             "mode": "reduceRow",
             "reduce": {
               "include": [
                 "aflag",
-                "q2"
+                "q2",
+                "mis4"
               ],
               "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "addr_last",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "name A"
+              ],
+              "reducer": "firstNotNull"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "node_last",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "node"
+              ],
+              "reducer": "firstNotNull"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Name",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "pref_name A",
+                "validator_name",
+                "addr_last",
+                "node_last"
+              ],
+              "reducer": "firstNotNull"
             },
             "replaceFields": false
           }
@@ -2772,8 +3118,14 @@
               "Time 5": true,
               "Value #C": true,
               "Value #D": true,
+              "Value #F": true,
+              "account_name A": true,
+              "addr_last": true,
+              "aflag": true,
+              "behindFlag": true,
               "exported_network": true,
               "haslogz": true,
+              "hasrep0": true,
               "instance": true,
               "job": true,
               "log0": true,
@@ -2783,12 +3135,24 @@
               "m2_s": true,
               "m3": true,
               "m3_s": true,
+              "mis4": true,
+              "mis_s": true,
+              "misflag": true,
+              "misone": true,
+              "misone A": true,
+              "name A": true,
               "neglog": true,
               "network 2": true,
               "notlog": true,
               "notportal": true,
               "notrep": true,
+              "onchain_active E": true,
+              "onchain_quarantined Q": true,
+              "onlatest0": true,
               "portal0": true,
+              "pref_name A": true,
+              "q2": true,
+              "qflag": true,
               "rep0": true,
               "repone": true,
               "reptwo": true,
@@ -2796,117 +3160,55 @@
               "rowIndex0": true,
               "status A": true,
               "universalone": true,
-              "zeroU": true,
-              "Value #F": true,
-              "onlatest0": true,
-              "hasrep0": true,
-              "behindFlag": true,
+              "validator_name": true,
               "ver_s": true,
-              "onchain_active E": true,
-              "onchain_quarantined Q": true,
-              "aflag": true,
-              "qflag": true,
-              "q2": true
+              "zeroU": true,
+              "node_last": true
             },
             "indexByName": {
               "#": 0,
-              "name A": 1,
-              "account_name A": 2,
-              "validator_name": 3,
-              "node": 4,
-              "network A": 5,
-              "PartCode": 6,
-              "MetricsCode": 7,
               "LogsCode": 8,
-              "VersionCode": 9,
-              "version": 10,
+              "MetricsCode": 7,
+              "Name": 1,
+              "PartCode": 6,
               "Value #B": 11,
-              "severity": 12
+              "VersionCode": 9,
+              "identity A": 2,
+              "linked_txt A": 3,
+              "network A": 5,
+              "node": 4,
+              "severity": 12,
+              "version": 10
             },
             "renameByName": {
               "LogsCode": "Logs",
               "MetricsCode": "Metrics",
+              "PartCode": "Participating",
               "Value #B": "Blocks Behind",
-              "name A": "On-chain",
-              "account_name A": "Portal",
+              "VersionCode": "Version",
+              "identity A": "Identity",
+              "linked_txt A": "Linked",
               "network A": "In Portal",
               "node": "Node",
-              "PartCode": "Participating",
               "severity": "Sev",
-              "validator_name": "Metrics name",
-              "VersionCode": "Version",
               "version": "Node Version"
             }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "string",
+                "targetField": "Name"
+              }
+            ],
+            "fields": {}
           }
         }
       ],
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-logs"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 0,
-        "y": 15
-      },
-      "id": 40,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "pluginVersion": "11.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
-          },
-          "editorMode": "code",
-          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | network=\"$network\" [5m])))",
-          "format": "table",
-          "instant": true,
-          "legendFormat": "",
-          "queryType": "instant",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Reporting (logs)",
-      "type": "stat",
-      "description": "Nodes shipping logs to Loki in the last 5 min for $network."
     }
   ],
   "refresh": "1m",
@@ -2991,6 +3293,30 @@
         "skipUrlSync": false,
         "sort": 8,
         "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "grafanacloud-prom"
+        },
+        "definition": "query_result(max(epoch_monitor_current_epoch{network=\"$network\"}))",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Current epoch",
+        "multi": false,
+        "name": "current_epoch",
+        "options": [],
+        "query": {
+          "qryType": 3,
+          "query": "query_result(max(epoch_monitor_current_epoch{network=\"$network\"}))",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/\\}\\s+([0-9]+)/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
@@ -3002,6 +3328,6 @@
   "timezone": "",
   "title": "Testnet | Wall of Shame",
   "uid": "gl-wall-of-shame",
-  "version": 20,
+  "version": 45,
   "weekStart": ""
 }
