@@ -37,6 +37,75 @@ anything the MCP doesn't support.
 
 - `gl-testnets-index` → `index.json` — landing page; validator directory table
   (deep-links each row to the profile) + links to the other dashboards.
+- `gl-preclarke-status` → `preclarke_status.json` — **Pre-Clarke network status**,
+  a self-contained, portal-free validator-status page for the **Pre-Clarke**
+  network. Pre-Clarke runs on the **Bradbury chain (chainId 4221,
+  `https://rpc-bradbury.genlayer.com`)** with a SEPARATE consensus deployment
+  (`deployment_vesting_pre_clarke`); staking `0x500261a6b5F93Bc940Fb05624a3f1B9A3CE843e3`.
+  It has **no portal roster**, so the validator list comes straight from the
+  **explorer chain-indexer API** and is cross-checked against Grafana telemetry.
+  **PUBLICLY SHARED** (Grafana public dashboard, no login):
+  `https://genlayerfoundation.grafana.net/public-dashboards/7147dc0ed75d4d3f9c05d84cb98c0520`.
+  Built 2026-07-09; at launch epoch 0 all 9 validators are `pending`/primed (they
+  activate at the next epoch boundary). Design notes / gotchas:
+  - **Validator source = the explorer API, NOT raw RPC.** `activeValidators()` on
+    the staking contract is EMPTY at epoch 0 (new validators are `inactive` until
+    the next epoch), so it would show nothing while the explorer lists 9. Use
+    `GET https://internal-explorer.genlayer.com/api/v1/validators?page_size=100`
+    (public, no auth) — returns `{total, validators:[{validator_address, self_stake,
+    delegated_stake, banned_until_epoch, is_active, is_primed_next_epoch, status,
+    operator_address, owner_address, metadata:{name,…}, …}]}`. The table's `V`
+    Infinity target maps each to `{node:(validator_address|lc), name:metadata.name,
+    statuscode, sortweight, stake:(self_stake/1e18), operator, activeflag, rowflag:1}`.
+    `statuscode`: banned=3 / active=1 / primed=2 / pending=0 → colored
+    active(green)/primed·next epoch(blue)/pending(grey)/banned(red).
+  - **Stats** (Infinity API + telemetry): Validators (`.total`), Active
+    (`is_active` count), Primed·next epoch (`is_primed_next_epoch && !is_active`),
+    Reporting (metrics) = `count(genlayer_node_info{network="pre-clarke", node!=""})`,
+    Reporting (logs) = Loki distinct nodes, Epoch = on-chain `epoch()` (selector
+    **`0x900cf0cf`**) decoded via `hexval`. **`node!=""` matters**: a non-validator
+    full node `preclarke-full-1` reports metrics but has no `node` label — without
+    the filter the metrics stat shows 1 while every validator's Metrics cell is `-`
+    (Ivan caught this). Filtering to `node!=""` counts only real validators →
+    consistent with the table. Prometheus/Loki stats end with `or on() vector(0)`
+    so they read `0` pre-launch, not "No data".
+  - **No template vars** (network + staking address hardcoded in every query).
+    REQUIRED for public dashboards: public mode does **NOT interpolate template
+    variables inside Infinity RPC bodies** (`${staking_addr}` stayed literal →
+    `eth_call` to a bad address → `ltrimstr("0x") cannot be applied to: null`).
+  - **Telemetry join by `node` address** (lowercased both sides — the metrics/logs
+    `node` label is CHECKSUMMED, the API side is `ascii_downcase`'d; the leading
+    `formatString → Lower Case` on `node` handles it and DOES lowercase all frames).
+    Validators get a `node` label once they run a node; the tri-state Metrics/Logs
+    math mirrors the main Wall of Shame (`MetricsCode` 2=ON/1=SHAME/0=`-`, SHAME only
+    when `is_active` and not reporting). `I`/`L` targets filter `node!=""` to drop
+    the node-less full node.
+  - **GOTCHA — the Prometheus value column is `Value`, the Loki one is `Value #L`
+    (NOT `Value #I`).** With frames V (Infinity, no Value field), I (Prometheus),
+    L (Loki), Grafana keeps the FIRST value frame's name bare (`Value` ← Prometheus)
+    and only suffixes the colliding second (`Value #L` ← Loki). Reference `Value`
+    for metrics and `Value #L` for logs. Symptom of getting this wrong: the node
+    pushes fine, the join matches (Node Version populates), but Metrics stays `-`
+    while Logs shows ON — because `Value #I` doesn't exist so `hasm0` is always 0.
+    (This — NOT any address case mismatch — was the real "my node reports but Metrics
+    shows -" bug; the join/lowercasing was always fine.)
+  - **GOTCHA — `joinByField` renames Infinity-frame field NAMES to `<field> V`
+    (the frame's refId), not just displayName.** The join key (`node`) and
+    post-join `calculateField` aliases (`MetricsCode`, `LogsCode`) keep clean
+    names, but the `V` target's own fields become `name V` / `statuscode V` /
+    `stake V` / `operator V` / `activeflag V` / `rowflag V` / `sortweight V`. ALL
+    transform refs AND field overrides for those must use the ` V` suffix; column
+    renames are done via **field overrides** (`byName "name V"` → `displayName
+    "Name"`), because `organize.renameByName` sets displayName but does NOT win over
+    the join's displayName reliably. `renameByName` / `renameByRegex` operate on
+    `field.name` and did NOT help here.
+  - **GOTCHA — after a full `overwrite`, panel INDEX shifts.** This board is
+    `[100,10,11,12,13,14,15,1]` so the **table is `panels[7]`** (id 1), not
+    `panels[6]` (the Epoch stat). Patch ops must resolve the index from the LIVE
+    dashboard (`$.dashboard.panels | to_entries[] | {idx,id}`) — I burned a long
+    loop editing the Epoch stat thinking it was the table, and misread a stale
+    image renderer as "caching" (busting cache via `theme=light` confirmed the
+    table was simply never being changed).
 - `gl-wall-of-shame` → `wall_of_shame.json` — portal↔Grafana reconciliation table,
   with **four summary stat rows** above it (all per-`$network`):
   1. **Validators** — `Total` (union roster ∪ reporting ∪ on-chain active, via the
@@ -44,7 +113,9 @@ anything the MCP doesn't support.
      `genlayer`, case-insensitive), `On-chain active` (live `activeValidators()` —
      which INCLUDES quarantined nodes, see the "quarantine" note below),
      `Quarantined` (live **on-chain** `getAllQuarantinedValidators()`, NOT the
-     portal), and portal-status counts `Portal: active` / `Inactive` / `Banned`.
+     portal), portal-status counts `Portal: active` / `Inactive` / `Banned`, and
+     `Missing` (graduated validators with no wallet linked on this network — see
+     the "Missing graduated validators" note below).
      Note on-chain-active (live) routinely differs from portal-active (portal
      syncs periodically) — showing both is the point.
   2. **Metrics** — `Reporting (metrics)` (`count(genlayer_node_info{…})`),
@@ -64,6 +135,90 @@ anything the MCP doesn't support.
     the `/grafana/` endpoint returning `[{"c": (… | length)}]`; `$network`
     **interpolates inside `root_selector`** (filter `select(.network=="$network")`),
     confirmed working. Reduce `lastNotNull` on field `c`.
+  - **Roster dedupe (datasource-side, 2026-07-02)**: operators who re-register get
+    a NEW validator wallet; the old one stays in the portal roster as `inactive`,
+    so the raw roster held ~91 rows for ~39 Asimov accounts and the table showed
+    "duplicate" validators. The roster query A (table + `Total` + `Inactive` stat)
+    is now `jq-backend` with a `root_selector` that groups by
+    `account → name → node` (first non-empty wins, prefixed `a:`/`n:`/`x:` to
+    avoid key collisions) and per group keeps all non-`inactive` wallets, or the
+    LAST wallet if the whole group is inactive (fully-gone operator = one row).
+    `(add // [])` guards the empty-network case. An operator can still legitimately
+    show twice (e.g. one `active` + one on-chain `quarantined` wallet — both live).
+    The table's `rone` flag moved from `computed_columns` into the jq
+    (`map(. + {rone: 1})`) because computed columns aren't reliable with
+    `jq-backend`. Don't "fix" this by filtering `status` in a transformation —
+    dedupe must happen before the `joinByField` merge.
+  - **`Name` column — one merged display name (2026-07-03)**: the three old name
+    columns (On-chain / Portal / Metrics name) are collapsed into a single `Name`,
+    priority **portal account name > on-chain identity moniker > metrics
+    `validator_name` > node address**. When the portal name wins it's tagged
+    `" (portal)"` so you can see the source. Built in two layers: query A's jq
+    computes `pref_name` = `account_name+" (portal)" // moniker` (null otherwise;
+    portal-vs-identity resolved here); after the join a `calculateField` copies
+    roster `name A` into `addr_last` (a computed field, which Grafana appends
+    **last** in field order), then `Name` = `reduceRow firstNotNull` over
+    `[pref_name A, validator_name, addr_last]`. **Why addr_last**: `reduceRow`
+    `firstNotNull` picks the first non-null in *frame field order*, and ALL frame-A
+    (roster) fields precede frame-B (`validator_name`) — so a roster fallback would
+    always outrank the metrics name. Re-emitting the address as a trailing computed
+    field forces the intended `pref_name > validator_name > address` order.
+    `firstNotNull` **does work on string fields** (verified). The three source
+    columns are `excludeByName`-hidden; `Name` is organize index 1.
+    **(2026-07-28, "null" Names regression + fix)**: the `validator_name` field
+    in this chain is supplied by target **D** — the 2026-07-10 fix had trimmed D
+    to `max by (node, version)`, silently dropping it, so every reporting node
+    with no roster row rendered a literal `null` Name (Ivan's report, spotted on
+    the public dashboard). D is now `max by (node, version, validator_name)(…)`
+    — keep `validator_name` in the `by()` (safe: an aggregation can't hit the
+    duplicate-series error, and no node carries two validator_names — verified;
+    worst case a dup name adds a row, it doesn't blank columns). Additionally a
+    trailing `node_last` computed field (reduceRow firstNotNull over `node`,
+    created after `addr_last`, before `Name`) gives a **full-node-address last
+    resort** for rows with neither roster row nor metrics (`addr_last` = roster
+    minified address only covers roster rows). Name include is now
+    `[pref_name A, validator_name, addr_last, node_last]`; `node_last` is
+    excludeByName-hidden. Note the merge
+    fully depends on the roster's raw `moniker` (points PR #881) for the identity
+    tier — until that deploys, non-portal rows fall straight to `validator_name` or
+    the address.
+  - **`Identity` + `Linked` columns — verdicts computed IN GRAFANA from raw
+    roster facts (2026-07-03, design decision)**: the roster endpoint ships raw
+    fields only (`linked` bool — wallet attributed to a portal account, safe for
+    non-visible operators; raw `moniker` / `logo_uri`; `has_description` bool —
+    points PR #881); query A's jq computes the display tokens and `del()`s the
+    raw fields so they never enter the join. `linked_txt`: `-` if `linked` is
+    null (no wallet / backend not deployed), else `linked` / `NOT LINKED`.
+    `identity`: `-` when all three raw fields are null, `OK` when moniker+logo+
+    description are all set, else `missing: moniker, logo, description` (subset).
+    Note `portal` linkage is NOT part of Identity — it has its own `Linked`
+    column. After the join they're `identity A` / `linked_txt A`, renamed
+    `Identity` / `Linked`, colored via mappings (green / grey `-` / regex
+    `(missing:.*)` orange / `NOT LINKED` red). Until PR #881 reaches production
+    both columns show `-` everywhere by design. (An earlier backend-computed
+    `identity_missing` field was scrapped — verdict logic belongs in Grafana.)
+  - **GOTCHA — Infinity `columns` whitelist eats jq-added fields**: table target
+    A declares an explicit `columns` list; any field the jq adds (`misone`,
+    `linked_txt`, `pref_name`, …) must ALSO be appended there or the frame silently
+    drops it (organize/reduceRow then no-op with no error — `Linked` column simply
+    never appeared until `linked_txt` was whitelisted).
+  - **Missing graduated validators (2026-07-03)**: the roster endpoint appends one
+    synthetic `status='missing'` row per network for each graduated portal
+    validator (visible Validator role user) with no wallet linked there (points
+    PR #881; until it reaches production nothing changes — 0 missing rows). On
+    those rows `node` = the **account address** (unique join key only; matches no
+    metric/on-chain series) and `operator` is null. Dashboard wiring: query A's jq
+    adds `misone` (1 iff `status=="missing"`); transformations build `misflag`
+    (reduceRow with `zeroU`, null-safe) → `mis4` feeds `PartCode` (now
+    `aflag + 2*qflag + 4*misflag`, mapping `4 → MISSING`, red) and `mis_s`
+    (`misflag*1e13`, added to `severity` so missing sorts above metrics-shame).
+    New `Missing` stat (id 26, roster count of `status=="missing"`, always-red
+    like the SHAME stats); row-1 stats are all w3 now (Total shrank from w6).
+    A wallet of ANY status (incl. inactive) suppresses the missing row; an
+    unlinked wallet does NOT (portal can't attribute it), so an operator can
+    legitimately show both an account-less real row and a MISSING row — that
+    pair means "running but unlinked". Factory `getWalletsForOperator` stays the
+    definitive absence check.
   - **Gotcha — `Value #<refId>` naming**: a stat that joins Infinity(E) + a
     **single** Prometheus target does NOT get the value column suffixed
     (`Value #F` won't exist → filter matches nothing → 0). Give the panel a
@@ -80,18 +235,61 @@ anything the MCP doesn't support.
     reduceRow-sum of `onchain_active E` / `onchain_quarantined Q` with `zeroU`):
     `1 → active` (green), `2`/`3 → quarantined` (orange), `0`/null →
     `not participating` (grey, e.g. reporting-but-not-in-set spectators like
-    `genlayerlabs-full-1`). The top `Quarantined` stat counts the same `Q` set.
+    `genlayerlabs-full-1`). The top `Quarantined` stat counts the same (filtered)
+    `Q` set.
   - **Decoding `getAllQuarantinedValidators` (and `getAllBannedValidators`
     `0x6461cf56`)**: return is a dynamic array of `(address, uint256
     untilEpochBanned, bool permanentlyBanned)` — 3 words (192 hex) per element,
     vs `activeValidators()`' 1 word. jq-backend `root_selector` skips the
-    offset+length header (`.[128:]`), strides **192** hex/element, takes the
-    first word's address: `[ range(0; (length/192)) as $i | .[$i*192:($i*192)+64] ]
-    | map(... {node, onchain_quarantined:1})`. Body `data` = selector + 32-byte
-    `startIndex=0` + 32-byte `size=100` (100 is ample for testnet; more needs
-    pagination). NOTE: right now `getAllBannedValidators` returns the SAME set as
-    quarantined (all current bans are temporary, `permanentlyBanned:false`), so
-    banned is NOT wired separately — using it would double-count.
+    offset+length header (`.[128:]`), strides **192** hex/element, and now reads
+    **all three** words per element: address (word 0), `until_epoch` (word 1),
+    `perm` (word 2). Body `data` = selector + 32-byte `startIndex=0` + 32-byte
+    `size=100` (100 is ample for testnet; more needs pagination). NOTE: right now
+    `getAllBannedValidators` returns the SAME set as quarantined (all current bans
+    are temporary, `permanentlyBanned:false`), so banned is NOT wired separately —
+    using it would double-count.
+  - **EXPIRY FILTER — the raw quarantine list contains LAPSED entries; filter by
+    epoch (2026-07-04, Ivan's "explorer says 3, dashboard says 4" report)**:
+    `getAllQuarantinedValidators` returns entries whose `untilEpochBanned` may
+    already be in the past. A quarantine is only *current* while
+    `until_epoch > currentEpoch` (or `permanentlyBanned`); once it lapses the
+    validator drops out of `activeValidators()` and the explorer stops showing it
+    quarantined. Both the `Q` table target AND the `Quarantined` stat now decode
+    `until_epoch` (via a jq `hexval` def — `ascii_downcase | ltrimstr("0") |
+    explode | reduce …` 64-hex → int) and `select(.perm or (.until_epoch >
+    $current_epoch))`. **`$current_epoch`** = hidden Prometheus var
+    `query_result(max(epoch_monitor_current_epoch{network="$network"}))`, regex
+    `/\}\s+([0-9]+)/`, per-network (Asimov/Bradbury epochs differ). It interpolates
+    as a bare number inside the jq. Verified: Bradbury had 4 raw / 3 live (one at
+    `until_epoch=73` vs epoch 89, also absent from `activeValidators()`); Asimov
+    unaffected (all `until_epoch=125` > epoch 124). Don't revert to counting the
+    raw list — it over-reports quarantines for ~one epoch (~24h) after each lapse.
+- `gl-wos-public` → `wos_public.json` — **PUBLIC Wall of Shame** (Grafana public
+  dashboard, no login):
+  `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`.
+  A self-contained, variable-free variant of `gl-wall-of-shame` with one section
+  (row) per network — Asimov (panel ids +200) and Bradbury (+400) — because
+  **public dashboards do not interpolate template variables**: Prometheus exprs
+  keep the literal `$network` and silently return EMPTY (no error), Infinity RPC
+  bodies keep `${staking_addr}` and the jq errors; only Infinity `root_selector`
+  gets interpolated (with the saved current value). Do NOT hand-edit it —
+  **generated** from `wall_of_shame.json` by `scripts/build_public_wos.py`
+  (run from repo root, then upload `wos_public.json` as uid `gl-wos-public`,
+  folder `fkpd6m`); rerun after any material Wall of Shame change. What the
+  generator does (2026-07-28):
+  - Hardcodes `$network` / `$staking_addr` per section (Asimov
+    `0x63Fa…687A`, Bradbury `0x4A44…21A5`).
+  - **`$current_epoch` is replaced by a batch JSON-RPC call**: the quarantine
+    targets POST `[{id:1, epoch() 0x900cf0cf}, {id:2, getAllQuarantinedValidators
+    0x510a6f26…}]` to the RPC and the jq decodes the epoch from `.id==1` and the
+    quarantine list from `.id==2`, keeping the lapsed-quarantine expiry filter
+    with zero variables (the RPC endpoint supports batch — verified).
+  - **Drops the Version OK/behind logic** (stats 30/31/32, table target F,
+    `VersionCode` + related transforms/overrides) — it needs the
+    `$latest_version` query var, which cannot exist publicly. The raw
+    `Node Version` column stays. Removing F keeps the `Value #B/#C/#D` suffixes
+    (multiple Prometheus targets remain, so Prometheus still suffixes all).
+  - Rewrites the Legend once at top; sections are plain uncollapsed rows.
 - `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
 - `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
@@ -152,6 +350,15 @@ Always save any Grafana change back to the matching JSON file here.
   `_transactions_activated_total`, `_uptime_seconds{component="node"}`,
   `up{validator_name!=""}`.
 - **Logs**: Loki `{job="genlayer-node"} | json | network=... | validator_name=...`.
+- **Loki METRIC queries must carry `| __error__=""` right after `| json`
+  (2026-07-28)**: one node shipping a malformed (non-JSON) log line makes Loki
+  hard-error the ENTIRE metric query for that network (`pipeline error:
+  'JSONParserErr'` — the error series reaches the aggregation), so Reporting
+  (logs) / Logs SHAME / the table's Logs column all break at once. A Bradbury
+  node triggered exactly this; all Loki metric exprs in `gl-wall-of-shame`,
+  `gl-wos-public`, and `gl-preclarke-status` now filter `__error__=""`. Any NEW
+  Loki metric query needs the same filter. (Plain log-browsing queries are fine
+  without it.)
 
 ## Live on-chain "participating" (Wall of Shame)
 
@@ -187,10 +394,12 @@ We read the consensus set **directly from the chain**, not from the portal cache
 
 Two columns flag nodes running an outdated release (added in dashboard v14+):
 
-- **Node Version** — the node's actual running version string, straight from the
-  `genlayer_node_info.version` label (via query B's `group_left(node, version)`;
-  the `version` field is un-hidden in the `organize` transform). `-` if not
-  reporting.
+- **Node Version** — the node's actual running version string, from the
+  `genlayer_node_info.version` label. Sourced from **query D**
+  (`max by (node, version)(genlayer_node_info{…}) * 0 - 1`); the `version` field is
+  un-hidden in the `organize` transform. `-` if not reporting. (Was query B's
+  `group_left(version)` until 2026-07-10 — that vector-match erred out on a
+  duplicate `validator_name`, see the "vector-match duplicate" gotcha below.)
 - **Version** — `OK` (green) if the node runs the **latest version seen in the
   wild** for that network, `behind` (red) if older, `-` if not reporting. This is
   **fully dynamic — NO manual target** (deliberately decoupled from the points
@@ -226,8 +435,52 @@ How the dynamic "latest" works:
   filters/organize/overrides must reference the **SUFFIXED** names.
 - **Lowercase both `node` sides** before join (metric checksummed, roster
   lowercase).
+- **A Prometheus vector-match (`* on(x) group_left(...)`) that hits a DUPLICATE
+  series on the right ERRORS the WHOLE query → the target returns nothing → its
+  columns silently vanish (2026-07-10).** The WoS `Blocks Behind` + `Node Version`
+  columns were blank because target B was
+  `genlayer_node_blocks_behind * on(validator_name) group_left(node,version) genlayer_node_info`
+  and `[NODERS]` runs two scrape instances reporting the SAME `node`, so
+  `on(validator_name)` found duplicate right-hand series and the query erred out for
+  every node. Fix: `genlayer_node_blocks_behind` ALREADY carries a `node` label —
+  read it directly, deduped: **B = `max by (node)(genlayer_node_blocks_behind{network="$network"})`**,
+  and source the version string from **D = `max by (node, version, validator_name)(genlayer_node_info{…}) * 0 - 1`**
+  (D was `max by(node)` — adding `version` gives the `Node Version` column its
+  field without a second vector-match; `validator_name` re-added 2026-07-28, the
+  Name merge needs it — see the null-Names note above). Never join genlayer metrics on
+  `validator_name` — it is NOT unique (operators reuse it across nodes); join on
+  `node`.
+- **`Value #<refId>` column naming is NOT always suffixed — the FIRST value-bearing
+  frame can stay bare `Value`.** Observed: with exactly two value frames
+  (1 Prometheus + 1 Loki, as in `gl-preclarke-status`) the Prometheus value is bare
+  **`Value`** and Loki is **`Value #L`**; with four (WoS B/C/D/F) they are all
+  suffixed `Value #B/#C/#D/#F`. So verify per-panel: if a tri-state silently shows
+  `-`/blank while the node reports, the calc is likely referencing the wrong value
+  column name. `filterFieldsByName` matches `field.name` (often NOT the displayed
+  `Value #X`, which is a displayName) — don't use it to probe; strip to
+  `[formatString, joinByField]` and read the rendered headers, or bust the image
+  renderer's aggressive cache with `theme=light`.
 - Wall of Shame Metrics/Logs are **tri-state**: ON (reporting) / SHAME (on-chain
   active but not reporting) / `-` (not active & not reporting → not expected).
+- **`calculateField` output is always TYPED number — a reduceRow-built STRING
+  column (e.g. the merged `Name`) sorts "randomly" until you re-type it
+  (2026-07-10, Ivan's "can't order by name" report).** The values render fine,
+  but the table's sort comparator picks numeric compare from the declared field
+  type → every string is NaN → clicking the header shuffles arbitrarily. Fix:
+  append a `convertFieldType` transform (`targetField: "Name"`,
+  `destinationType: "string"`) — placed last, after `organize`, since organize
+  doesn't rename `Name`. Any future reduceRow/calculateField string column needs
+  the same re-type or its sort (and substring filtering) will misbehave.
+- **`reduceRow firstNotNull` respects FRAME FIELD ORDER, not `include` order**, and
+  all frame-A (Infinity) fields precede frame-B (Prometheus) which precede computed
+  fields. To make a later-frame or fallback value rank *below* an earlier one, force
+  order by re-emitting the loser as a trailing `calculateField` (Grafana appends
+  computed fields last) — that's the `addr_last` trick behind the merged `Name`
+  column. It DOES work on string fields.
+- **MCP `update_dashboard` `operations` "add" at a numeric array index REPLACES that
+  element, it does NOT insert-before** (RFC-6902 insert semantics are not honored).
+  To insert mid-array, append with `/-` and reorder, or replace the whole array.
+  (Learned the hard way clobbering the table's `organize` transform.)
 
 ## Reference docs in this repo
 
