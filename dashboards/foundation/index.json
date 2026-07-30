@@ -23,7 +23,7 @@
   "links": [
     {
       "type": "link",
-      "title": "Wall of Shame",
+      "title": "Validator Status",
       "url": "/d/gl-wall-of-shame",
       "icon": "external link",
       "tooltip": "",
@@ -83,7 +83,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# GenLayer Testnets\n\nOperational landing page for the **Asimov** (`asimov-phase5`) and **Bradbury** (`bradbury-phase1`) testnets. Start here, then jump to a companion dashboard.\n\n### Dashboards\n- [Wall of Shame](/d/gl-wall-of-shame) — who's lagging / out of sync\n- [Network Status](/d/gl-network-status) — per-network health overview\n- [Validator Profile](/d/gl-validator-profile) — drill into a single validator\n- [Validator Overview](/d/validator-overview) — GenLayer Labs fleet deep-dive\n\n_Use the directory table below to open any validator's profile directly._"
+        "content": "# GenLayer Testnets\n\nOperational landing page for the **Asimov** (`asimov-phase5`) and **Bradbury** (`bradbury-phase1`) testnets. Start here, then jump to a companion dashboard.\n\n### Dashboards\n- [Validator Status](/d/gl-wall-of-shame) — who's lagging / out of sync\n- [Network Status](/d/gl-network-status) — per-network health overview\n- [Validator Profile](/d/gl-validator-profile) — drill into a single validator\n- [Validator Overview](/d/validator-overview) — GenLayer Labs fleet deep-dive\n\n_Use the directory table below to open any validator's profile directly._"
       },
       "transparent": false
     },

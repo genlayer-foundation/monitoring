@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the public (variable-free) Wall of Shame dashboard from wall_of_shame.json.
+"""Generate the public (variable-free) Validator Status dashboard (formerly "Wall of Shame") from wall_of_shame.json.
 
 Run from the monitoring repo root: python3 scripts/build_public_wos.py
 Then upload dashboards/foundation/wos_public.json to Grafana (uid gl-wos-public,
@@ -36,7 +36,7 @@ QUAR_HEAD_NEW = ('(map(select(.id==1)) | .[0].result | ltrimstr("0x") | hexval) 
                  '| (map(select(.id==2)) | .[0].result | ltrimstr("0x") | .[128:]) as $h')
 QUAR_DATA_RE = re.compile(r'"data":"(0x510a6f26[0-9a-fA-F]*)"')
 
-LEGEND = """**GenLayer Wall of Shame — public view.** One section per testnet (**Asimov**, **Bradbury**). Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator. Read-only; data is queried live on each load.
+LEGEND = """**GenLayer Validator Status board — public view.** One section per testnet (**Asimov**, **Bradbury**). Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator. Read-only; data is queried live on each load.
 
 **Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.
 
@@ -160,7 +160,7 @@ def main():
         'time': src['time'],
         'timepicker': {},
         'timezone': src.get('timezone', ''),
-        'title': 'Testnet | Wall of Shame (Public)',
+        'title': 'Testnet | Validator Status (Public)',
         'uid': 'gl-wos-public',
         'weekStart': src.get('weekStart', ''),
     }

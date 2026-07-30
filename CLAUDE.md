@@ -106,7 +106,12 @@ anything the MCP doesn't support.
     loop editing the Epoch stat thinking it was the table, and misread a stale
     image renderer as "caching" (busting cache via `theme=light` confirmed the
     table was simply never being changed).
-- `gl-wall-of-shame` → `wall_of_shame.json` — portal↔Grafana reconciliation table,
+- `gl-wall-of-shame` → `wall_of_shame.json` — display title **"Testnet |
+  Validator Status"** (formerly "Wall of Shame" — renamed 2026-07 for
+  validator-facing neutrality; the uid, filename, tags, and the internal
+  shorthand "Wall of Shame"/"WoS"/"SHAME" in this doc and in stat names
+  deliberately keep the old name — the uid is referenced by links and the
+  public-dashboard token, so NEVER rename it). Portal↔Grafana reconciliation table,
   with **four summary stat rows** above it (all per-`$network`):
   1. **Validators** — `Total` (union roster ∪ reporting ∪ on-chain active, via the
      A+B+E join, count `node`), `Internal` (roster name/account_name matches
@@ -264,7 +269,8 @@ anything the MCP doesn't support.
     `until_epoch=73` vs epoch 89, also absent from `activeValidators()`); Asimov
     unaffected (all `until_epoch=125` > epoch 124). Don't revert to counting the
     raw list — it over-reports quarantines for ~one epoch (~24h) after each lapse.
-- `gl-wos-public` → `wos_public.json` — **PUBLIC Wall of Shame** (Grafana public
+- `gl-wos-public` → `wos_public.json` — display title **"Testnet | Validator
+  Status (Public)"**, the **PUBLIC** Wall-of-Shame variant (Grafana public
   dashboard, no login):
   `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`.
   A self-contained, variable-free variant of `gl-wall-of-shame` with one section
@@ -294,7 +300,7 @@ anything the MCP doesn't support.
   (metrics-only).
 - `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
   select by **`validator_name`** (primary), node derives from it; has an
-  on-chain identity + Wall-of-Shame-status row + health + logs.
+  on-chain identity + validator-status (Wall-of-Shame) row + health + logs.
   - **Full on-chain identity block** (panels 25/26/27, y=4): reads the whole
     `getIdentity()` tuple in one `eth_call 0x36afc6fa` to `${node}` and decodes
     all fields via `jq-backend`. **Avatar** (id 25, table w/ `image` cell) shows
