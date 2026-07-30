@@ -1176,7 +1176,7 @@
       },
       "id": 16,
       "options": {
-        "content": "### Wall of Shame status\nLive health of the selected validator \u2014 on-chain status, metrics & logs heartbeat, and version vs fleet.",
+        "content": "### Validator status\nLive health of the selected validator \u2014 on-chain status, metrics & logs heartbeat, and version vs fleet.",
         "mode": "markdown"
       },
       "transparent": true,

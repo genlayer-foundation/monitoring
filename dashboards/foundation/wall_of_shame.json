@@ -31,7 +31,7 @@
       },
       "id": 100,
       "options": {
-        "content": "**Wall of Shame — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Metrics SHAME* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Logs SHAME* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/SHAME/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
+        "content": "**Validator Status board — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Metrics SHAME* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Logs SHAME* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/SHAME/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
         "mode": "markdown"
       },
       "title": "Legend",
@@ -2519,7 +2519,7 @@
           }
         }
       ],
-      "title": "Wall of Shame — on-chain ↔ Grafana reconciliation ($network)",
+      "title": "Validator Status — on-chain ↔ Grafana reconciliation ($network)",
       "transformations": [
         {
           "id": "formatString",
@@ -3276,7 +3276,7 @@
           "uid": "grafanacloud-prom"
         },
         "definition": "query_result(count by (version)(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"$network\"}))",
-        "description": "Highest node version seen in the wild for $network (natural-sorted desc, so the current value is the max). Drives the 'behind' check on the Wall of Shame — no manual target.",
+        "description": "Highest node version seen in the wild for $network (natural-sorted desc, so the current value is the max). Drives the 'behind' check on the Validator Status board — no manual target.",
         "hide": 2,
         "includeAll": false,
         "label": "Latest version",
@@ -3326,7 +3326,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Testnet | Wall of Shame",
+  "title": "Testnet | Validator Status",
   "uid": "gl-wall-of-shame",
   "version": 45,
   "weekStart": ""
