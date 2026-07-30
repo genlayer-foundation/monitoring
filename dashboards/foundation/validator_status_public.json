@@ -5143,6 +5143,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Testnet | Validator Status (Public)",
-  "uid": "gl-wos-public",
+  "uid": "gl-validator-status-public",
   "weekStart": ""
 }

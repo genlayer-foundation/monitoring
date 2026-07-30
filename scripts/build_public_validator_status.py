@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Generate the public (variable-free) Validator Status dashboard (formerly "Wall of Shame") from wall_of_shame.json.
+"""Generate the public (variable-free) Validator Status dashboard (formerly "Wall of Shame") from validator_status.json.
 
-Run from the monitoring repo root: python3 scripts/build_public_wos.py
-Then upload dashboards/foundation/wos_public.json to Grafana (uid gl-wos-public,
-folder fkpd6m) — rerun this whenever wall_of_shame.json changes materially.
+Run from the monitoring repo root: python3 scripts/build_public_validator_status.py
+Then upload dashboards/foundation/validator_status_public.json to Grafana (uid
+gl-validator-status-public, folder fkpd6m) — rerun this whenever
+validator_status.json changes materially.
 
 Public Grafana dashboards do not interpolate template variables (Prometheus exprs
 silently match nothing; Infinity bodies keep the literal ${var}). So this bakes
@@ -17,8 +18,8 @@ import json
 import re
 import sys
 
-SRC = 'dashboards/foundation/wall_of_shame.json'
-OUT = 'dashboards/foundation/wos_public.json'
+SRC = 'dashboards/foundation/validator_status.json'
+OUT = 'dashboards/foundation/validator_status_public.json'
 
 NETWORKS = [
     dict(label='Asimov', network='asimov-phase5',
@@ -161,7 +162,7 @@ def main():
         'timepicker': {},
         'timezone': src.get('timezone', ''),
         'title': 'Testnet | Validator Status (Public)',
-        'uid': 'gl-wos-public',
+        'uid': 'gl-validator-status-public',
         'weekStart': src.get('weekStart', ''),
     }
     with open(OUT, 'w') as f:

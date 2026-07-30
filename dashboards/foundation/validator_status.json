@@ -3327,7 +3327,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Testnet | Validator Status",
-  "uid": "gl-wall-of-shame",
+  "uid": "gl-validator-status",
   "version": 45,
   "weekStart": ""
 }

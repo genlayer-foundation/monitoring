@@ -31,7 +31,9 @@ anything the MCP doesn't support.
   `asimov-wall-of-shame` (dead stub, 2026-07-01); `genlayer-fleet-overview`
   (deprecated `exported_network` label) and the `fede/*` scratch boards
   (`fedngdj`/`fe75g2b`/`feb9fvx`), all 2026-07-03. The empty `fede` folder
-  (uid `af7w864ddjnr4f`) still exists in Grafana.
+  (uid `af7w864ddjnr4f`) still exists in Grafana. `gl-wall-of-shame` /
+  `gl-wos-public` were superseded 2026-07-30 by `gl-validator-status` /
+  `gl-validator-status-public` (uid+file rename, same content).
 
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
@@ -106,12 +108,12 @@ anything the MCP doesn't support.
     loop editing the Epoch stat thinking it was the table, and misread a stale
     image renderer as "caching" (busting cache via `theme=light` confirmed the
     table was simply never being changed).
-- `gl-wall-of-shame` → `wall_of_shame.json` — display title **"Testnet |
-  Validator Status"** (formerly "Wall of Shame" — renamed 2026-07 for
-  validator-facing neutrality; the uid, filename, tags, and the internal
-  shorthand "Wall of Shame"/"WoS"/"SHAME" in this doc and in stat names
-  deliberately keep the old name — the uid is referenced by links and the
-  public-dashboard token, so NEVER rename it). Portal↔Grafana reconciliation table,
+- `gl-validator-status` → `validator_status.json` — display title **"Testnet |
+  Validator Status"** (formerly "Wall of Shame" — display titles renamed 2026-07
+  for validator-facing neutrality; uid + filenames + generator renamed too on
+  2026-07-30, old uid was `gl-wall-of-shame`. The `wall-of-shame` tag and the
+  internal shorthand "Wall of Shame"/"WoS"/"SHAME" in this doc and in stat names
+  deliberately keep the old name). Portal↔Grafana reconciliation table,
   with **four summary stat rows** above it (all per-`$network`):
   1. **Validators** — `Total` (union roster ∪ reporting ∪ on-chain active, via the
      A+B+E join, count `node`), `Internal` (roster name/account_name matches
@@ -269,19 +271,25 @@ anything the MCP doesn't support.
     `until_epoch=73` vs epoch 89, also absent from `activeValidators()`); Asimov
     unaffected (all `until_epoch=125` > epoch 124). Don't revert to counting the
     raw list — it over-reports quarantines for ~one epoch (~24h) after each lapse.
-- `gl-wos-public` → `wos_public.json` — display title **"Testnet | Validator
-  Status (Public)"**, the **PUBLIC** Wall-of-Shame variant (Grafana public
-  dashboard, no login):
+- `gl-validator-status-public` → `validator_status_public.json` — display title
+  **"Testnet | Validator Status (Public)"**, the **PUBLIC** Wall-of-Shame
+  variant (Grafana public dashboard, no login):
   `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`.
-  A self-contained, variable-free variant of `gl-wall-of-shame` with one section
+  The access token **survived the 2026-07-30 uid rename** (old uid
+  `gl-wos-public`): Grafana's public-dashboards create API accepts an explicit
+  `accessToken`, so the share was deleted on the old uid and recreated on the
+  new one with the SAME token — the shared URL never changed. Same trick works
+  for any future uid move.
+  A self-contained, variable-free variant of `gl-validator-status` with one section
   (row) per network — Asimov (panel ids +200) and Bradbury (+400) — because
   **public dashboards do not interpolate template variables**: Prometheus exprs
   keep the literal `$network` and silently return EMPTY (no error), Infinity RPC
   bodies keep `${staking_addr}` and the jq errors; only Infinity `root_selector`
   gets interpolated (with the saved current value). Do NOT hand-edit it —
-  **generated** from `wall_of_shame.json` by `scripts/build_public_wos.py`
-  (run from repo root, then upload `wos_public.json` as uid `gl-wos-public`,
-  folder `fkpd6m`); rerun after any material Wall of Shame change. What the
+  **generated** from `validator_status.json` by
+  `scripts/build_public_validator_status.py` (run from repo root, then upload
+  `validator_status_public.json` as uid `gl-validator-status-public`, folder
+  `fkpd6m`); rerun after any material Wall of Shame change. What the
   generator does (2026-07-28):
   - Hardcodes `$network` / `$staking_addr` per section (Asimov
     `0x63Fa…687A`, Bradbury `0x4A44…21A5`).
@@ -361,8 +369,9 @@ Always save any Grafana change back to the matching JSON file here.
   hard-error the ENTIRE metric query for that network (`pipeline error:
   'JSONParserErr'` — the error series reaches the aggregation), so Reporting
   (logs) / Logs SHAME / the table's Logs column all break at once. A Bradbury
-  node triggered exactly this; all Loki metric exprs in `gl-wall-of-shame`,
-  `gl-wos-public`, and `gl-preclarke-status` now filter `__error__=""`. Any NEW
+  node triggered exactly this; all Loki metric exprs in `gl-validator-status`,
+  `gl-validator-status-public`, and `gl-preclarke-status` now filter
+  `__error__=""`. Any NEW
   Loki metric query needs the same filter. (Plain log-browsing queries are fine
   without it.)
 
