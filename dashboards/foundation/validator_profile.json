@@ -1290,7 +1290,7 @@
         "type": "prometheus",
         "uid": "grafanacloud-prom"
       },
-      "description": "ON if the selected node is currently reporting Prometheus metrics, else SHAME.",
+      "description": "ON if the selected node is currently reporting Prometheus metrics, else OFF.",
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -1312,7 +1312,7 @@
                 "result": {
                   "color": "red",
                   "index": 1,
-                  "text": "SHAME"
+                  "text": "OFF"
                 },
                 "to": 0
               },
@@ -1366,7 +1366,7 @@
           "refId": "A"
         }
       ],
-      "title": "Metrics (ON/SHAME)",
+      "title": "Metrics (ON/OFF)",
       "type": "stat"
     },
     {
@@ -1374,7 +1374,7 @@
         "type": "loki",
         "uid": "grafanacloud-logs"
       },
-      "description": "ON if the selected validator emitted logs in the last 5m, else SHAME.",
+      "description": "ON if the selected validator emitted logs in the last 5m, else OFF.",
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -1395,7 +1395,7 @@
                 "0": {
                   "color": "red",
                   "index": 1,
-                  "text": "SHAME"
+                  "text": "OFF"
                 }
               },
               "type": "value"
@@ -1406,13 +1406,13 @@
                 "result": {
                   "color": "red",
                   "index": 2,
-                  "text": "SHAME"
+                  "text": "OFF"
                 }
               },
               "type": "special"
             }
           ],
-          "noValue": "SHAME",
+          "noValue": "OFF",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1463,7 +1463,7 @@
           "refId": "A"
         }
       ],
-      "title": "Logs (ON/SHAME)",
+      "title": "Logs (ON/OFF)",
       "type": "stat"
     },
     {

@@ -37,7 +37,7 @@
       "pluginVersion": "11.3.0",
       "options": {
         "mode": "markdown",
-        "content": "## Pre-Clarke — Validator Status (on-chain, epoch 0)\nPre-Clarke runs on the **Bradbury chain (chainId 4221)** with a separate consensus deployment; **no portal roster** exists, so validators come straight from the **chain indexer** (explorer API) and are cross-checked against **Grafana telemetry**. New validators show **pending / primed (next epoch)** until the next epoch boundary, then go **active**. **Metrics/Logs**: ON = node reporting last 5m, SHAME = active but silent, - = not applicable (not active yet). Source: internal-explorer.genlayer.com."
+        "content": "## Pre-Clarke — Validator Status (on-chain, epoch 0)\nPre-Clarke runs on the **Bradbury chain (chainId 4221)** with a separate consensus deployment; **no portal roster** exists, so validators come straight from the **chain indexer** (explorer API) and are cross-checked against **Grafana telemetry**. New validators show **pending / primed (next epoch)** until the next epoch boundary, then go **active**. **Metrics/Logs**: ON = node reporting last 5m, OFF = active but silent, - = not applicable (not active yet). Source: internal-explorer.genlayer.com."
       }
     },
     {
@@ -475,7 +475,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "All Pre-Clarke validators from the chain indexer (explorer API), cross-checked with Grafana telemetry by validator (node) address. Status is live on-chain: active / primed (activates next epoch) / pending / banned. Metrics/Logs: ON = node reporting last 5m, SHAME = active but silent, - = not applicable. Sorted active → primed → pending → banned, then by stake.",
+      "description": "All Pre-Clarke validators from the chain indexer (explorer API), cross-checked with Grafana telemetry by validator (node) address. Status is live on-chain: active / primed (activates next epoch) / pending / banned. Metrics/Logs: ON = node reporting last 5m, OFF = active but silent, - = not applicable. Sorted active → primed → pending → banned, then by stake.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -656,7 +656,7 @@
                       "1": {
                         "color": "red",
                         "index": 1,
-                        "text": "SHAME"
+                        "text": "OFF"
                       },
                       "2": {
                         "color": "green",
@@ -715,7 +715,7 @@
                       "1": {
                         "color": "red",
                         "index": 1,
-                        "text": "SHAME"
+                        "text": "OFF"
                       },
                       "2": {
                         "color": "green",

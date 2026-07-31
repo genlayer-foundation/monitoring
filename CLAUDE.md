@@ -79,7 +79,7 @@ anything the MCP doesn't support.
     `node` label is CHECKSUMMED, the API side is `ascii_downcase`'d; the leading
     `formatString → Lower Case` on `node` handles it and DOES lowercase all frames).
     Validators get a `node` label once they run a node; the tri-state Metrics/Logs
-    math mirrors the main Wall of Shame (`MetricsCode` 2=ON/1=SHAME/0=`-`, SHAME only
+    math mirrors the main Wall of Shame (`MetricsCode` 2=ON/1=OFF/0=`-`, OFF only
     when `is_active` and not reporting). `I`/`L` targets filter `node!=""` to drop
     the node-less full node.
   - **GOTCHA — the Prometheus value column is `Value`, the Loki one is `Value #L`
@@ -111,9 +111,11 @@ anything the MCP doesn't support.
 - `gl-validator-status` → `validator_status.json` — display title **"Testnet |
   Validator Status"** (formerly "Wall of Shame" — display titles renamed 2026-07
   for validator-facing neutrality; uid + filenames + generator renamed too on
-  2026-07-30, old uid was `gl-wall-of-shame`. The `wall-of-shame` tag and the
-  internal shorthand "Wall of Shame"/"WoS"/"SHAME" in this doc and in stat names
-  deliberately keep the old name). Portal↔Grafana reconciliation table,
+  2026-07-30, old uid was `gl-wall-of-shame`; displayed "SHAME" strings replaced
+  2026-07-31 — stat titles are now "Not reporting (metrics/logs)" and table/stat
+  cells show ON/OFF/-. The `wall-of-shame` tag and the internal shorthand
+  "Wall of Shame"/"WoS"/"SHAME" in THIS DOC deliberately keep the old name).
+  Portal↔Grafana reconciliation table,
   with **four summary stat rows** above it (all per-`$network`):
   1. **Validators** — `Total` (union roster ∪ reporting ∪ on-chain active, via the
      A+B+E join, count `node`), `Internal` (roster name/account_name matches
@@ -126,9 +128,11 @@ anything the MCP doesn't support.
      Note on-chain-active (live) routinely differs from portal-active (portal
      syncs periodically) — showing both is the point.
   2. **Metrics** — `Reporting (metrics)` (`count(genlayer_node_info{…})`),
-     `Metrics SHAME` (on-chain active ∖ reporting metrics).
-  3. **Logs** — `Reporting (logs)`, `Logs SHAME` (on-chain active ∖ shipping
-     logs). Symmetric with the Metrics row. `Reporting (logs)` is a **Loki**
+     `Not reporting (metrics)` (on-chain active ∖ reporting metrics; was
+     "Metrics SHAME").
+  3. **Logs** — `Reporting (logs)`, `Not reporting (logs)` (on-chain active ∖
+     shipping logs; was "Logs SHAME"). Symmetric with the Metrics row.
+     `Reporting (logs)` is a **Loki**
      stat: `count(sum by (node) (count_over_time({job="genlayer-node"} | json |
      network="$network" [5m])))` (count distinct nodes shipping logs in 5m).
      Reporting(logs) usually EXCEEDS Reporting(metrics) — some nodes ship logs
@@ -137,7 +141,7 @@ anything the MCP doesn't support.
   4. **Versions** (scoped to the on-chain active set, so the three sum to it):
      `Version OK` (active ∩ latest `$latest_version`), `Version behind`
      (active ∩ reporting ∩ older), `Version unknown` (active ∖ reporting — no
-     metrics so version can't be read; same set as Metrics SHAME).
+     metrics so version can't be read; same set as `Not reporting (metrics)`).
   - **Roster status/Internal counts** = single **Infinity `jq-backend`** query on
     the `/grafana/` endpoint returning `[{"c": (… | length)}]`; `$network`
     **interpolates inside `root_selector`** (filter `select(.network=="$network")`),
@@ -368,7 +372,7 @@ Always save any Grafana change back to the matching JSON file here.
   (2026-07-28)**: one node shipping a malformed (non-JSON) log line makes Loki
   hard-error the ENTIRE metric query for that network (`pipeline error:
   'JSONParserErr'` — the error series reaches the aggregation), so Reporting
-  (logs) / Logs SHAME / the table's Logs column all break at once. A Bradbury
+  (logs) / Not reporting (logs) / the table's Logs column all break at once. A Bradbury
   node triggered exactly this; all Loki metric exprs in `gl-validator-status`,
   `gl-validator-status-public`, and `gl-preclarke-status` now filter
   `__error__=""`. Any NEW
@@ -475,8 +479,9 @@ How the dynamic "latest" works:
   `Value #X`, which is a displayName) — don't use it to probe; strip to
   `[formatString, joinByField]` and read the rendered headers, or bust the image
   renderer's aggressive cache with `theme=light`.
-- Wall of Shame Metrics/Logs are **tri-state**: ON (reporting) / SHAME (on-chain
-  active but not reporting) / `-` (not active & not reporting → not expected).
+- Wall of Shame Metrics/Logs are **tri-state**: ON (reporting) / OFF (on-chain
+  active but not reporting; displayed "SHAME" until 2026-07-31) / `-` (not
+  active & not reporting → not expected).
 - **`calculateField` output is always TYPED number — a reduceRow-built STRING
   column (e.g. the merged `Name`) sorts "randomly" until you re-type it
   (2026-07-10, Ivan's "can't order by name" report).** The values render fine,
