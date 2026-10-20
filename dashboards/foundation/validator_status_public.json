@@ -60,7 +60,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "All validators known for bradbury-phase-2: union of the portal roster, nodes reporting to Grafana, and the live on-chain active set (distinct node addresses). Superseded wallets (inactive, with a live sibling wallet under the same account/name) are dropped in the roster query itself.",
+      "description": "All validators known for bradbury-phase2: union of the portal roster, nodes reporting to Grafana, and the live on-chain active set (distinct node addresses). Superseded wallets (inactive, with a live sibling wallet under the same account/name) are dropped in the roster query itself.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -154,7 +154,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by(node)(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase-2\"})",
+          "expr": "max by(node)(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -225,7 +225,7 @@
                 "config": {
                   "id": "equal",
                   "options": {
-                    "value": "bradbury-phase-2"
+                    "value": "bradbury-phase2"
                   }
                 },
                 "fieldName": "network A"
@@ -250,7 +250,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Portal validators for bradbury-phase-2 whose name or account contains 'GenLayer' (Foundation/Labs-run nodes).",
+      "description": "Portal validators for bradbury-phase2 whose name or account contains 'GenLayer' (Foundation/Labs-run nodes).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -418,7 +418,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Portal roster validators with status=active for bradbury-phase-2. May differ from on-chain active (portal syncs periodically).",
+      "description": "Portal roster validators with status=active for bradbury-phase2. May differ from on-chain active (portal syncs periodically).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -495,7 +495,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Portal roster validators with status=quarantined for bradbury-phase-2.",
+      "description": "Portal roster validators with status=quarantined for bradbury-phase2.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -581,7 +581,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Portal roster validators with status=inactive for bradbury-phase-2, deduped to one row per fully-inactive operator (inactive wallets superseded by a live wallet under the same account/name are dropped in the query).",
+      "description": "Portal roster validators with status=inactive for bradbury-phase2, deduped to one row per fully-inactive operator (inactive wallets superseded by a live wallet under the same account/name are dropped in the query).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -658,7 +658,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Portal roster validators with status=banned for bradbury-phase-2.",
+      "description": "Portal roster validators with status=banned for bradbury-phase2.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -735,7 +735,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Graduated portal validators (Validator role, expected on both testnets) with no wallet linked on bradbury-phase-2 — synthetic status='missing' roster rows from the portal. Either the operator isn't running here or their wallet isn't linked to their portal account (factory getWalletsForOperator is the definitive absence check).",
+      "description": "Graduated portal validators (Validator role, expected on both testnets) with no wallet linked on bradbury-phase2 — synthetic status='missing' roster rows from the portal. Either the operator isn't running here or their wallet isn't linked to their portal account (factory getWalletsForOperator is the definitive absence check).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -812,7 +812,7 @@
         "type": "prometheus",
         "uid": "grafanacloud-prom"
       },
-      "description": "Nodes emitting Prometheus metrics in the last 5 min for bradbury-phase-2.",
+      "description": "Nodes emitting Prometheus metrics in the last 5 min for bradbury-phase2.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -861,7 +861,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase-2\"})",
+          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -965,7 +965,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by(node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase-2\"})",
+          "expr": "max by(node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1029,7 +1029,7 @@
         "type": "loki",
         "uid": "grafanacloud-logs"
       },
-      "description": "Nodes shipping logs to Loki in the last 5 min for bradbury-phase-2.",
+      "description": "Nodes shipping logs to Loki in the last 5 min for bradbury-phase2.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1078,7 +1078,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase-2\" [5m])))",
+          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase2\" [5m])))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1183,7 +1183,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase-2\" [5m]))",
+          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase2\" [5m]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1248,7 +1248,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "Live on-chain active set (Staking.selectableValidators()) reconciled against the portal roster and Grafana, joined by node address. Lists ALL portal validators for bradbury-phase-2 (active + inactive + quarantined), any node reporting/active but not in the portal, and graduated validators with no wallet on this network (MISSING). Roster is deduped at the datasource: inactive wallets superseded by a live wallet under the same account/name are dropped; a fully-inactive operator keeps one row. Name: single merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address. Identity: on-chain getIdentity() completeness (OK / missing: moniker/logo/description), computed here from the roster's raw fields. Linked: whether the wallet is attributed to a portal account (linked / NOT LINKED). In Portal: Yes/No (has a roster row on this network). Participating (live on-chain): active / quarantined / MISSING (graduated but no wallet here) / not participating. Metrics/Logs: ON = reporting last 5m, OFF = on-chain active but not reporting, - = not applicable. Version: OK/behind vs the latest version seen in the wild. Blocks Behind from metrics. Rows sorted worst-first.",
+      "description": "Live on-chain active set (Staking.selectableValidators()) reconciled against the portal roster and Grafana, joined by node address. Lists ALL portal validators for bradbury-phase2 (active + inactive + quarantined), any node reporting/active but not in the portal, and graduated validators with no wallet on this network (MISSING). Roster is deduped at the datasource: inactive wallets superseded by a live wallet under the same account/name are dropped; a fully-inactive operator keeps one row. Name: single merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address. Identity: on-chain getIdentity() completeness (OK / missing: moniker/logo/description), computed here from the roster's raw fields. Linked: whether the wallet is attributed to a portal account (linked / NOT LINKED). In Portal: Yes/No (has a roster row on this network). Participating (live on-chain): active / quarantined / MISSING (graduated but no wallet here) / not participating. Metrics/Logs: ON = reporting last 5m, OFF = on-chain active but not reporting, - = not applicable. Version: OK/behind vs the latest version seen in the wild. Blocks Behind from metrics. Rows sorted worst-first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1858,7 +1858,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by (node) (genlayer_node_blocks_behind{network=\"bradbury-phase-2\"})",
+          "expr": "max by (node) (genlayer_node_blocks_behind{network=\"bradbury-phase2\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1871,7 +1871,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase-2\" [5m]))",
+          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase2\" [5m]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1885,7 +1885,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by (node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase-2\"}) * 0 - 1",
+          "expr": "max by (node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"}) * 0 - 1",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1971,7 +1971,7 @@
           }
         }
       ],
-      "title": "Validator Status — on-chain ↔ Grafana reconciliation (bradbury-phase-2)",
+      "title": "Validator Status — on-chain ↔ Grafana reconciliation (bradbury-phase2)",
       "transformations": [
         {
           "id": "formatString",
@@ -1995,7 +1995,7 @@
                 "config": {
                   "id": "equal",
                   "options": {
-                    "value": "bradbury-phase-2"
+                    "value": "bradbury-phase2"
                   }
                 },
                 "fieldName": "network A"

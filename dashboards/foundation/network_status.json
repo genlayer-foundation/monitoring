@@ -1454,8 +1454,8 @@
     "list": [
       {
         "current": {
-          "text": "bradbury-phase-2",
-          "value": "bradbury-phase-2"
+          "text": "bradbury-phase2",
+          "value": "bradbury-phase2"
         },
         "includeAll": false,
         "label": "Network",
@@ -1464,11 +1464,11 @@
         "options": [
           {
             "selected": true,
-            "text": "bradbury-phase-2",
-            "value": "bradbury-phase-2"
+            "text": "bradbury-phase2",
+            "value": "bradbury-phase2"
           }
         ],
-        "query": "bradbury-phase-2",
+        "query": "bradbury-phase2",
         "type": "custom"
       },
       {

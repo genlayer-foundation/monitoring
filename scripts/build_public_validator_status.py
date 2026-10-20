@@ -25,7 +25,7 @@ OUT = 'dashboards/foundation/validator_status_public.json'
 # 2026-10-20 when the testnet moved to Arbitrum Orbit (RPC
 # https://rpc.testnet-chain.genlayer.com); Bradbury Phase 2 is the only network.
 NETWORKS = [
-    dict(label='Bradbury Phase 2', network='bradbury-phase-2',
+    dict(label='Bradbury Phase 2', network='bradbury-phase2',
          staking='0xD8fBa96C0dBB0257028dBc0107060b958e5c7113', offset=200, row_id=199),
 ]
 
