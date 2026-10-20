@@ -28,7 +28,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
   - `dashboards/foundation/validator_status.json:127` (7 targets: table `A` + stats `Total`/`Internal`/`Portal: active`/`Inactive`/`Banned`/`Missing`)
   - `dashboards/foundation/validator_status_public.json:145` (7 targets — one network section)
   - `dashboards/foundation/validator_profile.json:176`
-  - `dashboards/foundation/index.json:221` (validator directory table, `parser: backend`; its profile deep-link hardcodes `var-network=bradbury-phase-2`)
+  - `dashboards/foundation/index.json:221` (validator directory table, `parser: backend`; its profile deep-link hardcodes `var-network=bradbury-phase2`)
 
 ### GenLayer testnet chain — Bradbury Phase 2 (public RPC, Arbitrum Orbit / Conduit)
 - **Direction**: read
@@ -68,7 +68,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Auth**: handled by Grafana Cloud; no credential in this repo
 - **Endpoint**: datasource uid `grafanacloud-prom` (the org default)
 - **Cadence**: per dashboard load + refresh; per alert-rule evaluation
-- **We consume**: `genlayer_node_info` (labels `node`, `validator_name`, `version`, `commit`, `genvm_version`, `staking_address`, `network`), `genlayer_node_blocks_behind`, `_synced`, `_latest_block`, `_synced_block`, `_cpu_usage_percent`, `_memory_percent`, `_disk_usage_percent`, `_genvm_permits_current`, `_genvm_executions`, `_transactions_activated_total`, `_uptime_seconds`, `up`, `go_memstats_alloc_bytes`. Dashboards select `network="bradbury-phase-2"` — an **assumed** label: as of 2026-10-20 no series carries it (`epoch_monitor_current_epoch` is no longer read; the epoch comes from the chain)
+- **We consume**: `genlayer_node_info` (labels `node`, `validator_name`, `version`, `commit`, `genvm_version`, `staking_address`, `network`), `genlayer_node_blocks_behind`, `_synced`, `_latest_block`, `_synced_block`, `_cpu_usage_percent`, `_memory_percent`, `_disk_usage_percent`, `_genvm_permits_current`, `_genvm_executions`, `_transactions_activated_total`, `_uptime_seconds`, `up`, `go_memstats_alloc_bytes`. Dashboards select `network="bradbury-phase2"` — the documented label (`NETWORK_NAME`, docs.genlayer.com/validators/monitoring), not yet observed: as of 2026-10-20 no series carries it (`epoch_monitor_current_epoch` is no longer read; the epoch comes from the chain)
 - **Degrades**: hard dependency for every alert rule and most panels — `noDataState: OK` on all 9 rules means a Prometheus outage **silently resolves** alerts rather than firing
 - **Code**: `dashboards/foundation/validator_status.json:136`; every `grafana-alerts/alert-*.json` (`datasourceUid: grafanacloud-prom`), e.g. `grafana-alerts/alert-validator-down.json`
 
@@ -170,7 +170,7 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
 ## On-chain
 
 - **Networks**:
-  - **Bradbury Phase 2** (`network` label `bradbury-phase-2`, assumed; portal key `bradbury2`) — staking proxy `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113`, via `https://rpc.testnet-chain.genlayer.com` (chainId 4221, Arbitrum Orbit / Conduit)
+  - **Bradbury Phase 2** (`network` label `bradbury-phase2`, per docs.genlayer.com/validators/monitoring, not yet observed; portal key `bradbury2`) — staking proxy `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113`, via `https://rpc.testnet-chain.genlayer.com` (chainId 4221, Arbitrum Orbit / Conduit)
   - Sunset 2026-10-20, no longer queried: Asimov (`asimov-phase5`, staking `0x63Fa5E0bb10fb6fA98F44726C5518223F767687A`) and Bradbury Phase 1 (`bradbury-phase1`, staking `0x4A4449E617F8D10FDeD0b461CadEf83939E821A5`), both on `https://zksync-os-testnet-genlayer.zksync.dev`
   - **Pre-Clarke** (`pre-clarke`) — separate consensus deployment on the Bradbury chain (chainId 4221), staking `0x500261a6b5F93Bc940Fb05624a3f1B9A3CE843e3`, RPC `https://rpc-bradbury.genlayer.com`
   - Legacy, in the report script only: chainId 4221 via Caldera, staking `0x10eCB157734c8152f1d84D00040c8AA46052CB27`, factory `0x2e198119E639D1063180f281617f64Dd788D78d2`

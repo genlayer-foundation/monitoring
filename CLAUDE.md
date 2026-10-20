@@ -16,15 +16,18 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   still producing blocks) — don't point anything at it.
 - Staking proxy `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113` (routed "diamond";
   raw `IGenLayerStaking` ABI, genlayer-consensus `deployments/bradbury-phase-2.json`).
-- Grafana `network` label **`bradbury-phase-2`** — ⚠️ **ASSUMED, unverified**: as of
-  2026-10-20 no Prometheus or Loki series carries it (only the two sunset labels,
-  from old nodes still running). When the first Phase 2 node reports, check
-  `count by (network)(genlayer_node_info)`; if the label differs, change it in every
-  dashboard's `network` var, `index.json` and the generator's `NETWORKS`.
+- Grafana `network` label **`bradbury-phase2`** (no hyphen before the 2) — the
+  documented value: `NETWORK_NAME=bradbury-phase2` in
+  https://docs.genlayer.com/validators/monitoring, and the setup guide says the node
+  names the network `bradbury-phase2` from its consensus address. Not yet observed:
+  as of 2026-10-20 no Prometheus or Loki series carries it. When the first Phase 2
+  node reports, confirm with `count by (network)(genlayer_node_info)`; if it differs,
+  change it in every dashboard's `network` var, `index.json` and the generator's
+  `NETWORKS`. (`bradbury-phase-2` with a hyphen was a wrong guess, fixed 2026-10-20.)
 - Portal roster network key is **`bradbury2`** (not the Grafana label): every roster
   target calls `/api/v1/validators/wallets/grafana/?network=bradbury2` and filters
   server-side; the jq no longer does `select(.network=="$network")`. The `index`
-  directory deep-links with a hardcoded `var-network=bradbury-phase-2` because the
+  directory deep-links with a hardcoded `var-network=bradbury-phase2` because the
   roster's `network` field is the portal key, not the label.
 - **ABI changes** that hit the dashboards: `activeValidators()` `0xd2d49c4b` is
   **retired (reverts)** → replaced by **`selectableValidators()` `0x2d2f135d`** (same
@@ -355,7 +358,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   `fkpd6m`); rerun after any material Wall of Shame change. What the
   generator does (2026-07-28):
   - Hardcodes `$network` / `$staking_addr` per section (Bradbury Phase 2
-    `bradbury-phase-2` / `0xD8fB…7113`).
+    `bradbury-phase2` / `0xD8fB…7113`).
   - The quarantine targets already use the batch `[epoch(), getAllQuarantined…]`
     JSON-RPC call in the source board, so they copy through unchanged (the new
     Orbit RPC supports batch — verified 2026-10-20). Until Phase 2 the generator
@@ -412,7 +415,7 @@ Always save any Grafana change back to the matching JSON file here.
 
 ## Data model & conventions
 
-- **Networks**: the `network` label value is `bradbury-phase-2` (assumed — see the
+- **Networks**: the `network` label value is `bradbury-phase2` (documented — see the
   top section; NOT the portal key `bradbury2`). Sunset 2026-10-20:
   `asimov-phase5` / `bradbury-phase1`. Deprecated `exported_network` label is
   broken — don't use it.

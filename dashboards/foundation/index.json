@@ -83,7 +83,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "# GenLayer Testnets\n\nOperational landing page for the **Bradbury Phase 2** testnet (Grafana `network` label `bradbury-phase-2`, portal network `bradbury2`). Asimov and Bradbury Phase 1 were sunset in 2026-10. Start here, then jump to a companion dashboard.\n\n### Dashboards\n- [Validator Status](/d/gl-validator-status) — who's lagging / out of sync\n- [Network Status](/d/gl-network-status) — per-network health overview\n- [Validator Profile](/d/gl-validator-profile) — drill into a single validator\n- [Validator Overview](/d/validator-overview) — GenLayer Labs fleet deep-dive\n\n_Use the directory table below to open any validator's profile directly._"
+        "content": "# GenLayer Testnets\n\nOperational landing page for the **Bradbury Phase 2** testnet (Grafana `network` label `bradbury-phase2`, portal network `bradbury2`). Asimov and Bradbury Phase 1 were sunset in 2026-10. Start here, then jump to a companion dashboard.\n\n### Dashboards\n- [Validator Status](/d/gl-validator-status) — who's lagging / out of sync\n- [Network Status](/d/gl-network-status) — per-network health overview\n- [Validator Profile](/d/gl-validator-profile) — drill into a single validator\n- [Validator Overview](/d/validator-overview) — GenLayer Labs fleet deep-dive\n\n_Use the directory table below to open any validator's profile directly._"
       },
       "transparent": false
     },
@@ -108,7 +108,7 @@
             "type": "prometheus",
             "uid": "grafanacloud-prom"
           },
-          "expr": "count(genlayer_node_info{network=\"bradbury-phase-2\"}) or on() vector(0)",
+          "expr": "count(genlayer_node_info{network=\"bradbury-phase2\"}) or on() vector(0)",
           "instant": true,
           "legendFormat": ""
         }
@@ -161,7 +161,7 @@
             "type": "prometheus",
             "uid": "grafanacloud-prom"
           },
-          "expr": "count(genlayer_node_synced{network=\"bradbury-phase-2\"} == 1) or on() vector(0)",
+          "expr": "count(genlayer_node_synced{network=\"bradbury-phase2\"} == 1) or on() vector(0)",
           "instant": true,
           "legendFormat": ""
         }
@@ -319,7 +319,7 @@
                 "value": [
                   {
                     "title": "Open validator profile",
-                    "url": "/d/gl-validator-profile/testnet-validator-profile?var-network=bradbury-phase-2&var-node=${__data.fields.node}",
+                    "url": "/d/gl-validator-profile/testnet-validator-profile?var-network=bradbury-phase2&var-node=${__data.fields.node}",
                     "targetBlank": false
                   }
                 ]
