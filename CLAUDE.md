@@ -5,6 +5,43 @@ JSON file in this repo (unwrapped dashboard model, pretty-printed). Use the
 Grafana MCP server to manage Grafana resources; fall back to the Grafana API for
 anything the MCP doesn't support.
 
+## Current network — Bradbury Phase 2 (since 2026-10-20)
+
+The testnet restarted on **Arbitrum Orbit (Conduit)**, replacing ZKsync. **Asimov
+(`asimov-phase5`) and Bradbury Phase 1 (`bradbury-phase1`) are sunset**; the only
+network on the Foundation dashboards is **Bradbury Phase 2**:
+
+- RPC `https://rpc.testnet-chain.genlayer.com` (chainId 4221, same as before).
+  The old `https://zksync-os-testnet-genlayer.zksync.dev` still answers (old chain,
+  still producing blocks) — don't point anything at it.
+- Staking proxy `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113` (routed "diamond";
+  raw `IGenLayerStaking` ABI, genlayer-consensus `deployments/bradbury-phase-2.json`).
+- Grafana `network` label **`bradbury-phase-2`** — ⚠️ **ASSUMED, unverified**: as of
+  2026-10-20 no Prometheus or Loki series carries it (only the two sunset labels,
+  from old nodes still running). When the first Phase 2 node reports, check
+  `count by (network)(genlayer_node_info)`; if the label differs, change it in every
+  dashboard's `network` var, `index.json` and the generator's `NETWORKS`.
+- Portal roster network key is **`bradbury2`** (not the Grafana label): every roster
+  target calls `/api/v1/validators/wallets/grafana/?network=bradbury2` and filters
+  server-side; the jq no longer does `select(.network=="$network")`. The `index`
+  directory deep-links with a hardcoded `var-network=bradbury-phase-2` because the
+  roster's `network` field is the portal key, not the label.
+- **ABI changes** that hit the dashboards: `activeValidators()` `0xd2d49c4b` is
+  **retired (reverts)** → replaced by **`selectableValidators()` `0x2d2f135d`** (same
+  `address[]` ABI, same jq decoder). It is strict consensus-duty eligibility: it
+  **excludes quarantined** validators (the old set included them) and is **empty
+  until the first epoch advance**. `getActiveValidatorsList` does not exist on the
+  router either. Unchanged and verified on the new chain: `epoch()` `0x900cf0cf`,
+  `getAllQuarantinedValidators(uint256,uint256)` `0x510a6f26` (still 3-word
+  elements), `getIdentity()` `0x36afc6fa` on the wallet. `validatorView` (9 words now)
+  is not used by any dashboard.
+- **Owner vs wallet**: the factory's first two Phase 2 validators are wallets
+  `0x140457fb2eab027161a6ccdb378544dce3ea3a1d` (owner `0x5463…d866`, 500 GEN) and
+  `0xf00f26f5b1a30953af621c8abfd70d8106c3f0c4` (owner `0x3850…147c`, 0.01 GEN). The
+  `node` join key is the **wallet**, never the owner.
+- Alerts (`grafana-alerts/`) are label-agnostic — no `network` filter in any expr,
+  `network` is only carried through `by()` and templates — so they need no change.
+
 ## Grafana instance & datasources
 
 - **Instance**: https://genlayerfoundation.grafana.net
@@ -38,8 +75,15 @@ anything the MCP doesn't support.
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
 - `gl-testnets-index` → `index.json` — landing page; validator directory table
-  (deep-links each row to the profile) + links to the other dashboards.
-- `gl-preclarke-status` → `preclarke_status.json` — **Pre-Clarke network status**,
+  (deep-links each row to the profile) + links to the other dashboards. Since
+  2026-10-20: two Bradbury Phase 2 stats (reporting / synced, `or on() vector(0)`
+  so they read 0, not No data) replace the four Asimov/Bradbury ones.
+- `gl-preclarke-status` → `preclarke_status.json` — ⚠️ **Status 2026-10-20: left
+  unchanged, likely stale.** `https://rpc-bradbury.genlayer.com` still answers but is
+  the OLD ZKsync chain (same head as the zksync RPC; Pre-Clarke `epoch()` = 139), the
+  explorer API still lists 25 validators / 15 active, and **no Prometheus or Loki
+  series carries `network="pre-clarke"`**. Ask whether Pre-Clarke is retired before
+  repointing or deleting it. **Pre-Clarke network status**,
   a self-contained, portal-free validator-status page for the **Pre-Clarke**
   network. Pre-Clarke runs on the **Bradbury chain (chainId 4221,
   `https://rpc-bradbury.genlayer.com`)** with a SEPARATE consensus deployment
@@ -119,8 +163,9 @@ anything the MCP doesn't support.
   with **four summary stat rows** above it (all per-`$network`):
   1. **Validators** — `Total` (union roster ∪ reporting ∪ on-chain active, via the
      A+B+E join, count `node`), `Internal` (roster name/account_name matches
-     `genlayer`, case-insensitive), `On-chain active` (live `activeValidators()` —
-     which INCLUDES quarantined nodes, see the "quarantine" note below),
+     `genlayer`, case-insensitive), `On-chain active` (live `selectableValidators()`
+     since Phase 2 — EXCLUDES quarantined nodes and is empty until the first epoch
+     advance; was `activeValidators()`, which included them),
      `Quarantined` (live **on-chain** `getAllQuarantinedValidators()`, NOT the
      portal), portal-status counts `Portal: active` / `Inactive` / `Banned`, and
      `Missing` (graduated validators with no wallet linked on this network — see
@@ -247,11 +292,12 @@ anything the MCP doesn't support.
   - Removed the old `Max blocks behind` and `Not in portal` stats.
   - **`Participating` column = ON-CHAIN, not portal.** The table's status column
     reads the chain, not the roster. Two Infinity RPC targets feed it: `E` =
-    `activeValidators()` (`0xd2d49c4b`) and `Q` =
-    `getAllQuarantinedValidators(0,100)` (`0x510a6f26`). A quarantined validator
-    is **still in `activeValidators()`** on-chain (quarantine is a pending-ban
-    flag with an `untilEpoch`, not removal), so **quarantine takes precedence**
-    in the label. Encoded as `PartCode = aflag + 2*qflag` (aflag/qflag =
+    `selectableValidators()` (`0x2d2f135d`; was the retired `activeValidators()`
+    `0xd2d49c4b` before Phase 2) and `Q` =
+    `getAllQuarantinedValidators(0,100)` (`0x510a6f26`). On Phase 2 a quarantined
+    validator is NOT in the selectable set (aflag=0, qflag=1 → `2`); under the old
+    `activeValidators()` it was (→ `3`). Both map to `quarantined`, and
+    **quarantine takes precedence** in the label. Encoded as `PartCode = aflag + 2*qflag` (aflag/qflag =
     reduceRow-sum of `onchain_active E` / `onchain_quarantined Q` with `zeroU`):
     `1 → active` (green), `2`/`3 → quarantined` (orange), `0`/null →
     `not participating` (grey, e.g. reporting-but-not-in-set spectators like
@@ -277,10 +323,13 @@ anything the MCP doesn't support.
     quarantined. Both the `Q` table target AND the `Quarantined` stat now decode
     `until_epoch` (via a jq `hexval` def — `ascii_downcase | ltrimstr("0") |
     explode | reduce …` 64-hex → int) and `select(.perm or (.until_epoch >
-    $current_epoch))`. **`$current_epoch`** = hidden Prometheus var
-    `query_result(max(epoch_monitor_current_epoch{network="$network"}))`, regex
-    `/\}\s+([0-9]+)/`, per-network (Asimov/Bradbury epochs differ). It interpolates
-    as a bare number inside the jq. Verified: Bradbury had 4 raw / 3 live (one at
+    $cur))`. **Since Phase 2 (2026-10-20) `$cur` is read ON-CHAIN**: both
+    quarantine targets POST a batch `[{id:1, epoch() 0x900cf0cf}, {id:2,
+    getAllQuarantinedValidators}]` and the jq takes the epoch from `.id==1`. The
+    old hidden `$current_epoch` Prometheus var
+    (`max(epoch_monitor_current_epoch{network="$network"})`) was deleted: the epoch
+    monitor only ever reported Asimov, so on any other network the var was empty
+    and the jq failed to parse. Verified: Bradbury had 4 raw / 3 live (one at
     `until_epoch=73` vs epoch 89, also absent from `activeValidators()`); Asimov
     unaffected (all `until_epoch=125` > epoch 124). Don't revert to counting the
     raw list — it over-reports quarantines for ~one epoch (~24h) after each lapse.
@@ -294,7 +343,8 @@ anything the MCP doesn't support.
   new one with the SAME token — the shared URL never changed. Same trick works
   for any future uid move.
   A self-contained, variable-free variant of `gl-validator-status` with one section
-  (row) per network — Asimov (panel ids +200) and Bradbury (+400) — because
+  (row) per network — since 2026-10-20 only **Bradbury Phase 2** (panel ids +200;
+  it was Asimov +200 / Bradbury +400) — because
   **public dashboards do not interpolate template variables**: Prometheus exprs
   keep the literal `$network` and silently return EMPTY (no error), Infinity RPC
   bodies keep `${staking_addr}` and the jq errors; only Infinity `root_selector`
@@ -304,13 +354,12 @@ anything the MCP doesn't support.
   `validator_status_public.json` as uid `gl-validator-status-public`, folder
   `fkpd6m`); rerun after any material Wall of Shame change. What the
   generator does (2026-07-28):
-  - Hardcodes `$network` / `$staking_addr` per section (Asimov
-    `0x63Fa…687A`, Bradbury `0x4A44…21A5`).
-  - **`$current_epoch` is replaced by a batch JSON-RPC call**: the quarantine
-    targets POST `[{id:1, epoch() 0x900cf0cf}, {id:2, getAllQuarantinedValidators
-    0x510a6f26…}]` to the RPC and the jq decodes the epoch from `.id==1` and the
-    quarantine list from `.id==2`, keeping the lapsed-quarantine expiry filter
-    with zero variables (the RPC endpoint supports batch — verified).
+  - Hardcodes `$network` / `$staking_addr` per section (Bradbury Phase 2
+    `bradbury-phase-2` / `0xD8fB…7113`).
+  - The quarantine targets already use the batch `[epoch(), getAllQuarantined…]`
+    JSON-RPC call in the source board, so they copy through unchanged (the new
+    Orbit RPC supports batch — verified 2026-10-20). Until Phase 2 the generator
+    rewrote them itself, because the source used a `$current_epoch` var.
   - **Drops the Version OK/behind logic** (stats 30/31/32, table target F,
     `VersionCode` + related transforms/overrides) — it needs the
     `$latest_version` query var, which cannot exist publicly. The raw
@@ -320,7 +369,9 @@ anything the MCP doesn't support.
 - `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
 - `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
-  select by **`validator_name`** (primary), node derives from it; has an
+  select by **`validator_name`** (primary), node derives from it; ⚠️ both vars come
+  from `genlayer_node_info`, so the profile cannot select a validator that does not
+  push metrics (true of every Phase 2 validator as of 2026-10-20); has an
   on-chain identity + validator-status (Wall-of-Shame) row + health + logs.
   - **Full on-chain identity block** (panels 25/26/27, y=4): reads the whole
     `getIdentity()` tuple in one `eth_call 0x36afc6fa` to `${node}` and decodes
@@ -361,8 +412,9 @@ Always save any Grafana change back to the matching JSON file here.
 
 ## Data model & conventions
 
-- **Networks**: the `network` label value is `asimov-phase5` / `bradbury-phase1`
-  (NOT the short `asimov`/`bradbury`). Deprecated `exported_network` label is
+- **Networks**: the `network` label value is `bradbury-phase-2` (assumed — see the
+  top section; NOT the portal key `bradbury2`). Sunset 2026-10-20:
+  `asimov-phase5` / `bradbury-phase1`. Deprecated `exported_network` label is
   broken — don't use it.
 - `genlayer_node_info{job="prometheus.scrape.genlayer_node", network=...}` labels:
   - `node` — validator addr, the **JOIN KEY**; **CHECKSUMMED in metrics,
@@ -392,27 +444,31 @@ Always save any Grafana change back to the matching JSON file here.
 
 We read the consensus set **directly from the chain**, not from the portal cache.
 
-- Infinity `url`/POST to RPC `https://zksync-os-testnet-genlayer.zksync.dev`, body:
+- Infinity `url`/POST to RPC `https://rpc.testnet-chain.genlayer.com`, body:
   ```json
-  {"jsonrpc":"2.0","id":1,"method":"eth_call","params":[{"to":"${staking_addr}","data":"0xd2d49c4b"},"latest"]}
+  {"jsonrpc":"2.0","id":1,"method":"eth_call","params":[{"to":"${staking_addr}","data":"0x2d2f135d"},"latest"]}
   ```
-  (`0xd2d49c4b` = `activeValidators()` → `address[]`).
+  (`0x2d2f135d` = `selectableValidators()` → `address[]`. Before 2026-10-20:
+  `activeValidators()` `0xd2d49c4b` on the ZKsync RPC — retired, it reverts.)
 - Parser MUST be **`jq-backend`** (plain `backend` treats `root_selector` as
   JSONata and fails). Tested decoder (skip offset+length words, chunk 64 hex,
   last 40 = address, drop the zero address to match the portal's own filtering):
   ```jq
   .result | ltrimstr("0x") | .[128:] | [range(0;(length/64)) as $i | .[$i*64:($i+1)*64]] | map(select(length==64) | {node:("0x"+(.[24:64]|ascii_downcase)), onchain_active:1}) | map(select(.node != "0x0000000000000000000000000000000000000000"))
   ```
-- **Staking contracts**: Asimov `0x63Fa5E0bb10fb6fA98F44726C5518223F767687A`,
-  Bradbury `0x4A4449E617F8D10FDeD0b461CadEf83939E821A5`. Per-network target via a
-  hidden `staking_addr` template var: Prometheus
-  `query_result(topk(1, count by (staking_address)(genlayer_node_info{network="$network"})))`
-  + regex `/staking_address="([^"]+)"/` (topk self-corrects one mislabeled
-  Bradbury node that carries the Asimov staking_address).
+- **Staking contract**: Bradbury Phase 2 `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113`
+  (sunset: Asimov `0x63Fa…687A`, Bradbury Phase 1 `0x4A44…21A5`). Per-network target
+  via a hidden `staking_addr` template var: Prometheus
+  `query_result(topk(1, count by (staking_address)(genlayer_node_info{network="$network"}) or label_replace(vector(0), "staking_address", "0xD8fB…7113", "", "")))`
+  + regex `/staking_address="([^"]+)"/`. topk self-corrects a mislabeled node; the
+  `or label_replace(vector(0), …)` arm is a **fallback default** (value 0, so any
+  real reporting count wins) — without it the var is EMPTY while no node reports,
+  and every RPC target fails with `Invalid params`. Verified both ways 2026-10-20.
 
 ## active vs reporting (DIFFERENT axes — expected to differ)
 
-- **Active** = in the on-chain consensus set (`activeValidators()`).
+- **Active** = in the on-chain consensus set (`selectableValidators()` since
+  Phase 2; `activeValidators()` before).
 - **Reporting** = node pushing metrics to Grafana now.
 - **Active ∖ Reporting** = the core SHAME (validating but no telemetry).
 - **Reporting ∖ Active** = up but not in the set (low stake / infra full-node
@@ -521,7 +577,8 @@ How the dynamic "latest" works:
 
 - `grafana-alerts/*.json` — 9 rules synced from live Grafana; multi-network via
   the `network` label; routing labels `component`/`severity`/`threshold` (legacy
-  `asimov-alert` label was dropped).
+  `asimov-alert` label was dropped). **Label-agnostic** (re-checked 2026-10-20 for
+  Phase 2): no expr filters on a `network` value, so a new label needs no change.
 
 ## Convention
 

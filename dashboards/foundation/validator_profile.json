@@ -85,7 +85,7 @@
           "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\n.result | ltrimstr(\"0x\") as $h\n| ( $h[64:128] | h2i ) as $moff\n| (64 + $moff*2) as $lp\n| ( $h[$lp:$lp+64] | h2i ) as $len\n| $h[$lp+64 : $lp+64 + $len*2]\n| [ range(0; length/2) as $i | .[$i*2:$i*2+2] | h2i ] | implode\n| { onchain_name: . }",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
@@ -173,7 +173,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -367,7 +367,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -1275,7 +1275,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -1659,7 +1659,7 @@
           "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| (fld($h;1)) as $logo\n| { logo: ($logo | if test(\"^https?://github.com/[^/]+/[^/]+/blob/\") then (sub(\"://github.com/\";\"://raw.githubusercontent.com/\") | sub(\"/blob/\";\"/\")) else . end) }",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
@@ -1763,7 +1763,7 @@
           "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| { Website: fld($h;2), Twitter: fld($h;5), GitHub: fld($h;7), Email: fld($h;4), Telegram: fld($h;6) }",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
@@ -1846,7 +1846,7 @@
           "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| { Description: fld($h;3) }",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
@@ -1877,8 +1877,8 @@
       {
         "current": {
           "selected": true,
-          "text": "asimov-phase5",
-          "value": "asimov-phase5"
+          "text": "bradbury-phase-2",
+          "value": "bradbury-phase-2"
         },
         "includeAll": false,
         "label": "Network",
@@ -1887,16 +1887,11 @@
         "options": [
           {
             "selected": true,
-            "text": "asimov-phase5",
-            "value": "asimov-phase5"
-          },
-          {
-            "selected": false,
-            "text": "bradbury-phase1",
-            "value": "bradbury-phase1"
+            "text": "bradbury-phase-2",
+            "value": "bradbury-phase-2"
           }
         ],
-        "query": "asimov-phase5,bradbury-phase1",
+        "query": "bradbury-phase-2",
         "type": "custom"
       },
       {
