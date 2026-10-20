@@ -26,7 +26,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Validators in the live on-chain consensus set (Staking.activeValidators(), read on each load). The true denominator: how many validators SHOULD be running. Synced + Behind + Dark must equal this.",
+      "description": "Validators in the live on-chain consensus set (Staking.selectableValidators(), read on each load; empty until the first epoch advance). The true denominator: how many validators SHOULD be running. Synced + Behind + Dark must equal this.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -94,11 +94,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -185,11 +185,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -366,11 +366,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -547,11 +547,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -764,11 +764,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1454,8 +1454,8 @@
     "list": [
       {
         "current": {
-          "text": "asimov-phase5",
-          "value": "asimov-phase5"
+          "text": "bradbury-phase-2",
+          "value": "bradbury-phase-2"
         },
         "includeAll": false,
         "label": "Network",
@@ -1464,16 +1464,11 @@
         "options": [
           {
             "selected": true,
-            "text": "asimov-phase5",
-            "value": "asimov-phase5"
-          },
-          {
-            "selected": false,
-            "text": "bradbury-phase1",
-            "value": "bradbury-phase1"
+            "text": "bradbury-phase-2",
+            "value": "bradbury-phase-2"
           }
         ],
-        "query": "asimov-phase5,bradbury-phase1",
+        "query": "bradbury-phase-2",
         "type": "custom"
       },
       {
@@ -1482,7 +1477,7 @@
           "type": "prometheus",
           "uid": "grafanacloud-prom"
         },
-        "definition": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"})))",
+        "definition": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"}) or label_replace(vector(0), \"staking_address\", \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"\", \"\")))",
         "hide": 2,
         "includeAll": false,
         "label": "Staking contract",
@@ -1491,14 +1486,15 @@
         "options": [],
         "query": {
           "qryType": 3,
-          "query": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"})))",
+          "query": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"}) or label_replace(vector(0), \"staking_address\", \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"\", \"\")))",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
         "regex": "/staking_address=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query"
+        "type": "query",
+        "description": "Staking proxy for $network, read from node telemetry (topk self-corrects a mislabeled node); falls back to the Bradbury Phase 2 staking proxy 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113 while no node reports."
       }
     ]
   },

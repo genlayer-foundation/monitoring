@@ -8,38 +8,35 @@ validator_status.json changes materially.
 
 Public Grafana dashboards do not interpolate template variables (Prometheus exprs
 silently match nothing; Infinity bodies keep the literal ${var}). So this bakes
-$network / $staking_addr in per-section, replaces the $current_epoch var with a
-batch JSON-RPC call (epoch() + getAllQuarantinedValidators() in one request), and
-drops the $latest_version-dependent Version OK/behind logic (panels 30/31/32 and
-the table's F target / VersionCode column).
+$network / $staking_addr in per-section and drops the $latest_version-dependent
+Version OK/behind logic (panels 30/31/32 and the table's F target / VersionCode
+column). The quarantine targets need no rework: since Bradbury Phase 2
+(2026-10-20) the source board itself reads the epoch on-chain in the same batch
+JSON-RPC call as getAllQuarantinedValidators(), so there is no $current_epoch var.
 """
 import copy
 import json
-import re
 import sys
 
 SRC = 'dashboards/foundation/validator_status.json'
 OUT = 'dashboards/foundation/validator_status_public.json'
 
+# Asimov (asimov-phase5) and Bradbury Phase 1 (bradbury-phase1) were sunset
+# 2026-10-20 when the testnet moved to Arbitrum Orbit (RPC
+# https://rpc.testnet-chain.genlayer.com); Bradbury Phase 2 is the only network.
 NETWORKS = [
-    dict(label='Asimov', network='asimov-phase5',
-         staking='0x63Fa5E0bb10fb6fA98F44726C5518223F767687A', offset=200, row_id=199),
-    dict(label='Bradbury', network='bradbury-phase1',
-         staking='0x4A4449E617F8D10FDeD0b461CadEf83939E821A5', offset=400, row_id=399),
+    dict(label='Bradbury Phase 2', network='bradbury-phase-2',
+         staking='0xD8fBa96C0dBB0257028dBc0107060b958e5c7113', offset=200, row_id=199),
 ]
 
 DROP_PANELS = {30, 31, 32, 100}  # version stats + legend (legend re-added once, rewritten)
 VERSION_ALIASES = {'onlatest0', 'hasrep0', 'VersionCode', 'behindFlag', 'ver_s'}
 VERSION_FIELDS = VERSION_ALIASES | {'Value #F'}
 
-QUAR_HEAD_RE = re.compile(r'\.result\s*\|\s*ltrimstr\("0x"\)\s*\|\s*\.\[128:\]\s+as\s+\$h')
-QUAR_HEAD_NEW = ('(map(select(.id==1)) | .[0].result | ltrimstr("0x") | hexval) as $cur\n'
-                 '| (map(select(.id==2)) | .[0].result | ltrimstr("0x") | .[128:]) as $h')
-QUAR_DATA_RE = re.compile(r'"data":"(0x510a6f26[0-9a-fA-F]*)"')
 
-LEGEND = """**GenLayer Validator Status board — public view.** One section per testnet (**Asimov**, **Bradbury**). Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator. Read-only; data is queried live on each load.
+LEGEND = """**GenLayer Validator Status board — public view.** Testnet **Bradbury Phase 2** (Asimov and Bradbury Phase 1 were sunset in 2026-10). Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator. Read-only; data is queried live on each load.
 
-**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.
+**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.selectableValidators() set (strict consensus-duty eligibility; excludes quarantined; empty until the first epoch advance). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.
 
 **Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Not reporting (metrics)* = on-chain active but silent on metrics.
 
@@ -58,25 +55,6 @@ def replace_strings(obj, mapping):
             obj = obj.replace(old, new)
         return obj
     return obj
-
-
-def rework_quarantine_target(t, staking):
-    """Batch body: id 1 = epoch() 0x900cf0cf, id 2 = getAllQuarantinedValidators."""
-    m = QUAR_DATA_RE.search(t['url_options']['data'])
-    if not m:
-        sys.exit('quarantine target: data payload not found')
-    quar_data = m.group(1)
-    t['url_options']['data'] = (
-        '[{"jsonrpc":"2.0","id":1,"method":"eth_call","params":[{"to":"%s","data":"0x900cf0cf"},"latest"]},'
-        '{"jsonrpc":"2.0","id":2,"method":"eth_call","params":[{"to":"%s","data":"%s"},"latest"]}]'
-        % (staking, staking, quar_data))
-    rs = t['root_selector']
-    rs, n = QUAR_HEAD_RE.subn(QUAR_HEAD_NEW, rs)
-    if n != 1:
-        sys.exit('quarantine target: root_selector head not matched')
-    if '$current_epoch' not in rs:
-        sys.exit('quarantine target: $current_epoch not found in root_selector')
-    t['root_selector'] = rs.replace('$current_epoch', '$cur')
 
 
 def strip_version_logic(table):
@@ -112,9 +90,6 @@ def build_section(src_panels, net, y_base):
         p = copy.deepcopy(p)
         if p['type'] == 'table':
             strip_version_logic(p)
-        for t in p.get('targets', []):
-            if '0x510a6f26' in (t.get('url_options') or {}).get('data', ''):
-                rework_quarantine_target(t, net['staking'])
         p = replace_strings(p, mapping)
         p['id'] += net['offset']
         g = p['gridPos']

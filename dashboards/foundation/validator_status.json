@@ -31,7 +31,7 @@
       },
       "id": 100,
       "options": {
-        "content": "**Validator Status board — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.activeValidators() set (includes quarantined). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist, expected on BOTH testnets) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Not reporting (metrics)* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Not reporting (logs)* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/OFF/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
+        "content": "**Validator Status board — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.selectableValidators() set (strict consensus-duty eligibility; excludes quarantined; empty until the first epoch advance). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Not reporting (metrics)* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Not reporting (logs)* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/OFF/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
         "mode": "markdown"
       },
       "title": "Legend",
@@ -121,10 +121,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] | select(.network==\"$network\") ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1})",
+          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1})",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -168,11 +168,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -291,10 +291,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") | select((((.name//\"\")|ascii_downcase|test(\"genlayer\")) or ((.account_name//\"\")|ascii_downcase|test(\"genlayer\")))) ] | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] | select((((.name//\"\")|ascii_downcase|test(\"genlayer\")) or ((.account_name//\"\")|ascii_downcase|test(\"genlayer\")))) ] | length) }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -309,7 +309,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Validators in the live on-chain active set (Staking.activeValidators()), read from the chain on each load.",
+      "description": "Validators in the live on-chain active set (Staking.selectableValidators()), read from the chain on each load.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -377,11 +377,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -459,10 +459,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") | select(.status==\"active\") ] | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] | select(.status==\"active\") ] | length) }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -537,14 +537,14 @@
           "method": "POST",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ( def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end)); .result | ltrimstr(\"0x\") | .[128:] as $h | [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ] | map(select(.node != \"0x0000000000000000000000000000000000000000\")) | map(select(.perm or (.until_epoch > $current_epoch))) | length ) }]",
+          "root_selector": "[{ \"c\": ( def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end)); (map(select(.id==1)) | .[0].result | ltrimstr(\"0x\") | hexval) as $cur\n| (map(select(.id==2)) | .[0].result | ltrimstr(\"0x\") | .[128:]) as $h | [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ] | map(select(.node != \"0x0000000000000000000000000000000000000000\")) | map(select(.perm or (.until_epoch > $cur))) | length ) }]",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}",
+            "data": "[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
             "headers": [
               {
                 "key": "Content-Type",
@@ -622,10 +622,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") ] | group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end) | map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end ) | (add // []) | map(select(.status==\"inactive\")) | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] ] | group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end) | map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end ) | (add // []) | map(select(.status==\"inactive\")) | length) }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -699,10 +699,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\") | select(.status==\"banned\") ] | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] | select(.status==\"banned\") ] | length) }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -776,10 +776,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{ \"c\": ([ .[] | select(.network==\"$network\" and .status==\"missing\") ] | length) }]",
+          "root_selector": "[{ \"c\": ([ .[] | select(.status==\"missing\") ] | length) }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -927,11 +927,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1145,11 +1145,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1298,11 +1298,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1463,11 +1463,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1644,11 +1644,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -1728,7 +1728,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "Live on-chain active set (Staking.activeValidators()) reconciled against the portal roster and Grafana, joined by node address. Lists ALL portal validators for $network (active + inactive + quarantined), any node reporting/active but not in the portal, and graduated validators with no wallet on this network (MISSING). Roster is deduped at the datasource: inactive wallets superseded by a live wallet under the same account/name are dropped; a fully-inactive operator keeps one row. Name: single merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address. Identity: on-chain getIdentity() completeness (OK / missing: moniker/logo/description), computed here from the roster's raw fields. Linked: whether the wallet is attributed to a portal account (linked / NOT LINKED). In Portal: Yes/No (has a roster row on this network). Participating (live on-chain): active / quarantined / MISSING (graduated but no wallet here) / not participating. Metrics/Logs: ON = reporting last 5m, OFF = on-chain active but not reporting, - = not applicable. Version: OK/behind vs the latest version seen in the wild. Blocks Behind from metrics. Rows sorted worst-first.",
+      "description": "Live on-chain active set (Staking.selectableValidators()) reconciled against the portal roster and Grafana, joined by node address. Lists ALL portal validators for $network (active + inactive + quarantined), any node reporting/active but not in the portal, and graduated validators with no wallet on this network (MISSING). Roster is deduped at the datasource: inactive wallets superseded by a live wallet under the same account/name are dropped; a fully-inactive operator keeps one row. Name: single merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address. Identity: on-chain getIdentity() completeness (OK / missing: moniker/logo/description), computed here from the roster's raw fields. Linked: whether the wallet is attributed to a portal account (linked / NOT LINKED). In Portal: Yes/No (has a roster row on this network). Participating (live on-chain): active / quarantined / MISSING (graduated but no wallet here) / not participating. Metrics/Logs: ON = reporting last 5m, OFF = on-chain active but not reporting, - = not applicable. Version: OK/behind vs the latest version seen in the wild. Blocks Behind from metrics. Rows sorted worst-first.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2378,10 +2378,10 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] | select(.network==\"$network\") ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then (.account_name + \" (portal)\") elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end)} | del(.linked, .moniker, .logo_uri, .has_description))",
+          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then (.account_name + \" (portal)\") elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end)} | del(.linked, .moniker, .logo_uri, .has_description))",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -2452,11 +2452,11 @@
           "root_selector": ".result | ltrimstr(\"0x\") | .[128:]\n| [ range(0; (length/64)) as $i | .[$i*64:($i+1)*64] ]\n| map(select(length==64) | {node: (\"0x\" + (.[24:64] | ascii_downcase)), onchain_active: 1})\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0xd2d49c4b\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -2501,14 +2501,14 @@
           "method": "POST",
           "parser": "jq-backend",
           "refId": "Q",
-          "root_selector": "def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end));\n.result | ltrimstr(\"0x\") | .[128:] as $h\n| [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ]\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))\n| map(select(.perm or (.until_epoch > $current_epoch)))\n| map({node: .node, onchain_quarantined: 1})",
+          "root_selector": "def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end));\n(map(select(.id==1)) | .[0].result | ltrimstr(\"0x\") | hexval) as $cur\n| (map(select(.id==2)) | .[0].result | ltrimstr(\"0x\") | .[128:]) as $h\n| [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ]\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))\n| map(select(.perm or (.until_epoch > $cur)))\n| map({node: .node, onchain_quarantined: 1})",
           "source": "url",
           "type": "json",
-          "url": "https://zksync-os-testnet-genlayer.zksync.dev",
+          "url": "https://rpc.testnet-chain.genlayer.com",
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}",
+            "data": "[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"eth_call\",\"params\":[{\"to\":\"${staking_addr}\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
             "headers": [
               {
                 "key": "Content-Type",
@@ -3223,8 +3223,8 @@
       {
         "current": {
           "selected": true,
-          "text": "asimov-phase5",
-          "value": "asimov-phase5"
+          "text": "bradbury-phase-2",
+          "value": "bradbury-phase-2"
         },
         "includeAll": false,
         "label": "Network",
@@ -3233,16 +3233,11 @@
         "options": [
           {
             "selected": true,
-            "text": "asimov-phase5",
-            "value": "asimov-phase5"
-          },
-          {
-            "selected": false,
-            "text": "bradbury-phase1",
-            "value": "bradbury-phase1"
+            "text": "bradbury-phase-2",
+            "value": "bradbury-phase-2"
           }
         ],
-        "query": "asimov-phase5,bradbury-phase1",
+        "query": "bradbury-phase-2",
         "type": "custom"
       },
       {
@@ -3251,7 +3246,7 @@
           "type": "prometheus",
           "uid": "grafanacloud-prom"
         },
-        "definition": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"})))",
+        "definition": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"}) or label_replace(vector(0), \"staking_address\", \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"\", \"\")))",
         "hide": 2,
         "includeAll": false,
         "label": "Staking contract",
@@ -3260,14 +3255,15 @@
         "options": [],
         "query": {
           "qryType": 3,
-          "query": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"})))",
+          "query": "query_result(topk(1, count by (staking_address)(genlayer_node_info{network=\"$network\"}) or label_replace(vector(0), \"staking_address\", \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"\", \"\")))",
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
         "regex": "/staking_address=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query"
+        "type": "query",
+        "description": "Staking proxy for $network, read from node telemetry (topk self-corrects a mislabeled node); falls back to the Bradbury Phase 2 staking proxy 0xD8fBa96C0dBB0257028dBc0107060b958e5c7113 while no node reports."
       },
       {
         "current": {},
@@ -3292,30 +3288,6 @@
         "regex": "/version=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 8,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "grafanacloud-prom"
-        },
-        "definition": "query_result(max(epoch_monitor_current_epoch{network=\"$network\"}))",
-        "hide": 2,
-        "includeAll": false,
-        "label": "Current epoch",
-        "multi": false,
-        "name": "current_epoch",
-        "options": [],
-        "query": {
-          "qryType": 3,
-          "query": "query_result(max(epoch_monitor_current_epoch{network=\"$network\"}))",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/\\}\\s+([0-9]+)/",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       }
     ]
