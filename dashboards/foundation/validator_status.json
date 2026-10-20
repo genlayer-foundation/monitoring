@@ -2310,8 +2310,8 @@
         "showHeader": true,
         "sortBy": [
           {
-            "desc": true,
-            "displayName": "Sev"
+            "desc": false,
+            "displayName": "Name"
           }
         ]
       },

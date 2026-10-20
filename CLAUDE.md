@@ -176,6 +176,15 @@ anything the MCP doesn't support.
     field forces the intended `pref_name > validator_name > address` order.
     `firstNotNull` **does work on string fields** (verified). The three source
     columns are `excludeByName`-hidden; `Name` is organize index 1.
+    **Default sort = `Name` ascending (2026-08-11)**, set via the panel's
+    `options.sortBy` (`{desc: false, displayName: "Name"}`), NOT the `sortBy`
+    transform. The transform at chain index 31 still sorts by `severity` desc, and
+    must stay that way: it runs BEFORE `Name` exists (`Name` is built by the
+    calculateFields at 32-41 and re-typed to string by the trailing
+    `convertFieldType` at 43), so a transform-level sort on `Name` there would be a
+    no-op. The table's own sort runs last on the rendered frame and wins. Sorting
+    by `Name` only behaves because of that `convertFieldType` — see the
+    reduceRow/NaN gotcha below; don't remove it.
     **(2026-07-28, "null" Names regression + fix)**: the `validator_name` field
     in this chain is supplied by target **D** — the 2026-07-10 fix had trimmed D
     to `max by (node, version)`, silently dropping it, so every reporting node
