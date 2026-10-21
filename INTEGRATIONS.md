@@ -24,11 +24,12 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Cadence**: per dashboard load + auto-refresh — 1m (`validator_status`, `validator_status_public`, `index`), 30s (`validator_profile`)
 - **We consume**: `network` (the portal key `bradbury2`, NOT the Grafana label — only displayed), `node` (lowercased validator address — the join key), `name`, `status`, `operator`, `account`, `account_name`, `explorer_url`, `linked`, `moniker`, `logo_uri`, `has_description`, plus synthetic `status:"missing"` rows
 - **Degrades**: the Infinity target returns no frame; the `joinByField` outer join still emits the Prometheus/Loki side, so roster-derived columns (`Name`, `Identity`, `Linked`, `In Portal`) go blank and roster stat panels read 0/No data. No retry, no cache, no alert.
-- **Consumed by 4 dashboards** (each declares its own copy of the target):
+- **Consumed by 5 dashboards** (each declares its own copy of the target):
   - `dashboards/foundation/validator_status.json:127` (7 targets: table `A` + stats `Total`/`Internal`/`Portal: active`/`Inactive`/`Banned`/`Missing`)
   - `dashboards/foundation/validator_status_public.json:145` (7 targets — one network section)
   - `dashboards/foundation/validator_profile.json:176`
   - `dashboards/foundation/index.json:221` (validator directory table, `parser: backend`; its profile deep-link hardcodes `var-network=bradbury-phase2`)
+  - `dashboards/foundation/validator_overview.json:213` (`Monitoring Overview` table `A`: one row per operator, `node` + name; replaced the dead explorer `/api/v1/validators` source on 2026-10-21 — no explorer serves Phase 2)
 
 ### GenLayer testnet chain — Bradbury Phase 2 (public RPC, Arbitrum Orbit / Conduit)
 - **Direction**: read
@@ -122,7 +123,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Cadence**: per dashboard load
 - **We consume**: object names, to derive the latest published `genlayer-node` release tag
 - **Degrades**: unknown (third-party board). Note the Foundation dashboards deliberately do **not** do this — their "latest version" is the max version seen in the fleet via the `$latest_version` Prometheus variable (`CLAUDE.md:436`).
-- **Code**: `dashboards/5ElementsNodes/WOS | Internal.json:800`
+- **Code**: `dashboards/5ElementsNodes/WOS | Internal.json:800`, `dashboards/foundation/validator_overview.json:638` (`$allowed_versions_regex` — this Foundation board does derive versions from the bucket)
 
 ### Grafana `/api/ds/query` — self-call (5Elements dashboard only)
 - **Direction**: read

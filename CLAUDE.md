@@ -155,6 +155,12 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     loop editing the Epoch stat thinking it was the table, and misread a stale
     image renderer as "caching" (busting cache via `theme=light` confirmed the
     table was simply never being changed).
+- `genlayer-foundation-overview-v4` → `validator_overview.json` — display title
+  **"GenLayer Foundation | Validator Overview"**; first committed 2026-10-21 (was
+  UI-only). Table names come from the portal roster (`bradbury2`), Metrics/Logs from
+  native Prometheus/Loki targets joined on lowercased `node`. Until v7 it called
+  Grafana's `/api/ds/query` with a service-account token pasted into the Infinity
+  header — never put a credential in a dashboard; use the native datasources.
 - `gl-validator-status` → `validator_status.json` — display title **"Testnet |
   Validator Status"** (formerly "Wall of Shame" — display titles renamed 2026-07
   for validator-facing neutrality; uid + filenames + generator renamed too on
