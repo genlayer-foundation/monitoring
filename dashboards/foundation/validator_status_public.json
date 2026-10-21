@@ -216,31 +216,6 @@
             "byField": "node",
             "mode": "outer"
           }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "filters": [
-              {
-                "config": {
-                  "id": "equal",
-                  "options": {
-                    "value": "bradbury-phase2"
-                  }
-                },
-                "fieldName": "network A"
-              },
-              {
-                "config": {
-                  "id": "isNull",
-                  "options": {}
-                },
-                "fieldName": "network A"
-              }
-            ],
-            "match": "any",
-            "type": "include"
-          }
         }
       ],
       "type": "stat"
@@ -1985,31 +1960,6 @@
           "options": {
             "byField": "node",
             "mode": "outer"
-          }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "filters": [
-              {
-                "config": {
-                  "id": "equal",
-                  "options": {
-                    "value": "bradbury-phase2"
-                  }
-                },
-                "fieldName": "network A"
-              },
-              {
-                "config": {
-                  "id": "isNull",
-                  "options": {}
-                },
-                "fieldName": "network A"
-              }
-            ],
-            "match": "any",
-            "type": "include"
           }
         },
         {
