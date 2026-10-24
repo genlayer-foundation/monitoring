@@ -161,6 +161,8 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   native Prometheus/Loki targets joined on lowercased `node`. Until v7 it called
   Grafana's `/api/ds/query` with a service-account token pasted into the Infinity
   header — never put a credential in a dashboard; use the native datasources.
+  Default `network` is `bradbury-phase2` (was `bradbury-phase1` until 2026-10-24);
+  the hidden `explorer_url` lookup maps it to `https://scan.testnet-chain.genlayer.com`.
 - `gl-validator-status` → `validator_status.json` — display title **"Testnet |
   Validator Status"** (formerly "Wall of Shame" — display titles renamed 2026-07
   for validator-facing neutrality; uid + filenames + generator renamed too on
@@ -230,15 +232,26 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     field forces the intended `pref_name > validator_name > address` order.
     `firstNotNull` **does work on string fields** (verified). The three source
     columns are `excludeByName`-hidden; `Name` is organize index 1.
-    **Default sort = `Name` ascending (2026-08-11)**, set via the panel's
-    `options.sortBy` (`{desc: false, displayName: "Name"}`), NOT the `sortBy`
-    transform. The transform at chain index 31 still sorts by `severity` desc, and
-    must stay that way: it runs BEFORE `Name` exists (`Name` is built by the
-    calculateFields at 32-41 and re-typed to string by the trailing
-    `convertFieldType` at 43), so a transform-level sort on `Name` there would be a
-    no-op. The table's own sort runs last on the rendered frame and wins. Sorting
-    by `Name` only behaves because of that `convertFieldType` — see the
-    reduceRow/NaN gotcha below; don't remove it.
+    **Default sort = Health severity (2026-10-24, replaced the 2026-08-11 `Name`
+    sort)**: the panel's `options.sortBy` is now EMPTY on purpose — the table's own
+    sort runs last on the rendered frame and used to override the `severity`
+    transform sort with `Name`. With it empty, the `sortBy` transform (`severity`
+    desc) is the default order; clicking a header still sorts. `severity` now
+    includes `hrank_s` = portal health rank × 1e14 (red 5 > orange 4 > yellow 3 >
+    gray 2 > green 1 > absent 0), which dominates every older component
+    (`mis_s` 1e13 …), so rows sort by Health first and by the old worst-first
+    signals within a colour. The `sortBy` transform only takes ONE field, hence one
+    combined number. Sorting by `Name` (header click) only behaves because of the
+    trailing `convertFieldType` — see the reduceRow/NaN gotcha below; don't remove it.
+  - **`Health` column (2026-10-24, `testnet/HEALTH-STATUS-PLAN.md`)**: the
+    portal's unified verdict, displayed, never computed here. Query A's jq turns
+    the roster's `health` object into `health_txt` = `"<color>|<label>"` (label
+    falls back to the color; `-` when `health` is absent or not an object) and
+    `hrank` (numeric rank above), then `del(.health)`. Overrides colour the cell
+    with regex mappings `^red\|(.*)$` → red, text `$1` (same for orange / yellow /
+    `gr[ae]y` → grey / green). Organize index 2 (right after `Name`). Until the
+    portal deploys the field every row reads `-` and `hrank` is 0, so the old
+    worst-first order is unchanged.
     **(2026-07-28, "null" Names regression + fix)**: the `validator_name` field
     in this chain is supplied by target **D** — the 2026-07-10 fix had trimmed D
     to `max by (node, version)`, silently dropping it, so every reporting node
@@ -268,7 +281,8 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     Note `portal` linkage is NOT part of Identity — it has its own `Linked`
     column. After the join they're `identity A` / `linked_txt A`, renamed
     `Identity` / `Linked`, colored via mappings (green / grey `-` / regex
-    `(missing:.*)` orange / `NOT LINKED` red). Until PR #881 reaches production
+    `(missing:.*)` yellow / `NOT LINKED` yellow — both were orange/red until
+    2026-10-24, aligned with the shared health rule table). Until PR #881 reaches production
     both columns show `-` everywhere by design. (An earlier backend-computed
     `identity_missing` field was scrapped — verdict logic belongs in Grafana.)
   - **GOTCHA — Infinity `columns` whitelist eats jq-added fields**: table target
@@ -306,7 +320,16 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     `getAllQuarantinedValidators(0,100)` (`0x510a6f26`). On Phase 2 a quarantined
     validator is NOT in the selectable set (aflag=0, qflag=1 → `2`); under the old
     `activeValidators()` it was (→ `3`). Both map to `quarantined`, and
-    **quarantine takes precedence** in the label. Encoded as `PartCode = aflag + 2*qflag` (aflag/qflag =
+    **quarantine takes precedence** in the label. Since 2026-10-24 `Q` also emits
+    `onchain_perm` (the `permanentlyBanned` word) → `pflag`, `p8 = 8*pflag` is added
+    to `PartCode`, and `10`/`11` map to red **no longer participating**; `0`/null
+    (not participating) is now **red** (was grey) per the rule table. Missing
+    Metrics/Logs (`m1`/`m3`) are now gated on `live1 = max(onchain_active E,
+    onchain_quarantined Q) - pflag` instead of `onchain_active E`, so quarantined
+    nodes show OFF too (permanently quarantined ones don't), and OFF is yellow
+    (was red). `universalone` also includes `onchain_quarantined Q` so a
+    quarantined-only row gets a `zeroU`. The `Not reporting` STATS are unchanged
+    (still on-chain active only). Encoded as `PartCode = aflag + 2*qflag` (aflag/qflag =
     reduceRow-sum of `onchain_active E` / `onchain_quarantined Q` with `zeroU`):
     `1 → active` (green), `2`/`3 → quarantined` (orange), `0`/null →
     `not participating` (grey, e.g. reporting-but-not-in-set spectators like
