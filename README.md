@@ -11,6 +11,32 @@ GenLayer uses Grafana Cloud for comprehensive monitoring and alerting across the
 - Monitoring documentation
 - Grafana dashboard configurations (when added)
 
+## Keep in sync — validator health
+
+Three systems show a validator's health: the **portal** (`portal/portal`), these
+**Grafana** dashboards, and the **Deckard** support bot (`deckard-testnet-agent`).
+They must show the same overall colour for the same node.
+
+- **The portal's rule table is canonical.** Until it lands in the portal repo, the
+  table lives in `testnet/HEALTH-STATUS-PLAN.md` (the parent `testnet` repo). When
+  the portal publishes its copy, point this link at it.
+- **Grafana displays the portal's verdict; it does not compute its own.** The
+  `Health` column on `validator_status.json` and the generated
+  `validator_status_public.json` renders the roster's `health.color` /
+  `health.label` from `GET /api/v1/validators/wallets/grafana/?network=bradbury2`,
+  and the table sorts by it (red > orange > yellow > gray > green). No `health`
+  field yet → the column shows `-` and the table falls back to its own worst-first
+  order.
+- **Per-column colours stay, but follow the same table**: identity missing,
+  not linked and missing metrics/logs are yellow; quarantined is orange; inactive
+  ("not participating") and permanently quarantined ("no longer participating")
+  are red; blocks behind is green < 5, orange 5–99, red ≥ 100.
+- **Deckard must agree** with the portal's verdict (`/status`, the ops console and
+  notifications).
+- A change to the rule table changes all three repos — portal first, then Grafana
+  and Deckard in the same round. Regenerate the public board after editing the
+  internal one: `python3 scripts/build_public_validator_status.py`.
+
 ## Infrastructure
 
 ### Grafana Cloud Stack

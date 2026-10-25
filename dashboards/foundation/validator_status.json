@@ -31,7 +31,7 @@
       },
       "id": 100,
       "options": {
-        "content": "**Validator Status board — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.selectableValidators() set (strict consensus-duty eligibility; excludes quarantined; empty until the first epoch advance). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Not reporting (metrics)* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Not reporting (logs)* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active / quarantined / MISSING (graduated but no wallet on this network) / not participating (live, on-chain) · *Metrics/Logs* ON/OFF/- · *Node Version* + *Version* (OK/behind vs latest, no manual target). Rows sorted worst-first.",
+        "content": "**Validator Status board — $network.** Three summary rows reconcile who *should* be validating against what is *actually* observable, then the table drills down per validator.\n\n**Validators** — the roster & on-chain picture. *Total* = every known node (portal roster ∪ reporting ∪ on-chain active). The roster is deduped in the query itself: operators who re-registered keep only their live wallet(s); superseded inactive wallets are dropped, and a fully-inactive operator keeps one row. *Internal* = Foundation/Labs nodes (name contains 'GenLayer'). *On-chain active* = live Staking.selectableValidators() set (strict consensus-duty eligibility; excludes quarantined; empty until the first epoch advance). *Quarantined* = live on-chain Staking.getAllQuarantinedValidators() (NOT the portal). *Portal: active / Inactive / Banned* = portal roster status counts (Inactive is deduped the same way). *Missing* = graduated portal validators (past the waitlist) with no wallet linked on this network — either not running here at all, or running an unlinked wallet the portal can't attribute. Note: on-chain active often differs from portal active because the portal syncs periodically.\n\n**Metrics** — *Reporting (metrics)* = nodes emitting Prometheus in the last 5 min. *Not reporting (metrics)* = on-chain active but silent on metrics.\n\n**Logs** — *Reporting (logs)* = nodes shipping logs to Loki in the last 5 min. *Not reporting (logs)* = on-chain active but silent on logs.\n\n**Versions** (over the on-chain active set). *Version OK* = active nodes on the latest version seen in the wild ($latest_version). *Version behind* = active + reporting but on an older release. *Version unknown* = active but not reporting, so version can't be read. These three sum to the on-chain active count.\n\n**Table columns** — *Name* one merged display name, in priority order portal account name (tagged '(portal)') > on-chain identity moniker > metrics validator_name > node address · *Health* the portal's overall verdict for the node (green / yellow / orange / red / gray, with its label) — computed by the portal from the shared rule table, displayed here as-is; '-' = no verdict from the portal yet · *Identity* OK / missing: … (on-chain getIdentity() moniker/logo/description completeness, computed in this dashboard's query from the roster's raw fields; '-' = no wallet or backend not deployed yet) · *Linked* linked / NOT LINKED (whether the wallet is attributed to a portal account — raw fact from the roster; '-' = no wallet on this network or backend not deployed yet) · *In Portal* Yes/No (has a roster row on this network) · *Participating* active (green) / quarantined (orange) / no longer participating (red, permanently quarantined) / MISSING (red, graduated but no wallet on this network) / not participating (red) (live, on-chain) · *Metrics/Logs* ON/OFF/- (OFF = active or quarantined on-chain but silent; yellow) · *Node Version* + *Version* (OK/behind vs latest, no manual target). Per-column colours follow the same rule table (identity missing, not linked and missing telemetry are yellow). Rows sorted by Health (red > orange > yellow > gray > green), then worst-first by this board's own signals.",
         "mode": "markdown"
       },
       "title": "Legend",
@@ -1755,6 +1755,106 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "Health"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-": {
+                        "color": "#808080",
+                        "index": 0,
+                        "text": "-"
+                      }
+                    },
+                    "type": "value"
+                  },
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "#808080",
+                        "index": 1,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  },
+                  {
+                    "options": {
+                      "pattern": "^red\\|(.*)$",
+                      "result": {
+                        "color": "red",
+                        "index": 2,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  },
+                  {
+                    "options": {
+                      "pattern": "^orange\\|(.*)$",
+                      "result": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  },
+                  {
+                    "options": {
+                      "pattern": "^yellow\\|(.*)$",
+                      "result": {
+                        "color": "yellow",
+                        "index": 4,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  },
+                  {
+                    "options": {
+                      "pattern": "^gr[ae]y\\|(.*)$",
+                      "result": {
+                        "color": "#808080",
+                        "index": 5,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  },
+                  {
+                    "options": {
+                      "pattern": "^green\\|(.*)$",
+                      "result": {
+                        "color": "green",
+                        "index": 6,
+                        "text": "$1"
+                      }
+                    },
+                    "type": "regex"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "Node"
             },
             "properties": [
@@ -1818,7 +1918,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 140
+                "value": 180
               },
               {
                 "id": "custom.cellOptions",
@@ -1832,6 +1932,11 @@
                 "value": [
                   {
                     "options": {
+                      "0": {
+                        "color": "red",
+                        "index": 0,
+                        "text": "not participating"
+                      },
                       "1": {
                         "color": "green",
                         "index": 1,
@@ -1851,16 +1956,16 @@
                         "color": "red",
                         "index": 5,
                         "text": "MISSING"
-                      }
-                    },
-                    "type": "value"
-                  },
-                  {
-                    "options": {
-                      "0": {
-                        "color": "#808080",
-                        "index": 0,
-                        "text": "not participating"
+                      },
+                      "10": {
+                        "color": "red",
+                        "index": 6,
+                        "text": "no longer participating"
+                      },
+                      "11": {
+                        "color": "red",
+                        "index": 7,
+                        "text": "no longer participating"
                       }
                     },
                     "type": "value"
@@ -1869,7 +1974,7 @@
                     "options": {
                       "match": "null",
                       "result": {
-                        "color": "#808080",
+                        "color": "red",
                         "index": 4,
                         "text": "not participating"
                       }
@@ -1908,7 +2013,7 @@
                         "text": "-"
                       },
                       "1": {
-                        "color": "red",
+                        "color": "yellow",
                         "index": 1,
                         "text": "OFF"
                       },
@@ -1963,7 +2068,7 @@
                         "text": "-"
                       },
                       "1": {
-                        "color": "red",
+                        "color": "yellow",
                         "index": 1,
                         "text": "OFF"
                       },
@@ -2197,7 +2302,7 @@
                     "options": {
                       "pattern": "(missing:.*)",
                       "result": {
-                        "color": "orange",
+                        "color": "yellow",
                         "index": 3,
                         "text": "$1"
                       }
@@ -2236,7 +2341,7 @@
                         "text": "-"
                       },
                       "NOT LINKED": {
-                        "color": "red",
+                        "color": "yellow",
                         "index": 1,
                         "text": "NOT LINKED"
                       },
@@ -2283,12 +2388,7 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "Name"
-          }
-        ]
+        "sortBy": []
       },
       "pluginVersion": "11.3.0",
       "targets": [
@@ -2343,6 +2443,16 @@
               "selector": "pref_name",
               "text": "pref_name",
               "type": "string"
+            },
+            {
+              "selector": "health_txt",
+              "text": "health_txt",
+              "type": "string"
+            },
+            {
+              "selector": "hrank",
+              "text": "hrank",
+              "type": "number"
             }
           ],
           "datasource": {
@@ -2353,7 +2463,7 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then (.account_name + \" (portal)\") elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end)} | del(.linked, .moniker, .logo_uri, .has_description))",
+          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then (.account_name + \" (portal)\") elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
@@ -2465,6 +2575,11 @@
               "selector": "onchain_quarantined",
               "text": "onchain_quarantined",
               "type": "number"
+            },
+            {
+              "selector": "onchain_perm",
+              "text": "onchain_perm",
+              "type": "number"
             }
           ],
           "datasource": {
@@ -2476,7 +2591,7 @@
           "method": "POST",
           "parser": "jq-backend",
           "refId": "Q",
-          "root_selector": "def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end));\n(map(select(.id==1)) | .[0].result | ltrimstr(\"0x\") | hexval) as $cur\n| (map(select(.id==2)) | .[0].result | ltrimstr(\"0x\") | .[128:]) as $h\n| [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ]\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))\n| map(select(.perm or (.until_epoch > $cur)))\n| map({node: .node, onchain_quarantined: 1})",
+          "root_selector": "def hexval: ascii_downcase | ltrimstr(\"0\") | explode | reduce .[] as $c (0; . * 16 + (if $c >= 48 and $c <= 57 then $c - 48 else $c - 87 end));\n(map(select(.id==1)) | .[0].result | ltrimstr(\"0x\") | hexval) as $cur\n| (map(select(.id==2)) | .[0].result | ltrimstr(\"0x\") | .[128:]) as $h\n| [ range(0; ($h|length)/192) as $i | {node: (\"0x\" + ($h[$i*192+24:$i*192+64] | ascii_downcase)), until_epoch: ($h[$i*192+64:$i*192+128] | hexval), perm: (($h[$i*192+128:$i*192+192] | hexval) > 0)} ]\n| map(select(.node != \"0x0000000000000000000000000000000000000000\"))\n| map(select(.perm or (.until_epoch > $cur)))\n| map({node: .node, onchain_quarantined: 1, onchain_perm: (if .perm then 1 else 0 end)})",
           "source": "url",
           "type": "json",
           "url": "https://rpc.testnet-chain.genlayer.com",
@@ -2532,7 +2647,8 @@
               "include": [
                 "onchain_active E",
                 "repone",
-                "rone A"
+                "rone A",
+                "onchain_quarantined Q"
               ],
               "reducer": "max"
             },
@@ -2550,6 +2666,65 @@
             },
             "mode": "binary",
             "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "chainone",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "onchain_active E",
+                "onchain_quarantined Q",
+                "zeroU"
+              ],
+              "reducer": "max"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "pflag",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "onchain_perm Q",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "live1",
+            "replaceFields": false,
+            "mode": "binary",
+            "binary": {
+              "left": "chainone",
+              "operator": "-",
+              "right": "pflag"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "hrank0",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "hrank A",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            }
           }
         },
         {
@@ -2603,7 +2778,7 @@
             "binary": {
               "left": "notrep",
               "operator": "*",
-              "right": "onchain_active E"
+              "right": "live1"
             },
             "mode": "binary",
             "replaceFields": false
@@ -2712,7 +2887,7 @@
             "binary": {
               "left": "notlog",
               "operator": "*",
-              "right": "onchain_active E"
+              "right": "live1"
             },
             "mode": "binary",
             "replaceFields": false
@@ -2888,6 +3063,19 @@
         {
           "id": "calculateField",
           "options": {
+            "alias": "hrank_s",
+            "replaceFields": false,
+            "mode": "binary",
+            "binary": {
+              "left": "hrank0",
+              "operator": "*",
+              "right": "100000000000000"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
             "alias": "severity",
             "mode": "reduceRow",
             "reduce": {
@@ -2897,7 +3085,8 @@
                 "m3_s",
                 "ver_s",
                 "Value #B",
-                "mis_s"
+                "mis_s",
+                "hrank_s"
               ],
               "reducer": "sum"
             },
@@ -2999,13 +3188,27 @@
         {
           "id": "calculateField",
           "options": {
+            "alias": "p8",
+            "replaceFields": false,
+            "mode": "binary",
+            "binary": {
+              "left": "pflag",
+              "operator": "*",
+              "right": "8"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
             "alias": "PartCode",
             "mode": "reduceRow",
             "reduce": {
               "include": [
                 "aflag",
                 "q2",
-                "mis4"
+                "mis4",
+                "p8"
               ],
               "reducer": "sum"
             },
@@ -3113,22 +3316,31 @@
               "validator_name": true,
               "ver_s": true,
               "zeroU": true,
-              "node_last": true
+              "node_last": true,
+              "hrank A": true,
+              "chainone": true,
+              "pflag": true,
+              "live1": true,
+              "hrank0": true,
+              "hrank_s": true,
+              "p8": true,
+              "onchain_perm Q": true
             },
             "indexByName": {
               "#": 0,
-              "LogsCode": 8,
-              "MetricsCode": 7,
               "Name": 1,
-              "PartCode": 6,
-              "Value #B": 11,
-              "VersionCode": 9,
-              "identity A": 2,
-              "linked_txt A": 3,
-              "network A": 5,
-              "node": 4,
-              "severity": 12,
-              "version": 10
+              "health_txt A": 2,
+              "identity A": 3,
+              "linked_txt A": 4,
+              "node": 5,
+              "network A": 6,
+              "PartCode": 7,
+              "MetricsCode": 8,
+              "LogsCode": 9,
+              "VersionCode": 10,
+              "version": 11,
+              "Value #B": 12,
+              "severity": 13
             },
             "renameByName": {
               "LogsCode": "Logs",
@@ -3141,7 +3353,8 @@
               "network A": "In Portal",
               "node": "Node",
               "severity": "Sev",
-              "version": "Node Version"
+              "version": "Node Version",
+              "health_txt A": "Health"
             }
           }
         },
