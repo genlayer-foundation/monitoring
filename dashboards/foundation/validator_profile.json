@@ -1,1968 +1,4747 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
+ "uid": "gl-validator-profile",
+ "title": "Testnet | Validator Profile",
+ "tags": [
+  "validator",
+  "profile"
+ ],
+ "timezone": "browser",
+ "editable": true,
+ "schemaVersion": 39,
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "refresh": "1m",
+ "graphTooltip": 1,
+ "description": "One validator: who it is, whether it is OK and what to fix, earnings, work done, why it went wrong, and node internals. Design: VALIDATOR-PROFILE-PLAN.md",
+ "links": [
+  {
+   "title": "Open in explorer",
+   "type": "link",
+   "url": "https://scan.bradbury.genlayer.com/address/${node}",
+   "targetBlank": true
   },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 325752100110336,
-  "links": [],
-  "panels": [
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "LIVE on-chain moniker read directly from the validator wallet contract ($node) via getIdentity() (eth_call 0x36afc6fa), ABI-decoded in the jq-backend parser.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
-          },
-          "noValue": "n/a",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 0,
-        "y": 0
-      },
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "On-chain",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "onchain_name",
-              "text": "On-chain",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "format": "table",
-          "parser": "jq-backend",
-          "refId": "A",
-          "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\n.result | ltrimstr(\"0x\") as $h\n| ( $h[64:128] | h2i ) as $moff\n| (64 + $moff*2) as $lp\n| ( $h[$lp:$lp+64] | h2i ) as $len\n| $h[$lp+64 : $lp+64 + $len*2]\n| [ range(0; length/2) as $i | .[$i*2:$i*2+2] | h2i ] | implode\n| { onchain_name: . }",
-          "source": "url",
-          "type": "json",
-          "url": "https://rpc.testnet-chain.genlayer.com",
-          "url_options": {
-            "body_content_type": "application/json",
-            "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${node}\",\"data\":\"0x36afc6fa\"},\"latest\"]}",
-            "headers": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "method": "POST"
-          }
-        }
-      ],
-      "title": "On-chain Name (live getIdentity)",
-      "type": "stat"
+  {
+   "title": "Validator Status",
+   "type": "link",
+   "url": "/d/gl-validator-status",
+   "targetBlank": false
+  }
+ ],
+ "templating": {
+  "list": [
+   {
+    "name": "network",
+    "type": "custom",
+    "query": "bradbury-phase2",
+    "current": {
+     "text": "bradbury-phase2",
+     "value": "bradbury-phase2"
     },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "Portal / roster display name (account_name) for the selected validator, from the Foundation roster (node matched case-insensitively).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
-          },
-          "noValue": "n/a",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 8,
-        "y": 0
-      },
-      "id": 23,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "Portal",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "account_name",
-              "text": "Portal",
-              "type": "string"
-            },
-            {
-              "selector": "node",
-              "text": "node",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "filterExpression": "node =~ '(?i)^${node}$'",
-          "format": "table",
-          "parser": "backend",
-          "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
-        }
-      ],
-      "title": "Portal Name (account_name)",
-      "type": "stat"
+    "hide": 2
+   },
+   {
+    "name": "node",
+    "label": "Validator",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
     },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+      "url_options": {
+       "method": "GET",
+       "data": ""
       },
-      "description": "Metrics identity: the Prometheus validator_name label reported by the selected node ($validator_name template variable).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "purple",
-            "mode": "fixed"
-          },
-          "noValue": "n/a",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "purple",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "id": 24,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "validator_name",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "genlayer_node_info{network=\"$network\", node=\"$node\"}",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Metrics Name ($validator_name)",
-      "type": "stat"
+      "root_selector": "[.[] | select(.node | startswith(\"0x\")) | {text: ((.name // .moniker // .node) + \" \u2014 \" + .node[0:10]), value: .node}] | unique_by(.value) | sort_by(.text | ascii_downcase)"
+     }
     },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "filterable": false
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Explorer"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "targetBlank": true,
-                    "title": "Open Explorer",
-                    "url": "${__value.text}"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Status"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "active": {
-                        "color": "green",
-                        "index": 0
-                      },
-                      "inactive": {
-                        "color": "red",
-                        "index": 1
-                      },
-                      "quarantined": {
-                        "color": "orange",
-                        "index": 2
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 24,
-        "x": 0,
-        "y": 12
-      },
-      "id": 1,
-      "options": {
-        "showHeader": true
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "name",
-              "text": "Name",
-              "type": "string"
-            },
-            {
-              "selector": "account_name",
-              "text": "Account",
-              "type": "string"
-            },
-            {
-              "selector": "status",
-              "text": "Status",
-              "type": "string"
-            },
-            {
-              "selector": "operator",
-              "text": "Operator",
-              "type": "string"
-            },
-            {
-              "selector": "node",
-              "text": "Node",
-              "type": "string"
-            },
-            {
-              "selector": "explorer_url",
-              "text": "Explorer",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "filterExpression": "node =~ '(?i)^${node}$'",
-          "format": "table",
-          "parser": "backend",
-          "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
-        }
-      ],
-      "title": "Identity / Roster (node = $node)",
-      "type": "table"
+    "refresh": 1,
+    "current": {
+     "text": "GenLayer Foundation \u2014 0xb0dab7fc",
+     "value": "0xb0dab7fc62e276f5be045b7ec3674f7168623342"
     },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto"
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 24,
-        "x": 0,
-        "y": 16
-      },
-      "id": 2,
-      "options": {
-        "showHeader": true
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "genlayer_node_info{network=\"$network\", node=\"$node\"}",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Node Info",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value": true,
-              "__name__": true,
-              "address_manager": true,
-              "exported_network": true,
-              "instance": true,
-              "job": true,
-              "network": true,
-              "node": true,
-              "protocol_version": true,
-              "rpc_url": true
-            },
-            "indexByName": {},
-            "renameByName": {
-              "commit": "Commit",
-              "genvm_version": "GenVM Version",
-              "staking_address": "Staking Address",
-              "validator_name": "Validator",
-              "version": "Node Version"
-            }
-          }
-        }
-      ],
-      "type": "table"
+    "sort": 0
+   },
+   {
+    "name": "node_hex",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
     },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+      "url_options": {
+       "method": "GET",
+       "data": ""
       },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 0,
-                  "text": "Not Synced"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 1,
-                  "text": "Synced"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red"
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 26
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_synced{network=\"$network\", node=\"$node\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Synced",
-      "type": "stat"
+      "root_selector": "[{v: ((\"${node}\" | ascii_downcase) | ltrimstr(\"0x\"))}] "
+     }
     },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 26
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_blocks_behind{network=\"$network\", node=\"$node\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Blocks Behind",
-      "type": "stat"
+    "refresh": 1,
+    "hide": 2
+   },
+   {
+    "name": "p_name",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
     },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue"
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 8,
-        "y": 26
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_latest_block{network=\"$network\", node=\"$node\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Latest Block",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          },
-          "unit": "dtdurations"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 13,
-        "y": 26
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_uptime_seconds{network=\"$network\", node=\"$node\", component=\"node\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Uptime",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red"
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 26
-      },
-      "id": 7,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_genvm_permits_current{network=\"$network\", node=\"$node\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "GenVM Permits",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "red",
-            "mode": "fixed"
-          },
-          "custom": {
-            "fillOpacity": 20,
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 30
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_blocks_behind{network=\"$network\", node=\"$node\"})",
-          "legendFormat": "Blocks Behind",
-          "refId": "A"
-        }
-      ],
-      "title": "Blocks Behind (history)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10,
-            "lineWidth": 2
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 30
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_latest_block{network=\"$network\", node=\"$node\"})",
-          "legendFormat": "Latest Block",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_synced_block{network=\"$network\", node=\"$node\"})",
-          "legendFormat": "Synced Block",
-          "refId": "B"
-        }
-      ],
-      "title": "Latest vs Synced Block",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "purple",
-            "mode": "fixed"
-          },
-          "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
-          },
-          "unit": "opm"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 38
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(rate(genlayer_node_transactions_activated_total{network=\"$network\", node=\"$node\"}[5m])) * 60",
-          "legendFormat": "Activated/min",
-          "refId": "A"
-        }
-      ],
-      "title": "Transactions Activated (rate/min)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
-          },
-          "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
-          },
-          "unit": "opm"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 38
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(rate(genlayer_node_genvm_executions{network=\"$network\", node=\"$node\"}[5m])) * 60",
-          "legendFormat": "Executions/min",
-          "refId": "A"
-        }
-      ],
-      "title": "GenVM Executions (rate/min)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 10,
-            "lineWidth": 2
-          },
-          "max": 100,
-          "min": 0,
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 46
-      },
-      "id": 12,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "sum(max by(component)(genlayer_node_cpu_usage_percent{network=\"$network\", node=\"$node\"}))",
-          "legendFormat": "CPU %",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "sum(max by(component)(genlayer_node_memory_percent{network=\"$network\", node=\"$node\"}))",
-          "legendFormat": "Memory %",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_disk_usage_percent{network=\"$network\", node=\"$node\"})",
-          "legendFormat": "Disk %",
-          "refId": "C"
-        }
-      ],
-      "title": "CPU / Memory / Disk (%)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-logs"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 54
-      },
-      "id": 13,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"genlayer-node\", network=\"$network\", validator_name=\"$validator_name\"} | json | level=\"error\" [$__range]))",
-          "instant": true,
-          "queryType": "instant",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Errors (range)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-logs"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 20,
-        "x": 4,
-        "y": 54
-      },
-      "id": 15,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
-          },
-          "editorMode": "code",
-          "expr": "{job=\"genlayer-node\", network=\"$network\", validator_name=\"$validator_name\"} | json | level=\"error\"",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Recent Error Logs",
-      "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-logs"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "orange",
-                "value": 100
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 58
-      },
-      "id": 14,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"genlayer-node\", network=\"$network\", validator_name=\"$validator_name\"} | json | level=\"warn\" [$__range]))",
-          "instant": true,
-          "queryType": "instant",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Warnings (range)",
-      "type": "stat"
-    },
-    {
-      "gridPos": {
-        "h": 2,
-        "w": 24,
-        "x": 0,
-        "y": 20
-      },
-      "id": 16,
-      "options": {
-        "content": "### Validator status\nLive health of the selected validator \u2014 on-chain status, metrics & logs heartbeat, and version vs fleet.",
-        "mode": "markdown"
-      },
-      "transparent": true,
-      "type": "text"
-    },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "Foundation roster on-chain status for the selected validator (node matched case-insensitively).",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "active": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "active"
-                },
-                "banned": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "banned"
-                },
-                "inactive": {
-                  "color": "red",
-                  "index": 3,
-                  "text": "inactive"
-                },
-                "quarantined": {
-                  "color": "orange",
-                  "index": 1,
-                  "text": "quarantined"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "noValue": "unknown",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 0,
-        "y": 22
-      },
-      "id": 17,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "Status",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "status",
-              "text": "Status",
-              "type": "string"
-            },
-            {
-              "selector": "node",
-              "text": "node",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "filterExpression": "node =~ '(?i)^${node}$'",
-          "format": "table",
-          "parser": "backend",
-          "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
-        }
-      ],
-      "title": "On-chain Status",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "description": "ON if the selected node is currently reporting Prometheus metrics, else OFF.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "from": 1,
-                "result": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "ON"
-                },
-                "to": 1000000000
-              },
-              "type": "range"
-            },
-            {
-              "options": {
-                "from": 0,
-                "result": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "OFF"
-                },
-                "to": 0
-              },
-              "type": "range"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 5,
-        "y": 22
-      },
-      "id": 18,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "count(genlayer_node_info{network=\"$network\", node=\"$node\"}) or vector(0)",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Metrics (ON/OFF)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "grafanacloud-logs"
-      },
-      "description": "ON if the selected validator emitted logs in the last 5m, else OFF.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [
-            {
-              "options": {
-                "from": 1,
-                "result": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "ON"
-                },
-                "to": 1000000000
-              },
-              "type": "range"
-            },
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "OFF"
-                }
-              },
-              "type": "value"
-            },
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "color": "red",
-                  "index": 2,
-                  "text": "OFF"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "noValue": "OFF",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 9,
-        "y": 22
-      },
-      "id": 19,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "grafanacloud-logs"
-          },
-          "editorMode": "code",
-          "expr": "sum(count_over_time({job=\"genlayer-node\"} | json | network=\"$network\" | validator_name=\"$validator_name\" [5m]))",
-          "instant": true,
-          "queryType": "instant",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Logs (ON/OFF)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "description": "Node software version reported by the selected node.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
-          },
-          "noValue": "n/a",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 13,
-        "y": 22
-      },
-      "id": 20,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "version",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "expr": "max(genlayer_node_info{network=\"$network\", node=\"$node\"}) by (version)",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Node Version",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafanacloud-prom"
-      },
-      "description": "Whether the selected node runs the fleet's latest version ($latest_version) on this network. Green = up to date; red = behind, showing the latest version to upgrade to. 'n/a' if the node isn't reporting.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "fixed"
-          },
-          "mappings": [
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "(Up to date)",
-                "result": {
-                  "text": "$1",
-                  "color": "green",
-                  "index": 0
-                }
-              }
-            },
-            {
-              "type": "regex",
-              "options": {
-                "pattern": "(Behind.*)",
-                "result": {
-                  "text": "$1",
-                  "color": "red",
-                  "index": 1
-                }
-              }
-            }
-          ],
-          "noValue": "n/a",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 19,
-        "y": 22
-      },
-      "id": 21,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/^disp$/",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafanacloud-prom"
-          },
-          "editorMode": "code",
-          "expr": "label_replace(count(genlayer_node_info{network=\"$network\", node=\"$node\", version=\"$latest_version\"}), \"disp\", \"Up to date\", \"\", \"\") or label_replace((count(genlayer_node_info{network=\"$network\", node=\"$node\"}) >= bool 1) * on() group_left() absent(genlayer_node_info{network=\"$network\", node=\"$node\", version=\"$latest_version\"}), \"disp\", \"Behind \u2192 $latest_version\", \"\", \"\")",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Version Status",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "LIVE on-chain avatar (logoUri) from the validator wallet contract ($node) via getIdentity() (eth_call 0x36afc6fa). GitHub blob URLs are rewritten to raw.githubusercontent so they render as an image.",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "center",
-            "cellOptions": {
-              "type": "image"
-            },
-            "filterable": false
-          },
-          "noValue": "no logo on-chain"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 4,
-        "x": 0,
-        "y": 4
-      },
-      "id": 25,
-      "options": {
-        "cellHeight": "lg",
-        "showHeader": false
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "logo",
-              "text": "logo",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "format": "table",
-          "parser": "jq-backend",
-          "refId": "A",
-          "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| (fld($h;1)) as $logo\n| { logo: ($logo | if test(\"^https?://github.com/[^/]+/[^/]+/blob/\") then (sub(\"://github.com/\";\"://raw.githubusercontent.com/\") | sub(\"/blob/\";\"/\")) else . end) }",
-          "source": "url",
-          "type": "json",
-          "url": "https://rpc.testnet-chain.genlayer.com",
-          "url_options": {
-            "body_content_type": "application/json",
-            "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${node}\",\"data\":\"0x36afc6fa\"},\"latest\"]}",
-            "headers": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "method": "POST"
-          }
-        }
-      ],
-      "title": "On-chain Avatar",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "LIVE on-chain identity links (getIdentity, eth_call 0x36afc6fa) read directly from the validator wallet contract ($node).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "text",
-            "mode": "fixed"
-          },
-          "noValue": "\u2014",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 4,
-        "y": 4
-      },
-      "id": 26,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "/.*/",
-          "values": false
-        },
-        "textMode": "value_and_name",
-        "wideLayout": true
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "Website",
-              "text": "Website",
-              "type": "string"
-            },
-            {
-              "selector": "Twitter",
-              "text": "Twitter",
-              "type": "string"
-            },
-            {
-              "selector": "GitHub",
-              "text": "GitHub",
-              "type": "string"
-            },
-            {
-              "selector": "Email",
-              "text": "Email",
-              "type": "string"
-            },
-            {
-              "selector": "Telegram",
-              "text": "Telegram",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "format": "table",
-          "parser": "jq-backend",
-          "refId": "A",
-          "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| { Website: fld($h;2), Twitter: fld($h;5), GitHub: fld($h;7), Email: fld($h;4), Telegram: fld($h;6) }",
-          "source": "url",
-          "type": "json",
-          "url": "https://rpc.testnet-chain.genlayer.com",
-          "url_options": {
-            "body_content_type": "application/json",
-            "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${node}\",\"data\":\"0x36afc6fa\"},\"latest\"]}",
-            "headers": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "method": "POST"
-          }
-        }
-      ],
-      "title": "On-chain Links (live getIdentity)",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "yesoreyeram-infinity-datasource",
-        "uid": "grafanacloud-infinity"
-      },
-      "description": "LIVE on-chain description (getIdentity, eth_call 0x36afc6fa) from the validator wallet contract ($node).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "text",
-            "mode": "fixed"
-          },
-          "noValue": "\u2014",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 13,
-        "y": 4
-      },
-      "id": 27,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "Description",
-          "values": false
-        },
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "targets": [
-        {
-          "columns": [
-            {
-              "selector": "Description",
-              "text": "Description",
-              "type": "string"
-            }
-          ],
-          "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
-            "uid": "grafanacloud-infinity"
-          },
-          "format": "table",
-          "parser": "jq-backend",
-          "refId": "A",
-          "root_selector": "def h2i: reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 elif $c>=65 then $c-55 else $c-48 end));\ndef fld($h;$i): ($h[64+$i*64:128+$i*64]|h2i) as $off | (64+$off*2) as $lp | ($h[$lp:$lp+64]|h2i) as $len | ($h[$lp+64:$lp+64+$len*2] | [range(0;length/2) as $k | .[$k*2:$k*2+2] | h2i] | implode);\n(.result | ltrimstr(\"0x\")) as $h\n| { Description: fld($h;3) }",
-          "source": "url",
-          "type": "json",
-          "url": "https://rpc.testnet-chain.genlayer.com",
-          "url_options": {
-            "body_content_type": "application/json",
-            "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"${node}\",\"data\":\"0x36afc6fa\"},\"latest\"]}",
-            "headers": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "method": "POST"
-          }
-        }
-      ],
-      "title": "On-chain Description",
-      "type": "stat"
+    "refresh": 1,
+    "hide": 2,
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+      "url_options": {
+       "method": "GET",
+       "data": ""
+      },
+      "root_selector": "[{v: (.validator.metadata.name // \"\" | if . == \"\" then \"Unnamed validator\" else . end)}]"
+     }
     }
-  ],
-  "refresh": "30s",
-  "schemaVersion": 42,
-  "tags": [
-    "validator",
-    "genlayer",
-    "testnet"
-  ],
-  "templating": {
-    "list": [
-      {
-        "current": {
-          "selected": true,
-          "text": "bradbury-phase2",
-          "value": "bradbury-phase2"
-        },
-        "includeAll": false,
-        "label": "Network",
-        "multi": false,
-        "name": "network",
-        "options": [
-          {
-            "selected": true,
-            "text": "bradbury-phase2",
-            "value": "bradbury-phase2"
+   },
+   {
+    "name": "p_desc",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
+    },
+    "refresh": 1,
+    "hide": 2,
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+      "url_options": {
+       "method": "GET",
+       "data": ""
+      },
+      "root_selector": "[{v: (.validator.metadata.description // \"\" | if . == \"\" then \"No description set on-chain.\" else . end)}]"
+     }
+    }
+   },
+   {
+    "name": "p_logo",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
+    },
+    "refresh": 1,
+    "hide": 2,
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+      "url_options": {
+       "method": "GET",
+       "data": ""
+      },
+      "root_selector": "[{v: (.validator.metadata.image_url // \"\" | if . == \"\" then \"<div style=\\\"width:128px;height:128px;border-radius:18px;border:1px dashed #888;display:flex;align-items:center;justify-content:center;opacity:.6\\\">no logo</div>\" else \"<img src=\\\"\" + . + \"\\\" style=\\\"width:128px;height:128px;border-radius:18px;object-fit:cover\\\">\" end)}]"
+     }
+    }
+   },
+   {
+    "name": "p_links",
+    "type": "query",
+    "datasource": {
+     "type": "yesoreyeram-infinity-datasource",
+     "uid": "grafanacloud-infinity"
+    },
+    "refresh": 1,
+    "hide": 2,
+    "query": {
+     "queryType": "infinity",
+     "refId": "variable",
+     "infinityQuery": {
+      "refId": "variable",
+      "type": "json",
+      "source": "url",
+      "parser": "jq-backend",
+      "format": "table",
+      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+      "url_options": {
+       "method": "GET",
+       "data": ""
+      },
+      "root_selector": "[{v: (.validator.metadata as $m | [(if ($m.url // \"\") != \"\" then \"<a href=\\\"\" + $m.url + \"\\\" target=\\\"_blank\\\">\" + $m.url + \"</a>\" else empty end), (if ($m.twitter // \"\") != \"\" then \"X: \" + $m.twitter else empty end), (if ($m.github // \"\") != \"\" then \"GitHub: \" + $m.github else empty end), (if ($m.telegram // \"\") != \"\" then \"Telegram: \" + $m.telegram else empty end), (if ($m.email // \"\") != \"\" then $m.email else empty end)] | if length == 0 then \"No links set\" else join(\" &nbsp;\u00b7&nbsp; \") end)}]"
+     }
+    }
+   },
+   {
+    "name": "latest_version",
+    "type": "query",
+    "datasource": {
+     "type": "prometheus",
+     "uid": "grafanacloud-prom"
+    },
+    "hide": 2,
+    "refresh": 2,
+    "sort": 8,
+    "query": {
+     "qryType": 3,
+     "query": "query_result(count by (version)(genlayer_node_info{network=\"$network\"}))",
+     "refId": "StandardVariableQuery"
+    },
+    "regex": "/version=\"([^\"]+)\"/",
+    "current": {}
+   }
+  ]
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "row",
+   "title": "Profile",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "panels": []
+  },
+  {
+   "id": 2,
+   "type": "text",
+   "title": "",
+   "description": "",
+   "targets": [],
+   "datasource": null,
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "mode": "html",
+    "content": "\n<div style=\"display:flex;gap:28px;align-items:center;padding:8px 4px\">\n  ${p_logo:raw}\n  <div style=\"min-width:0\">\n    <div style=\"font-size:34px;font-weight:600;line-height:1.15\">${p_name:raw}</div>\n    <div style=\"font-size:16px;opacity:.85;margin:10px 0 12px 0;max-width:820px\">${p_desc:raw}</div>\n    <div style=\"font-size:14px\">${p_links:raw}</div>\n    <div style=\"font-family:monospace;font-size:12px;opacity:.6;margin-top:10px\">validator wallet ${node}</div>\n  </div>\n</div>"
+   },
+   "transparent": true,
+   "gridPos": {
+    "h": 8,
+    "w": 15,
+    "x": 0,
+    "y": 1
+   }
+  },
+  {
+   "id": 3,
+   "type": "table",
+   "title": "Facts",
+   "description": "Identity facts. Sources: chain `ValidatorJoin` event (since, initial stake), explorer `/address` (status, operator, owner), portal roster (portal link, identity completeness).",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "C",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://rpc.testnet-chain.genlayer.com",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n[.result[] | select((.data | ascii_downcase | .[90:130]) == \"${node_hex}\")] | first // {} | if .blockTimestamp then [{fact: \"Validator since\", value: ((.blockTimestamp | ltrimstr(\"0x\") | h2i) | strftime(\"%Y-%m-%d %H:%M UTC\"))}, {fact: \"Joined with\", value: (((.data | ltrimstr(\"0x\") | .[128:192] | h2i) / 1e18 | floor | tostring) + \" GEN self stake\")}] else [{fact: \"Validator since\", value: \"no join event found\"}] end",
+     "url_options": {
+      "method": "POST",
+      "body_type": "raw",
+      "body_content_type": "application/json",
+      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"fromBlock\": \"0xbb3a\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
+      "headers": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | [{fact: \"Status\", value: .status}, {fact: \"Operator\", value: (.operator_address | ascii_downcase)}, {fact: \"Owner\", value: (.owner_address | ascii_downcase)}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "B",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map([{fact: \"Portal\", value: (if .linked == true then (\"linked\" + (if (.account_name // \"\") != \"\" then \" \u2014 \" + .account_name else \"\" end)) elif .linked == false then \"NOT LINKED\" else \"-\" end)}, {fact: \"On-chain identity\", value: ([(if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end)] | if length == 0 then \"complete\" else \"missing: \" + join(\", \") end)}]) | add // []",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "fact"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 150
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "value"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(linked.*|complete|active)$",
+           "result": {
+            "text": "$1",
+            "color": "green",
+            "index": 0
+           }
           }
-        ],
-        "query": "bradbury-phase2",
-        "type": "custom"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "grafanacloud-prom"
-        },
-        "definition": "label_values(genlayer_node_info{network=\"$network\"}, validator_name)",
-        "includeAll": false,
-        "label": "Validator Name",
-        "multi": false,
-        "name": "validator_name",
-        "options": [],
-        "query": "label_values(genlayer_node_info{network=\"$network\"}, validator_name)",
-        "refresh": 1,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "grafanacloud-prom"
-        },
-        "definition": "label_values(genlayer_node_info{network=\"$network\", validator_name=\"$validator_name\"}, node)",
-        "includeAll": false,
-        "label": "Node",
-        "multi": false,
-        "name": "node",
-        "options": [],
-        "query": "label_values(genlayer_node_info{network=\"$network\", validator_name=\"$validator_name\"}, node)",
-        "refresh": 1,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "grafanacloud-prom"
-        },
-        "definition": "query_result(count by (version)(genlayer_node_info{network=\"$network\"}))",
-        "description": "Highest node version seen in the wild for $network (natural-sorted desc, so the current value is the max). Drives the up-to-date/behind check \u2014 no manual target.",
-        "hide": 2,
-        "includeAll": false,
-        "label": "Latest version",
-        "multi": false,
-        "name": "latest_version",
-        "options": [],
-        "query": {
-          "qryType": 3,
-          "query": "query_result(count by (version)(genlayer_node_info{network=\"$network\"}))",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 1,
-        "regex": "/version=\"([^\"]+)\"/",
-        "skipUrlSync": false,
-        "sort": 8,
-        "type": "query"
-      }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(NOT LINKED|missing.*|quarantined)$",
+           "result": {
+            "text": "$1",
+            "color": "orange",
+            "index": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       }
+      ]
+     }
     ]
+   },
+   "options": {
+    "showHeader": false,
+    "cellHeight": "sm"
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    }
+   ],
+   "gridPos": {
+    "h": 8,
+    "w": 9,
+    "x": 15,
+    "y": 1
+   }
   },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Validator for",
+   "description": "Time since the validator joined the network (its on-chain `ValidatorJoin` event). Source: chain, staking contract logs.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "J",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://rpc.testnet-chain.genlayer.com",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n[.result[] | select((.data | ascii_downcase | .[90:130]) == \"${node_hex}\")] | first // {} | [{since: ((.blockTimestamp // \"0x0\" | ltrimstr(\"0x\") | h2i) * 1000)}]",
+     "url_options": {
+      "method": "POST",
+      "body_type": "raw",
+      "body_content_type": "application/json",
+      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"fromBlock\": \"0xbb3a\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
+      "headers": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "dateTimeFromNow",
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^since$/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 0,
+    "y": 9
+   }
   },
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Testnet | Validator Profile",
-  "uid": "gl-validator-profile",
-  "version": 9,
-  "weekStart": ""
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Total stake",
+   "description": "Self + delegated stake, GEN. Source: explorer `/validators` (same number as the network board).",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18)}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^stake$/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 5,
+    "y": 9
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "Transactions",
+   "description": "Transactions this validator has taken part in. Source: explorer `/validators` `transaction_count`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {txs: (.transaction_count // 0)}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^txs$/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 10,
+    "y": 9
+   }
+  },
+  {
+   "id": 7,
+   "type": "stat",
+   "title": "Delegators",
+   "description": "Delegators staking with this validator. Source: explorer `/address`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | {d: (.delegators | length)}",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^d$/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 4,
+    "x": 15,
+    "y": 9
+   }
+  },
+  {
+   "id": 8,
+   "type": "stat",
+   "title": "Node running for",
+   "description": "Time since the node process last started (a restart resets it). Source: `genlayer_node_uptime_seconds`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(genlayer_node_uptime_seconds{network=\"$network\", node=~\"(?i)$node\", component=\"node\"})",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "time_series",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 19,
+    "y": 9
+   }
+  },
+  {
+   "id": 9,
+   "type": "row",
+   "title": "Status \u2014 things to fix",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 12
+   },
+   "panels": []
+  },
+  {
+   "id": 10,
+   "type": "stat",
+   "title": "Health (portal verdict)",
+   "description": "The portal's single health verdict for this node \u2014 the same colour the validator sees on the portal and Deckard. Source: portal roster `health`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map({health: ((.health.color // \"gray\") + \"|\" + (.health.label // .health.color // \"not checked\"))})",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^red\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "red",
+         "index": 0
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^orange\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "orange",
+         "index": 1
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^yellow\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "yellow",
+         "index": 2
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^gr[ae]y\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "#808080",
+         "index": 3
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^green\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "green",
+         "index": 4
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "#808080"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^health$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 5,
+    "x": 0,
+    "y": 13
+   }
+  },
+  {
+   "id": 11,
+   "type": "table",
+   "title": "Things to fix",
+   "description": "Everything that is off for this node, worst first, with what to do. Rows come from the portal verdict (Portal) and from the node's own condition checks (Node). Empty = nothing to fix.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "root_selector": "{\"quarantined\": {problem: \"Quarantined\", fix: \"Keep the node up and responsive until the quarantine lifts; see 'Why did it go wrong?' for the cause.\"}, \"permanently_quarantined\": {problem: \"No longer participating\", fix: \"Permanently quarantined: restake with a new validator wallet.\"}, \"inactive\": {problem: \"Not participating\", fix: \"Check self stake is at the minimum and the node is primed for the next epoch.\"}, \"not_deployed\": {problem: \"Not deployed\", fix: \"Deploy a validator wallet and node on this network.\"}, \"stake_below_minimum\": {problem: \"Stake below minimum\", fix: \"Top up self stake to the minimum.\"}, \"no_metrics\": {problem: \"Not sending metrics\", fix: \"Enable metrics push \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"no_logs\": {problem: \"Not sending logs\", fix: \"Enable log shipping \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"version_behind\": {problem: \"Version behind\", fix: \"Upgrade the node to the latest release.\"}, \"identity_incomplete\": {problem: \"Profile incomplete\", fix: \"Set the missing on-chain identity fields (moniker, logo, description) on the validator wallet.\"}, \"not_linked\": {problem: \"Not linked to portal\", fix: \"Link this validator wallet to your portal account.\"}, \"blocks_behind\": {problem: \"Behind on blocks\", fix: \"The node lags the chain head: check its RPC provider, disk and CPU (Sync & connectivity).\"}, \"source_unavailable\": {problem: \"Monitoring delayed\", fix: \"Monitoring has not checked this node recently \\u2014 nothing to do on your side.\"}} as $fix | [.[] | select(.node == (\"${node}\" | ascii_downcase))] | [.[] | (.health.findings // [])[] | {severity, problem: ($fix[.type].problem // (.type | gsub(\"_\"; \" \"))), details: .detail, fix: ($fix[.type].fix // \"\"), from: \"Portal\"}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(max by (condition, state)(genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state!~\"healthy|unknown\"}) == 1, \"fix\", \"Check the RPC endpoint and key in the node config.\", \"condition\", \"chain[.]rpc\"), \"fix\", \"Node is not syncing: check RPC and disk.\", \"condition\", \"chain[.]sync\"), \"fix\", \"Websocket to the chain keeps dropping: check the WSS endpoint.\", \"condition\", \"chain[.]websocket\"), \"fix\", \"Quarantined/banned: wait for the stated epoch (see the node message below).\", \"condition\", \"consensus[.]ban\"), \"fix\", \"Top up the operator address with GEN for gas.\", \"condition\", \"consensus[.]operator_funds\"), \"fix\", \"Primes are not landing: check operator funds and RPC.\", \"condition\", \"consensus[.]prime\"), \"fix\", \"Self stake is below the minimum: top it up.\", \"condition\", \"consensus[.]stake\"), \"fix\", \"LLM provider calls fail: check the provider key, quota and model.\", \"condition\", \"genvm[.]llm\"), \"fix\", \"Web requests from GenVM fail: check outbound network and the webdriver.\", \"condition\", \"genvm[.]web\"), \"fix\", \"Disk is filling up: free or grow it.\", \"condition\", \"node[.]disk\"), \"fix\", \"Snapshot is old.\", \"condition\", \"node[.]snapshot_age\"), \"fix\", \"Webdriver cannot render pages: restart the webdriver container.\", \"condition\", \"webdriver[.]render\"), \"severity\", \"yellow\", \"state\", \"warning\"), \"severity\", \"orange\", \"state\", \"degraded\"), \"severity\", \"orange\", \"state\", \"suspect\"), \"severity\", \"red\", \"state\", \"unavailable\"), \"problem\", \"Node check: $1\", \"condition\", \"(.*)\"), \"details\", \"The node reports this check as $1.\", \"state\", \"(.*)\"), \"from\", \"Node\", \"\", \"\")",
+     "refId": "B",
+     "legendFormat": "__auto",
+     "format": "table",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "datasource",
+    "uid": "-- Mixed --"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "severity"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "red": {
+            "text": "red",
+            "color": "red",
+            "index": 0
+           },
+           "orange": {
+            "text": "orange",
+            "color": "orange",
+            "index": 1
+           },
+           "yellow": {
+            "text": "yellow",
+            "color": "yellow",
+            "index": 2
+           },
+           "green": {
+            "text": "green",
+            "color": "green",
+            "index": 3
+           },
+           "gray": {
+            "text": "gray",
+            "color": "#808080",
+            "index": 4
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "problem"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 170
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "from"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "condition"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 170
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "state"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "healthy": {
+            "text": "healthy",
+            "color": "green",
+            "index": 0
+           },
+           "warning": {
+            "text": "warning",
+            "color": "yellow",
+            "index": 1
+           },
+           "degraded": {
+            "text": "degraded",
+            "color": "orange",
+            "index": 2
+           },
+           "suspect": {
+            "text": "suspect",
+            "color": "orange",
+            "index": 3
+           },
+           "unavailable": {
+            "text": "unavailable",
+            "color": "red",
+            "index": 4
+           },
+           "unknown": {
+            "text": "unknown",
+            "color": "#808080",
+            "index": 5
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "details|fix"
+      },
+      "properties": [
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "transformations": [
+    {
+     "id": "labelsToFields",
+     "options": {
+      "mode": "columns"
+     }
+    },
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "Value": true,
+       "condition": true,
+       "state": true,
+       "__name__": true
+      },
+      "indexByName": {
+       "severity": 0,
+       "problem": 1,
+       "details": 2,
+       "fix": 3,
+       "from": 4
+      }
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 8,
+    "w": 19,
+    "x": 5,
+    "y": 13
+   }
+  },
+  {
+   "id": 12,
+   "type": "stat",
+   "title": "Chain",
+   "description": "Live on-chain participation, same rule as the network board: in the selectable set = active; quarantined until epoch N; permanently quarantined = no longer participating; otherwise not participating. Source: staking `epoch()`, `selectableValidators()`, `validatorBanned(node)`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://rpc.testnet-chain.genlayer.com",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n(map(select(.id==1))[0].result | ltrimstr(\"0x\") | h2i) as $ep\n| (map(select(.id==2))[0].result | ltrimstr(\"0x\") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n| (map(select(.id==3))[0].result | ltrimstr(\"0x\")) as $b\n| ($b[64:128] | if . == \"\" then 0 else h2i end) as $until | (($b[128:192] // \"\") | if . == \"\" then 0 else h2i end) as $perm\n| [{chain: (if $perm > 0 then \"red|No longer participating\" elif $until > $ep then \"orange|Quarantined until epoch \\($until)\" elif ($sel | index(\"${node_hex}\")) != null then \"green|Active (epoch \\($ep))\" else \"red|Not participating\" end)}]",
+     "url_options": {
+      "method": "POST",
+      "body_type": "raw",
+      "body_content_type": "application/json",
+      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x900cf0cf\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x2d2f135d\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x090d60bd000000000000000000000000${node_hex}\"}, \"latest\"]}]",
+      "headers": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^red\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "red",
+         "index": 0
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^orange\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "orange",
+         "index": 1
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^yellow\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "yellow",
+         "index": 2
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^gr[ae]y\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "#808080",
+         "index": 3
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "^green\\|(.*)$",
+        "result": {
+         "text": "$1",
+         "color": "green",
+         "index": 4
+        }
+       }
+      }
+     ],
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^chain$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 5,
+    "x": 0,
+    "y": 21
+   }
+  },
+  {
+   "id": 13,
+   "type": "stat",
+   "title": "Version",
+   "description": "The node's version, and whether it is the newest version running on the network. Source: `genlayer_node_info` labels.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "label_replace(max by (version)(genlayer_node_info{network=\"$network\", node=~\"(?i)$node\", version=\"$latest_version\"}), \"disp\", \"$1 \u2014 up to date\", \"version\", \"(.*)\") or label_replace(max by (version)(genlayer_node_info{network=\"$network\", node=~\"(?i)$node\"}), \"disp\", \"$1 \u2014 behind ($latest_version)\", \"version\", \"(.*)\")",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "table",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#808080",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "(.*up to date)",
+        "result": {
+         "text": "$1",
+         "color": "green",
+         "index": 0
+        }
+       }
+      },
+      {
+       "type": "regex",
+       "options": {
+        "pattern": "(.*behind.*)",
+        "result": {
+         "text": "$1",
+         "color": "yellow",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^disp$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 4,
+    "x": 5,
+    "y": 21
+   }
+  },
+  {
+   "id": 14,
+   "type": "stat",
+   "title": "Strikes",
+   "description": "Idleness strikes in the current epoch / the limit that quarantines. Source: explorer `/address` `strikes_current`, `strikes_max` (it resets each epoch, so a quarantined node usually shows 0).",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | {strikes: \"\\(.strikes_current // 0) / \\(.strikes_max // 3)\"}",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^strikes$/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 3,
+    "x": 9,
+    "y": 21
+   }
+  },
+  {
+   "id": 15,
+   "type": "stat",
+   "title": "Primed",
+   "description": "Whether the node has primed for the next epoch. A node that stops priming drops out. Source: explorer `/address` `is_primed_next_epoch`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | {primed: (if .is_primed_next_epoch then \"yes\" else \"no\" end)}",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "yes": {
+         "text": "Yes",
+         "color": "green",
+         "index": 0
+        },
+        "no": {
+         "text": "No",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^primed$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 3,
+    "x": 12,
+    "y": 21
+   }
+  },
+  {
+   "id": 16,
+   "type": "stat",
+   "title": "Blocks behind",
+   "description": "How far the node lags the chain head now. 5\u201399 orange, \u2265100 red. Source: `genlayer_node_blocks_behind`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(genlayer_node_blocks_behind{network=\"$network\", node=~\"(?i)$node\"})",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "time_series",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#808080",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 0
+       },
+       {
+        "color": "orange",
+        "value": 5
+       },
+       {
+        "color": "red",
+        "value": 100
+       }
+      ]
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 3,
+    "x": 15,
+    "y": 21
+   }
+  },
+  {
+   "id": 17,
+   "type": "stat",
+   "title": "Metrics",
+   "description": "Is the node pushing metrics now. Source: `genlayer_node_info`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "count(genlayer_node_info{network=\"$network\", node=~\"(?i)$node\"}) or vector(0)",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "time_series",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "range",
+       "options": {
+        "from": 1,
+        "to": 1000000000.0,
+        "result": {
+         "text": "ON",
+         "color": "green"
+        }
+       }
+      },
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "OFF",
+         "color": "yellow"
+        }
+       }
+      }
+     ],
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 3,
+    "x": 18,
+    "y": 21
+   }
+  },
+  {
+   "id": 18,
+   "type": "stat",
+   "title": "Logs",
+   "description": "Is the node shipping logs (any line in the last 5 min). Source: Loki, matched on the `node` field inside the log JSON.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "expr": "sum(count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" | node=~\"(?i)$node\" [5m])) or vector(0)",
+     "refId": "A",
+     "queryType": "instant"
+    }
+   ],
+   "datasource": {
+    "type": "loki",
+    "uid": "grafanacloud-logs"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "range",
+       "options": {
+        "from": 1,
+        "to": 1000000000000.0,
+        "result": {
+         "text": "ON",
+         "color": "green"
+        }
+       }
+      },
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "OFF",
+         "color": "yellow"
+        }
+       }
+      }
+     ],
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 3,
+    "w": 3,
+    "x": 21,
+    "y": 21
+   }
+  },
+  {
+   "id": 19,
+   "type": "row",
+   "title": "What do I do about it? \u2014 the node's own diagnosis",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 24
+   },
+   "panels": []
+  },
+  {
+   "id": 20,
+   "type": "table",
+   "title": "Node conditions now",
+   "description": "The node checks 12 conditions on itself (RPC, sync, websocket, ban, funds, prime, stake, LLM, web, disk, snapshot, webdriver). Anything not healthy is listed first. Source: `genlayer_node_operator_condition_state`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max by (condition, state)(genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\"}) == 1",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "table",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "state"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "healthy": {
+            "text": "healthy",
+            "color": "green",
+            "index": 0
+           },
+           "warning": {
+            "text": "warning",
+            "color": "yellow",
+            "index": 1
+           },
+           "degraded": {
+            "text": "degraded",
+            "color": "orange",
+            "index": 2
+           },
+           "suspect": {
+            "text": "suspect",
+            "color": "orange",
+            "index": 3
+           },
+           "unavailable": {
+            "text": "unavailable",
+            "color": "red",
+            "index": 4
+           },
+           "unknown": {
+            "text": "unknown",
+            "color": "#808080",
+            "index": 5
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "transformations": [
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "Value": true
+      }
+     }
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "state",
+        "desc": true
+       }
+      ]
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 10,
+    "w": 8,
+    "x": 0,
+    "y": 25
+   }
+  },
+  {
+   "id": 21,
+   "type": "state-timeline",
+   "title": "Condition history",
+   "description": "When each condition went bad and recovered. Green healthy, yellow warning, orange degraded/suspect, red unavailable, grey unknown. Source: `genlayer_node_operator_condition_state`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max by (condition)((genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"healthy\"} == 1) * 0 + 0 or (genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"warning\"} == 1) * 0 + 1 or (genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"degraded\"} == 1) * 0 + 2 or (genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"suspect\"} == 1) * 0 + 3 or (genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"unavailable\"} == 1) * 0 + 4 or (genlayer_node_operator_condition_state{network=\"$network\", node=~\"(?i)$node\", state=\"unknown\"} == 1) * 0 + -1)",
+     "refId": "A",
+     "legendFormat": "{{condition}}",
+     "format": "time_series"
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "healthy",
+         "color": "green",
+         "index": 0
+        },
+        "1": {
+         "text": "warning",
+         "color": "yellow",
+         "index": 1
+        },
+        "2": {
+         "text": "degraded",
+         "color": "orange",
+         "index": 2
+        },
+        "3": {
+         "text": "suspect",
+         "color": "orange",
+         "index": 3
+        },
+        "4": {
+         "text": "unavailable",
+         "color": "red",
+         "index": 4
+        },
+        "-1": {
+         "text": "unknown",
+         "color": "#808080",
+         "index": 5
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "#808080",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 0
+       },
+       {
+        "color": "yellow",
+        "value": 1
+       },
+       {
+        "color": "orange",
+        "value": 2
+       },
+       {
+        "color": "red",
+        "value": 4
+       }
+      ]
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "showValue": "never",
+    "mergeValues": true,
+    "rowHeight": 0.8,
+    "legend": {
+     "showLegend": false
+    }
+   },
+   "gridPos": {
+    "h": 10,
+    "w": 16,
+    "x": 8,
+    "y": 25
+   }
+  },
+  {
+   "id": 22,
+   "type": "logs",
+   "title": "What the node says needs attention",
+   "description": "The node's own 'requires attention' messages: which condition, why, the impact and the suggested action. Source: Loki, message `operator condition requires attention`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "expr": "{job=\"genlayer-node\"} | json | network=\"$network\" | node=~\"(?i)$node\" | message=\"operator condition requires attention\" | line_format \"[{{.condition}}] {{.reason}} \u2014 impact: {{.impact}} \u2014 action: {{.action}}\"",
+     "refId": "A",
+     "queryType": "range"
+    }
+   ],
+   "datasource": {
+    "type": "loki",
+    "uid": "grafanacloud-logs"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "showTime": true,
+    "wrapLogMessage": true,
+    "sortOrder": "Descending",
+    "enableLogDetails": true
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 16,
+    "x": 0,
+    "y": 35
+   }
+  },
+  {
+   "id": 23,
+   "type": "table",
+   "title": "Problems seen in range",
+   "description": "How many times each condition reported each reason in the selected time range. Source: `genlayer_node_operator_condition_occurrences_total`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "sum by (condition, reason)(increase(genlayer_node_operator_condition_occurrences_total{network=\"$network\", node=~\"(?i)$node\"}[$__range])) > 0",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "table",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "noValue": "No problems in range"
+    },
+    "overrides": []
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "sortBy": [
+     {
+      "displayName": "Value",
+      "desc": true
+     }
+    ]
+   },
+   "transformations": [
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true
+      },
+      "renameByName": {
+       "Value": "times"
+      }
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 35
+   }
+  },
+  {
+   "id": 24,
+   "type": "row",
+   "title": "Am I earning? \u2014 stake, rewards, slashing",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 43
+   },
+   "panels": []
+  },
+  {
+   "id": 25,
+   "type": "stat",
+   "title": "Stake now (explorer)",
+   "description": "Self stake and delegated stake, in GEN. Source: explorer `/address` (indexed at the last epoch boundary \u2014 a slash enacted since may not be in it yet).",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | {self_stake: (.self_stake | (tonumber / 1e18)), delegated: (.delegated_stake | (tonumber / 1e18)), delegators: (.delegators | length)}",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "unit": "none",
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 8,
+    "x": 0,
+    "y": 44
+   }
+  },
+  {
+   "id": 26,
+   "type": "stat",
+   "title": "Stake now (chain, live)",
+   "description": "Live `validatorView` on the staking contract: self stake and pending deposits/withdrawals, in GEN. The chain is the authority.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://rpc.testnet-chain.genlayer.com",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n.[0].result | ltrimstr(\"0x\") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)}",
+     "url_options": {
+      "method": "POST",
+      "body_type": "raw",
+      "body_content_type": "application/json",
+      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0xb83f5b39000000000000000000000000${node_hex}\"}, \"latest\"]}]",
+      "headers": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ]
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 8,
+    "x": 8,
+    "y": 44
+   }
+  },
+  {
+   "id": 27,
+   "type": "stat",
+   "title": "Rewards earned (node counter)",
+   "description": "Validator rewards the node has seen paid to it since the node process started \u2014 highest value in the selected range (GEN). Resets when the node restarts. Source: `genlayer_node_fees_earned_wei_total{type=\"validator_rewards\"}`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(max_over_time(genlayer_node_fees_earned_wei_total{network=\"$network\", node=~\"(?i)$node\", type=\"validator_rewards\"}[$__range])) / 1e18",
+     "refId": "A",
+     "legendFormat": "__auto",
+     "format": "time_series",
+     "instant": true,
+     "range": false
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "unit": "none",
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 8,
+    "x": 16,
+    "y": 44
+   }
+  },
+  {
+   "id": 28,
+   "type": "barchart",
+   "title": "Rewards vs slashing per epoch",
+   "description": "Green = rewards paid (validator + fee rewards), red = slashing and fee penalties, in GEN. Source: explorer `/epochs/{n}/validators`, one query per epoch (stopgap, covers epochs 1\u201314).",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E01",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E02",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E03",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E04",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E05",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E06",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E07",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E08",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E09",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E10",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E11",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E12",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E13",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E14",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "custom": {
+      "fillOpacity": 80
+     },
+     "noValue": "No data"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "rewards"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "slashing"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "red"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "xField": "epoch",
+    "stacking": "normal",
+    "showValue": "auto",
+    "legend": {
+     "showLegend": true,
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "epoch"
+       }
+      ]
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "self_stake": true,
+       "status": true
+      }
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 48
+   }
+  },
+  {
+   "id": 29,
+   "type": "barchart",
+   "title": "Self stake per epoch",
+   "description": "Self stake at each epoch, in GEN. Rewards compound into stake; slashes take it away. Source: explorer `/epochs/{n}/validators`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E01",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E02",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E03",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E04",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E05",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E06",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E07",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E08",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E09",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E10",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E11",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E12",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E13",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E14",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "blue"
+     },
+     "custom": {
+      "fillOpacity": 80
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "xField": "epoch",
+    "showValue": "auto",
+    "legend": {
+     "showLegend": false
+    }
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "epoch"
+       }
+      ]
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "rewards": true,
+       "slashing": true,
+       "status": true
+      }
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 12,
+    "y": 48
+   }
+  },
+  {
+   "id": 30,
+   "type": "timeseries",
+   "title": "Gas spent per duty (GEN / hour)",
+   "description": "What each kind of on-chain duty costs the operator. Source: `genlayer_node_gas_spent_wei_total` by method.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "sum by (method)(increase(genlayer_node_gas_spent_wei_total{network=\"$network\", node=~\"(?i)$node\"}[1h])) / 1e18",
+     "refId": "A",
+     "legendFormat": "{{method}}",
+     "format": "time_series"
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "decimals": 4,
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {},
+   "gridPos": {
+    "h": 7,
+    "w": 24,
+    "x": 0,
+    "y": 57
+   }
+  },
+  {
+   "id": 31,
+   "type": "row",
+   "title": "Am I doing my job? \u2014 duties, votes, leader turns",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 64
+   },
+   "panels": []
+  },
+  {
+   "id": 32,
+   "type": "stat",
+   "title": "Last 7 days (explorer)",
+   "description": "Leader turns, how often it was rotated out as leader, votes cast, votes in the minority, idle rounds, successful appeals against it. Source: explorer `/address` `*_7d`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
+     "root_selector": ".validator | {\"leader turns\": .total_as_leader_7d, \"rotated %\": .rotation_pct_7d, \"votes\": .total_votes_7d, \"minority %\": .minority_pct_7d, \"idle\": .idle_count_7d, \"idle %\": .idle_pct_7d, \"appeals lost\": .successful_appeals_7d}",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "noValue": "No data"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center",
+    "wideLayout": true
+   },
+   "gridPos": {
+    "h": 4,
+    "w": 24,
+    "x": 0,
+    "y": 65
+   }
+  },
+  {
+   "id": 33,
+   "type": "timeseries",
+   "title": "Duties per hour",
+   "description": "Consensus work the node did each hour. A flat zero while active means the node is not being selected or not responding. Source: `genlayer_node_transactions_{leader_proposed,leader_revealed,validator_commit,validator_reveal,activated}_total`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(increase(genlayer_node_transactions_leader_proposed_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+     "refId": "A",
+     "legendFormat": "leader proposed",
+     "format": "time_series"
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(increase(genlayer_node_transactions_leader_revealed_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+     "refId": "B",
+     "legendFormat": "leader revealed",
+     "format": "time_series"
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(increase(genlayer_node_transactions_validator_commit_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+     "refId": "C",
+     "legendFormat": "vote committed",
+     "format": "time_series"
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(increase(genlayer_node_transactions_validator_reveal_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+     "refId": "D",
+     "legendFormat": "vote revealed",
+     "format": "time_series"
+    },
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "max(increase(genlayer_node_transactions_activated_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+     "refId": "E",
+     "legendFormat": "activated",
+     "format": "time_series"
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60,
+      "stacking": {
+       "mode": "none"
+      }
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {},
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 69
+   }
+  },
+  {
+   "id": 34,
+   "type": "timeseries",
+   "title": "Submissions that failed",
+   "description": "On-chain transactions the node sent that failed or reverted, per hour, by method. Should be zero. Source: `genlayer_node_consensus_submit_total{outcome!=\"success\"}`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "expr": "sum by (method, outcome)(increase(genlayer_node_consensus_submit_total{network=\"$network\", node=~\"(?i)$node\", outcome!=\"success\"}[1h])) or vector(0)",
+     "refId": "A",
+     "legendFormat": "{{method}} {{outcome}}",
+     "format": "time_series"
+    }
+   ],
+   "datasource": {
+    "type": "prometheus",
+    "uid": "grafanacloud-prom"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60
+     },
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {},
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 69
+   }
+  },
+  {
+   "id": 35,
+   "type": "table",
+   "title": "Recent transactions",
+   "description": "The last ~100 rounds this node took part in, newest first: role and how it went. Click a tx to open it in the explorer. Source: explorer `/transactions/participations`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/transactions/participations?address=${node}&page_size=100",
+     "root_selector": ".participations | map({time: (.submission_timestamp * 1000), round: .round_label, role, outcome, color: .outcome_color, tx: .hash})",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "time"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "dateTimeAsIso"
+       },
+       {
+        "id": "custom.width",
+        "value": 170
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "tx"
+      },
+      "properties": [
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Open in explorer",
+          "url": "https://scan.bradbury.genlayer.com/tx/${__value.raw}",
+          "targetBlank": true
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "color"
+      },
+      "properties": [
+       {
+        "id": "custom.hidden",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "outcome"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(Idle.*)$",
+           "result": {
+            "text": "$1",
+            "color": "red",
+            "index": 0
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(Timeout.*)$",
+           "result": {
+            "text": "$1",
+            "color": "red",
+            "index": 1
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(.*In Minority.*)$",
+           "result": {
+            "text": "$1",
+            "color": "orange",
+            "index": 2
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(.*)$",
+           "result": {
+            "text": "$1",
+            "color": "green",
+            "index": 3
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "gridPos": {
+    "h": 10,
+    "w": 24,
+    "x": 0,
+    "y": 77
+   }
+  },
+  {
+   "id": 36,
+   "type": "row",
+   "title": "Why did it go wrong? \u2014 idleness, quarantine, slashing",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 87
+   },
+   "panels": []
+  },
+  {
+   "id": 37,
+   "type": "table",
+   "title": "Idle rounds",
+   "description": "Rounds where the node was picked but did not act in time. Idle rounds give strikes; 3 strikes in an epoch quarantine the node and slash it. Source: explorer `/transactions/participations?role_filter=idle`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "A",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/transactions/participations?address=${node}&page_size=100&role_filter=idle",
+     "root_selector": ".participations | map({time: (.submission_timestamp * 1000), round: .round_label, role, outcome, color: .outcome_color, tx: .hash}) | map(select(.outcome == \"Idle\"))",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No idle rounds"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "time"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "dateTimeAsIso"
+       },
+       {
+        "id": "custom.width",
+        "value": 170
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "tx"
+      },
+      "properties": [
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Open in explorer",
+          "url": "https://scan.bradbury.genlayer.com/tx/${__value.raw}",
+          "targetBlank": true
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "color"
+      },
+      "properties": [
+       {
+        "id": "custom.hidden",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "outcome"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(Idle.*)$",
+           "result": {
+            "text": "$1",
+            "color": "red",
+            "index": 0
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(Timeout.*)$",
+           "result": {
+            "text": "$1",
+            "color": "red",
+            "index": 1
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(.*In Minority.*)$",
+           "result": {
+            "text": "$1",
+            "color": "orange",
+            "index": 2
+           }
+          }
+         },
+         {
+          "type": "regex",
+          "options": {
+           "pattern": "^(.*)$",
+           "result": {
+            "text": "$1",
+            "color": "green",
+            "index": 3
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 88
+   }
+  },
+  {
+   "id": 38,
+   "type": "table",
+   "title": "Status and money per epoch",
+   "description": "Per epoch: on-chain status, rewards, slashing, self stake (GEN). Source: explorer `/epochs/{n}/validators`.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E01",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E02",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E03",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E04",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E05",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E06",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E07",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E08",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E09",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E10",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E11",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E12",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E13",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    },
+    {
+     "datasource": {
+      "type": "yesoreyeram-infinity-datasource",
+      "uid": "grafanacloud-infinity"
+     },
+     "refId": "E14",
+     "type": "json",
+     "source": "url",
+     "parser": "jq-backend",
+     "format": "table",
+     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
+     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
+     "url_options": {
+      "method": "GET",
+      "data": ""
+     }
+    }
+   ],
+   "datasource": {
+    "type": "yesoreyeram-infinity-datasource",
+    "uid": "grafanacloud-infinity"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "decimals": 0,
+     "noValue": "No data"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "status"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "active": {
+            "text": "active",
+            "color": "green",
+            "index": 0
+           },
+           "quarantined": {
+            "text": "quarantined",
+            "color": "orange",
+            "index": 1
+           },
+           "banned": {
+            "text": "banned",
+            "color": "red",
+            "index": 2
+           },
+           "inactive": {
+            "text": "inactive",
+            "color": "red",
+            "index": 3
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "slashing"
+      },
+      "properties": [
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       },
+       {
+        "id": "thresholds",
+        "value": {
+         "mode": "absolute",
+         "steps": [
+          {
+           "color": "red",
+           "value": null
+          },
+          {
+           "color": "text",
+           "value": 0
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "epoch"
+       }
+      ]
+     }
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "epoch",
+        "desc": true
+       }
+      ]
+     }
+    }
+   ],
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 88
+   }
+  },
+  {
+   "id": 39,
+   "type": "logs",
+   "title": "Idle / replaced events seen by the node",
+   "description": "The node's log lines when a leader or validator was idle and replaced, and missed primes. Source: Loki.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "expr": "{job=\"genlayer-node\"} | json | network=\"$network\" | node=~\"(?i)$node\" | message=~\"Leader is idle.*|Validator\\\\(s\\\\) idle.*|Missed prime.*|Leader rotated.*|Primed for epoch.*\"",
+     "refId": "A",
+     "queryType": "range"
+    }
+   ],
+   "datasource": {
+    "type": "loki",
+    "uid": "grafanacloud-logs"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "noValue": "No data from this node's telemetry"
+    },
+    "overrides": []
+   },
+   "options": {
+    "showTime": true,
+    "wrapLogMessage": true,
+    "sortOrder": "Descending",
+    "enableLogDetails": true
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 24,
+    "x": 0,
+    "y": 96
+   }
+  },
+  {
+   "id": 40,
+   "type": "row",
+   "title": "Sync & connectivity",
+   "collapsed": true,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 104
+   },
+   "panels": [
+    {
+     "id": 41,
+     "type": "state-timeline",
+     "title": "Sync health",
+     "description": "0 Synced, 1 Degraded, 2 Catching up, 3 Hopelessly behind. Source: `genlayer_node_health_state`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_health_state{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "health",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "mappings": [
+        {
+         "type": "value",
+         "options": {
+          "0": {
+           "text": "Synced",
+           "color": "green",
+           "index": 0
+          },
+          "1": {
+           "text": "Degraded",
+           "color": "yellow",
+           "index": 1
+          },
+          "2": {
+           "text": "Catching up",
+           "color": "orange",
+           "index": 2
+          },
+          "3": {
+           "text": "Hopelessly behind",
+           "color": "red",
+           "index": 3
+          }
+         }
+        }
+       ],
+       "color": {
+        "mode": "thresholds"
+       },
+       "thresholds": {
+        "mode": "absolute",
+        "steps": [
+         {
+          "color": "#808080",
+          "value": null
+         }
+        ]
+       },
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "showValue": "never",
+      "mergeValues": true,
+      "legend": {
+       "showLegend": false
+      }
+     },
+     "gridPos": {
+      "h": 4,
+      "w": 24,
+      "x": 0,
+      "y": 105
+     }
+    },
+    {
+     "id": 42,
+     "type": "timeseries",
+     "title": "Blocks behind",
+     "description": "How far the node lags the chain head. \u2265100 is red on the portal. Source: `genlayer_node_blocks_behind`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_blocks_behind{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "blocks behind",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "thresholds": {
+        "mode": "absolute",
+        "steps": [
+         {
+          "color": "green",
+          "value": null
+         },
+         {
+          "color": "orange",
+          "value": 5
+         },
+         {
+          "color": "red",
+          "value": 100
+         }
+        ]
+       },
+       "custom": {
+        "thresholdsStyle": {
+         "mode": "line+area"
+        }
+       },
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 0,
+      "y": 109
+     }
+    },
+    {
+     "id": 43,
+     "type": "timeseries",
+     "title": "RPC latency p95 by method",
+     "description": "95th percentile latency of the node's calls to its chain RPC provider. Source: `genlayer_rollup_rpc_request_duration_seconds_bucket`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "histogram_quantile(0.95, sum by (le, method)(rate(genlayer_rollup_rpc_request_duration_seconds_bucket{network=\"$network\", node=~\"(?i)$node\"}[5m])))",
+       "refId": "A",
+       "legendFormat": "{{method}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "s",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 12,
+      "y": 109
+     }
+    },
+    {
+     "id": 44,
+     "type": "timeseries",
+     "title": "RPC errors by fault",
+     "description": "RPC errors per minute: `provider` = the RPC endpoint failed, `blockchain` = the chain rejected the call. Source: `genlayer_rollup_rpc_errors_total`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "sum by (fault, error_type)(rate(genlayer_rollup_rpc_errors_total{network=\"$network\", node=~\"(?i)$node\"}[5m])) * 60 or vector(0)",
+       "refId": "A",
+       "legendFormat": "{{fault}} {{error_type}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "none",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 0,
+      "y": 116
+     }
+    },
+    {
+     "id": 45,
+     "type": "timeseries",
+     "title": "Nonce manager",
+     "description": "Stuck, dropped and gap nonces; non-zero means the node's own transactions are jammed. Source: `genlayer_node_transact_*`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_transact_stuck_nonce_count{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "stuck",
+       "format": "time_series"
+      },
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_transact_dropped_nonce_count{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "B",
+       "legendFormat": "dropped",
+       "format": "time_series"
+      },
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_transact_nonce_gap_size{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "C",
+       "legendFormat": "gap",
+       "format": "time_series"
+      },
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_transact_nonce_desync_delta{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "D",
+       "legendFormat": "desync",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 12,
+      "y": 116
+     }
+    },
+    {
+     "id": 46,
+     "type": "timeseries",
+     "title": "Websocket reconnects",
+     "description": "Websocket disconnections per hour by reason. Source: `genlayer_rollup_ws_disconnections_total`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "sum by (reason)(increase(genlayer_rollup_ws_disconnections_total{network=\"$network\", node=~\"(?i)$node\"}[1h]))",
+       "refId": "A",
+       "legendFormat": "{{reason}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 6,
+      "w": 24,
+      "x": 0,
+      "y": 123
+     }
+    }
+   ]
+  },
+  {
+   "id": 47,
+   "type": "row",
+   "title": "GenVM & LLM",
+   "collapsed": true,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 129
+   },
+   "panels": [
+    {
+     "id": 48,
+     "type": "timeseries",
+     "title": "GenVM executions / min",
+     "description": "Contract executions per minute. Source: `genlayer_node_genvm_executions_total`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(rate(genlayer_node_genvm_executions_total{network=\"$network\", node=~\"(?i)$node\"}[5m])) * 60",
+       "refId": "A",
+       "legendFormat": "executions/min",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 8,
+      "x": 0,
+      "y": 130
+     }
+    },
+    {
+     "id": 49,
+     "type": "timeseries",
+     "title": "GenVM average execution time",
+     "description": "Average seconds per execution. Source: `_genvm_execution_time_seconds_total` / `_genvm_executions_total`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(rate(genlayer_node_genvm_execution_time_seconds_total{network=\"$network\", node=~\"(?i)$node\"}[15m])) / max(rate(genlayer_node_genvm_executions_total{network=\"$network\", node=~\"(?i)$node\"}[15m]))",
+       "refId": "A",
+       "legendFormat": "avg s",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "s",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 8,
+      "x": 8,
+      "y": 130
+     }
+    },
+    {
+     "id": 50,
+     "type": "timeseries",
+     "title": "GenVM permits",
+     "description": "Free GenVM execution slots. At 0 the node cannot run contracts. Source: `genlayer_node_genvm_permits_current`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_genvm_permits_current{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "permits",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 8,
+      "x": 16,
+      "y": 130
+     }
+    },
+    {
+     "id": 51,
+     "type": "logs",
+     "title": "GenVM errors and timeouts",
+     "description": "GenVM internal errors and timeouts (LLM prompt/response lines are excluded). Source: Loki.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+       },
+       "expr": "{job=\"genlayer-node\"} | json | network=\"$network\" | node=~\"(?i)$node\" | message!=\"answer from module\" | message=~\"GenVM internal error.*|genVM run error.*\"",
+       "refId": "A",
+       "queryType": "range"
+      }
+     ],
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "showTime": true,
+      "wrapLogMessage": true,
+      "sortOrder": "Descending"
+     },
+     "gridPos": {
+      "h": 8,
+      "w": 24,
+      "x": 0,
+      "y": 137
+     }
+    }
+   ]
+  },
+  {
+   "id": 52,
+   "type": "row",
+   "title": "Machine",
+   "collapsed": true,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 145
+   },
+   "panels": [
+    {
+     "id": 53,
+     "type": "timeseries",
+     "title": "CPU % by component",
+     "description": "Source: `genlayer_node_cpu_usage_percent`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max by (component)(genlayer_node_cpu_usage_percent{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "{{component}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "percent",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 0,
+      "y": 146
+     }
+    },
+    {
+     "id": 54,
+     "type": "timeseries",
+     "title": "Memory % by component",
+     "description": "Source: `genlayer_node_memory_percent`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max by (component)(genlayer_node_memory_percent{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "{{component}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "percent",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 12,
+      "y": 146
+     }
+    },
+    {
+     "id": 55,
+     "type": "timeseries",
+     "title": "Disk used by directory",
+     "description": "Bytes used per data directory, and the disk's overall %. Source: `genlayer_node_disk_usage_bytes`, `_disk_usage_percent`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max by (directory)(genlayer_node_disk_usage_bytes{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "{{directory}}",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "bytes",
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 0,
+      "y": 153
+     }
+    },
+    {
+     "id": 56,
+     "type": "timeseries",
+     "title": "Disk % and node network",
+     "description": "Disk % (left) and node network throughput. Webdriver network counters are broken and excluded. Source: `_disk_usage_percent`, `_network_{rx,tx}_bytes_total{component=\"node\"}`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_disk_usage_percent{network=\"$network\", node=~\"(?i)$node\"})",
+       "refId": "A",
+       "legendFormat": "disk %",
+       "format": "time_series"
+      },
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(rate(genlayer_node_network_rx_bytes_total{network=\"$network\", node=~\"(?i)$node\", component=\"node\"}[5m]))",
+       "refId": "B",
+       "legendFormat": "rx",
+       "format": "time_series"
+      },
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(rate(genlayer_node_network_tx_bytes_total{network=\"$network\", node=~\"(?i)$node\", component=\"node\"}[5m]))",
+       "refId": "C",
+       "legendFormat": "tx",
+       "format": "time_series"
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": [
+       {
+        "matcher": {
+         "id": "byRegexp",
+         "options": "rx|tx"
+        },
+        "properties": [
+         {
+          "id": "unit",
+          "value": "Bps"
+         },
+         {
+          "id": "custom.axisPlacement",
+          "value": "right"
+         }
+        ]
+       },
+       {
+        "matcher": {
+         "id": "byName",
+         "options": "disk %"
+        },
+        "properties": [
+         {
+          "id": "unit",
+          "value": "percent"
+         }
+        ]
+       }
+      ]
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 12,
+      "x": 12,
+      "y": 153
+     }
+    },
+    {
+     "id": 57,
+     "type": "stat",
+     "title": "Uptime",
+     "description": "Time since the node process started. Source: `genlayer_node_uptime_seconds{component=\"node\"}`.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "prometheus",
+        "uid": "grafanacloud-prom"
+       },
+       "expr": "max(genlayer_node_uptime_seconds{network=\"$network\", node=~\"(?i)$node\", component=\"node\"})",
+       "refId": "A",
+       "legendFormat": "__auto",
+       "format": "time_series",
+       "instant": true,
+       "range": false
+      }
+     ],
+     "datasource": {
+      "type": "prometheus",
+      "uid": "grafanacloud-prom"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "unit": "s",
+       "color": {
+        "mode": "fixed",
+        "fixedColor": "text"
+       },
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "reduceOptions": {
+       "calcs": [
+        "lastNotNull"
+       ],
+       "fields": "",
+       "values": false
+      },
+      "colorMode": "value",
+      "graphMode": "none",
+      "textMode": "value",
+      "justifyMode": "center",
+      "wideLayout": true
+     },
+     "gridPos": {
+      "h": 4,
+      "w": 6,
+      "x": 0,
+      "y": 160
+     }
+    }
+   ]
+  },
+  {
+   "id": 58,
+   "type": "row",
+   "title": "Logs",
+   "collapsed": true,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 164
+   },
+   "panels": [
+    {
+     "id": 59,
+     "type": "timeseries",
+     "title": "Errors and warnings per 5 min",
+     "description": "Source: Loki, by level.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+       },
+       "expr": "sum by (level)(count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" | node=~\"(?i)$node\" | level=~\"error|warn\" [5m]))",
+       "refId": "A",
+       "queryType": "range"
+      }
+     ],
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "custom": {
+        "drawStyle": "bars",
+        "fillOpacity": 60
+       },
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": [
+       {
+        "matcher": {
+         "id": "byName",
+         "options": "error"
+        },
+        "properties": [
+         {
+          "id": "color",
+          "value": {
+           "mode": "fixed",
+           "fixedColor": "red"
+          }
+         }
+        ]
+       },
+       {
+        "matcher": {
+         "id": "byName",
+         "options": "warn"
+        },
+        "properties": [
+         {
+          "id": "color",
+          "value": {
+           "mode": "fixed",
+           "fixedColor": "yellow"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "options": {},
+     "gridPos": {
+      "h": 7,
+      "w": 24,
+      "x": 0,
+      "y": 165
+     }
+    },
+    {
+     "id": 60,
+     "type": "table",
+     "title": "Most frequent warnings and errors in range",
+     "description": "Source: Loki, grouped by message.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+       },
+       "expr": "topk(20, sum by (level, message)(count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"$network\" | node=~\"(?i)$node\" | level=~\"error|warn\" [$__range])))",
+       "refId": "A",
+       "queryType": "instant"
+      }
+     ],
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "showHeader": true,
+      "cellHeight": "sm",
+      "sortBy": [
+       {
+        "displayName": "Value",
+        "desc": true
+       }
+      ]
+     },
+     "transformations": [
+      {
+       "id": "reduce",
+       "options": {
+        "reducers": [
+         "lastNotNull"
+        ],
+        "mode": "seriesToRows",
+        "labelsToFields": true
+       }
+      }
+     ],
+     "gridPos": {
+      "h": 8,
+      "w": 24,
+      "x": 0,
+      "y": 172
+     }
+    },
+    {
+     "id": 61,
+     "type": "logs",
+     "title": "Recent errors",
+     "description": "Source: Loki, level=error.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+       },
+       "expr": "{job=\"genlayer-node\"} | json | network=\"$network\" | node=~\"(?i)$node\" | message!=\"answer from module\" | level=\"error\"",
+       "refId": "A",
+       "queryType": "range"
+      }
+     ],
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "showTime": true,
+      "wrapLogMessage": true,
+      "sortOrder": "Descending",
+      "enableLogDetails": true
+     },
+     "gridPos": {
+      "h": 8,
+      "w": 24,
+      "x": 0,
+      "y": 180
+     }
+    },
+    {
+     "id": 62,
+     "type": "logs",
+     "title": "Recent warnings",
+     "description": "Source: Loki, level=warn.",
+     "targets": [
+      {
+       "datasource": {
+        "type": "loki",
+        "uid": "grafanacloud-logs"
+       },
+       "expr": "{job=\"genlayer-node\"} | json | network=\"$network\" | node=~\"(?i)$node\" | message!=\"answer from module\" | level=\"warn\"",
+       "refId": "A",
+       "queryType": "range"
+      }
+     ],
+     "datasource": {
+      "type": "loki",
+      "uid": "grafanacloud-logs"
+     },
+     "fieldConfig": {
+      "defaults": {
+       "noValue": "No data from this node's telemetry"
+      },
+      "overrides": []
+     },
+     "options": {
+      "showTime": true,
+      "wrapLogMessage": true,
+      "sortOrder": "Descending",
+      "enableLogDetails": true
+     },
+     "gridPos": {
+      "h": 8,
+      "w": 24,
+      "x": 0,
+      "y": 188
+     }
+    }
+   ]
+  }
+ ]
 }
