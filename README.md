@@ -21,8 +21,8 @@ They must show the same overall colour for the same node.
   table lives in `testnet/HEALTH-STATUS-PLAN.md` (the parent `testnet` repo). When
   the portal publishes its copy, point this link at it.
 - **Grafana displays the portal's verdict; it does not compute its own.** The
-  `Health` column on `validator_status.json` and the generated
-  `validator_status_public.json` renders the roster's `health.color` /
+  `Health` column on `network.json` (uid `gl-testnet-network`, also the public
+  board) renders the roster's `health.color` /
   `health.label` from `GET /api/v1/validators/wallets/grafana/?network=bradbury2`,
   and the table sorts by it (red > orange > yellow > gray > green). No `health`
   field yet → the column shows `-` and the table falls back to its own worst-first
@@ -34,8 +34,7 @@ They must show the same overall colour for the same node.
 - **Deckard must agree** with the portal's verdict (`/status`, the ops console and
   notifications).
 - A change to the rule table changes all three repos — portal first, then Grafana
-  and Deckard in the same round. Regenerate the public board after editing the
-  internal one: `python3 scripts/build_public_validator_status.py`.
+  and Deckard in the same round.
 
 ## Infrastructure
 

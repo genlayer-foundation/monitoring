@@ -21,15 +21,12 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Transport**: HTTP REST (via the Grafana **Infinity** datasource `grafanacloud-infinity`)
 - **Auth**: none (public endpoint, cached 60s upstream)
 - **Endpoint**: `GET https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2` — filtered **server-side** by the portal network key `bradbury2` (Bradbury Phase 2; the portal's `asimov`/`bradbury` keys are retired and return `[]`). The key is hardcoded in the URL, not a variable: public dashboards don't interpolate Infinity URLs, and the portal key is not the Grafana `network` label. The jq no longer filters on `.network`. Verified 2026-10-20: prod returns 2 rows, both `inactive`
-- **Cadence**: per dashboard load + auto-refresh — 1m (`validator_status`, `validator_status_public`, `index`), 30s (`validator_profile`)
-- **We consume**: `network` (the portal key `bradbury2`, NOT the Grafana label — only displayed), `node` (lowercased validator address — the join key), `name`, `status`, `operator`, `account`, `account_name`, `explorer_url`, `linked`, `moniker`, `logo_uri`, `has_description`, plus synthetic `status:"missing"` rows; and `health` (`{color, label, findings, checked_at}` — the portal's unified verdict per node, see `../HEALTH-STATUS-PLAN.md`) on `validator_status` / `validator_status_public` only: only `health.color` and `health.label` are read, into the `Health` column. **Not deployed in the portal as of 2026-10-24** — absent or non-object `health` renders `-` and sorts as rank 0
+- **Cadence**: per dashboard load + auto-refresh — 1m (`network`), 30s (`validator_profile`)
+- **We consume**: `network` (the portal key `bradbury2`, NOT the Grafana label — only displayed), `node` (lowercased validator address — the join key), `name`, `status`, `operator`, `account`, `account_name`, `explorer_url`, `linked`, `moniker`, `logo_uri`, `has_description`, plus synthetic `status:"missing"` rows; and `health` (`{color, label, findings, checked_at}` — the portal's unified verdict per node, see `../HEALTH-STATUS-PLAN.md`) on `network` only: `health.color` / `health.label` into the `Health` column and `health.findings` into the `Issues` column and the `Open issues` counts; `account_id` (points PR #1371) builds the portal-profile link. **Not deployed in the portal as of 2026-10-24** — absent or non-object `health` renders `-` and sorts as rank 0
 - **Degrades**: the Infinity target returns no frame; the `joinByField` outer join still emits the Prometheus/Loki side, so roster-derived columns (`Name`, `Identity`, `Linked`, `In Portal`) go blank and roster stat panels read 0/No data. No retry, no cache, no alert.
-- **Consumed by 5 dashboards** (each declares its own copy of the target):
-  - `dashboards/foundation/validator_status.json:127` (7 targets: table `A` + stats `Total`/`Internal`/`Portal: active`/`Inactive`/`Banned`/`Missing`)
-  - `dashboards/foundation/validator_status_public.json:145` (7 targets — one network section)
+- **Consumed by 2 dashboards** (each declares its own copy of the target):
+  - `dashboards/foundation/network.json:1034` (Open issues, the Validators table `A`; `jq-backend`)
   - `dashboards/foundation/validator_profile.json:176`
-  - `dashboards/foundation/index.json:221` (validator directory table, `parser: backend`; its profile deep-link hardcodes `var-network=bradbury-phase2`)
-  - `dashboards/foundation/validator_overview.json:213` (`Monitoring Overview` table `A`: one row per operator, `node` + name; replaced the dead explorer `/api/v1/validators` source on 2026-10-21 — no explorer serves Phase 2)
 
 ### GenLayer testnet chain — Bradbury Phase 2 (public RPC, Arbitrum Orbit / Conduit)
 - **Direction**: read
@@ -39,7 +36,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Cadence**: per dashboard load + auto-refresh (30s–1m)
 - **We consume**: `selectableValidators()` (`0x2d2f135d` — replaced the retired `activeValidators()` `0xd2d49c4b`, which now reverts), `getAllQuarantinedValidators(0,100)` (`0x510a6f26`), `epoch()` (`0x900cf0cf`), all on the staking proxy; `getIdentity()` (`0x36afc6fa`) on the validator wallet. The validator profile adds `validatorView(address)` (`0xb83f5b39`: quarantine-until epoch, self/delegated stake), `validatorBanned(address)` (`0x090d60bd`: until-epoch + permanent flag, batched with `epoch()` and `selectableValidators()` for the Chain stat), and `eth_getLogs` for `ValidatorJoin(address operator, address validator, uint256 amount)` (topic `0x2b7297b3…6782`, staking proxy, from block 47930) — the validator's real join time and initial stake. ABI decoding is done entirely in the target's jq `root_selector` — there is no ABI file and no chain SDK in this repo.
 - **Degrades**: a jq decode error or RPC failure blanks the on-chain columns/stats for that panel. The `Participating` column falls to `not participating` (grey) rather than erroring. Known failure modes: an uninterpolated `${staking_addr}` produces `ltrimstr("0x") cannot be applied to: null`; an EMPTY `$staking_addr` produces RPC `Invalid params` — which is why the var now falls back to the Phase 2 staking proxy while no node reports (`CLAUDE.md`, "Live on-chain participating").
-- **Code**: `dashboards/foundation/validator_status.json:171` (`selectableValidators`), `:522` and `:2601` (batch `[epoch(), getAllQuarantinedValidators()]` in one POST — the epoch feeds the lapsed-quarantine filter); `dashboards/foundation/network_status.json:97`; `dashboards/foundation/validator_profile.json:2085` (`validatorView`), `:1129` (`validatorBanned` batch), `:292` (`eth_getLogs` ValidatorJoin); `dashboards/foundation/validator_status_public.json:189` (`selectableValidators`) and `:540`/`:2053` (the same batch, staking address baked in)
+- **Code**: `dashboards/foundation/network.json:151` (batch `[selectableValidators(), epoch(), getAllQuarantinedValidators()]`), `:4852` (`eth_getLogs` for `ValidatorSlash` / `ValidatorBannedIdleness` / `ValidatorPenaltyRecorded`, topic-only, from block 47930); `dashboards/foundation/validator_profile.json:2085` (`validatorView`), `:1129` (`validatorBanned` batch), `:292` (`eth_getLogs` ValidatorJoin)
 
 ### GenLayer explorer indexer API — Bradbury Phase 2 (`scan.bradbury.genlayer.com`)
 - **Direction**: read
@@ -50,6 +47,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **We consume**: from `/address`: `validator.metadata.{name,description,image_url,url,twitter,github,telegram,email}`, `status`, `strikes_current`/`strikes_max`, `is_primed_next_epoch`, `self_stake`/`delegated_stake`, `delegators`, `operator_address`, `owner_address`, the `*_7d` performance fields; from participations: `hash`, `submission_timestamp`, `round_label`, `role`, `outcome`, `outcome_color`; from `/epochs/{n}/validators`: per-validator `self_stake`, `validator_rewards`, `fee_rewards`, `validator_slashing`, `fee_penalties`, `status`; from `/validators`: `self_stake + delegated_stake`, `transaction_count`
 - **Degrades**: the affected panels go empty or show "No data"; future epochs return `validators: []`, so unreached epoch targets add nothing. `created_at` is the indexer's backfill time, NOT the join time — the profile reads the join from chain `ValidatorJoin` instead. Its `strikes_current` resets each epoch and its `self_stake` is the epoch-boundary snapshot, so both can disagree with the chain.
 - **Code**: `dashboards/foundation/validator_profile.json:121` (`/address`), `:3061` (participations), `:2203` (per-epoch history)
+- **Also consumed by `network.json`** (2026-10-27): `/transactions?page_size=100&page=1..5` (explicit pages — Infinity's own pagination 422s; consensus rounds/votes, execution results, finalization timestamps → time to acceptance derived as finalization − 60s), `/analytics/general-kpis`, `/analytics/kpi-histories?…&interval=H1&metric=…` (with `${__from:date:seconds}`/`${__to:date:seconds}` — works on the public dashboard too, verified), `/epochs/current`, `/epochs?page_size=…`, `/validators?page_size=100` (stake, `*_7d` consensus columns, names). Code: `dashboards/foundation/network.json` — search `scan.bradbury.genlayer.com`.
 
 ### Explorer chain-indexer API (GenLayer internal explorer) — Pre-Clarke only
 - **Direction**: read
@@ -81,7 +79,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Cadence**: per dashboard load + refresh; per alert-rule evaluation
 - **We consume**: `genlayer_node_info` (labels `node`, `validator_name`, `version`, `commit`, `genvm_version`, `staking_address`, `network`), `genlayer_node_blocks_behind`, `_synced`, `_latest_block`, `_synced_block`, `_cpu_usage_percent`, `_memory_percent`, `_disk_usage_percent`, `_genvm_permits_current`, `_genvm_executions`, `_transactions_activated_total`, `_uptime_seconds`, `up`, `go_memstats_alloc_bytes`. Dashboards select `network="bradbury-phase2"` — the documented label (`NETWORK_NAME`, docs.genlayer.com/validators/monitoring), not yet observed: as of 2026-10-20 no series carries it (`epoch_monitor_current_epoch` is no longer read; the epoch comes from the chain)
 - **Degrades**: hard dependency for every alert rule and most panels — `noDataState: OK` on all 9 rules means a Prometheus outage **silently resolves** alerts rather than firing
-- **Code**: `dashboards/foundation/validator_status.json:136`; every `grafana-alerts/alert-*.json` (`datasourceUid: grafanacloud-prom`), e.g. `grafana-alerts/alert-validator-down.json`
+- **Code**: `dashboards/foundation/network.json:833`; every `grafana-alerts/alert-*.json` (`datasourceUid: grafanacloud-prom`), e.g. `grafana-alerts/alert-validator-down.json`
 
 ### Grafana Cloud Loki (`grafanacloud-logs`)
 - **Direction**: read
@@ -91,7 +89,7 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Cadence**: per dashboard load + refresh; per alert-rule evaluation
 - **We consume**: `{job="genlayer-node"} | json | network=…` — the `node`/`operator` address and `level` fields; distinct-node counts for "Reporting (logs)"
 - **Degrades**: **one node shipping a malformed non-JSON line hard-errors the entire metric query for that network** (`JSONParserErr`), taking out Reporting (logs), Not reporting (logs) and the table's Logs column at once. Mitigated by `| __error__=""` immediately after `| json` in every Loki *metric* query — any new one needs it too (`CLAUDE.md:383`).
-- **Code**: `dashboards/foundation/validator_status.json:1012`; `grafana-alerts/alert-error-burst.json`, `grafana-alerts/alert-warning-burst.json`
+- **Code**: `dashboards/foundation/network.json:1222`; `grafana-alerts/alert-error-burst.json`, `grafana-alerts/alert-warning-burst.json`
 
 ### Grafana public-dashboard query API (`validator_telemetry_report.py`)
 - **Direction**: read
@@ -152,10 +150,10 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
 ### Validators and the public (via Grafana public dashboards)
 - **Transport**: HTTP REST (Grafana-hosted public dashboard, no login)
 - **Auth**: unauthenticated share link gated by a `public-dashboards` access token (token URLs are recorded in `CLAUDE.md`, not repeated here)
-- **Endpoint we expose**: `https://genlayerfoundation.grafana.net/public-dashboards/<token>` for uid `gl-validator-status-public` (Bradbury Phase 2) and uid `gl-preclarke-status` (Pre-Clarke)
-- **They consume**: per-validator reconciliation of on-chain participation vs metrics/logs reporting, node version, blocks behind
-- **Note**: the share **token survived the 2026-07-30 uid rename** (`gl-wos-public` → `gl-validator-status-public`) — Grafana's public-dashboards create API accepts an explicit `accessToken`, so the share was deleted on the old uid and recreated on the new one with the same token; the public URL never changed
-- **Code**: `dashboards/foundation/validator_status_public.json:2768` (uid), `dashboards/foundation/preclarke_status.json:1243` (uid), `CLAUDE.md:287`, `CLAUDE.md:49`
+- **Endpoint we expose**: `https://genlayerfoundation.grafana.net/public-dashboards/<token>` for uid `gl-testnet-network` (Bradbury Phase 2). Linked from Deckard's ops console (`deckard-testnet-agent/dashboard/data.ex:33`) and its knowledge base.
+- **They consume**: network health, consensus / transactions / stake / rewards & penalties, and the per-validator table
+- **Note**: the share **token survived two moves** (`gl-wos-public` → `gl-validator-status-public` 2026-07-30, → `gl-testnet-network` 2026-10-27) — Grafana's public-dashboards create API accepts an explicit `accessToken`, so the share is deleted on the old uid and recreated on the new one with the same token; the public URL never changed
+- **Code**: `dashboards/foundation/network.json:7862` (uid), `CLAUDE.md`
 
 ### Grafana Alerting → contact point (Slack)
 - **Transport**: webhook (Grafana-managed Alertmanager → Slack)
@@ -186,9 +184,9 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
   - **Pre-Clarke** (`pre-clarke`) — separate consensus deployment on the Bradbury chain (chainId 4221), staking `0x500261a6b5F93Bc940Fb05624a3f1B9A3CE843e3`, RPC `https://rpc-bradbury.genlayer.com`
   - Legacy, in the report script only: chainId 4221 via Caldera, staking `0x10eCB157734c8152f1d84D00040c8AA46052CB27`, factory `0x2e198119E639D1063180f281617f64Dd788D78d2`
 - **Access**: **read-only**. Only `eth_call` and `eth_getLogs`; no transaction is ever signed and no signing key or mnemonic exists or is expected in this repo.
-- **Address source of truth**: upstream `genlayer-consensus` `deployments/bradbury-phase-2.json`; none as a file here. The staking address is resolved **at runtime** from telemetry — hidden Prometheus template var `$staking_addr` = `query_result(topk(1, count by (staking_address)(genlayer_node_info{network="$network"}) or label_replace(vector(0), "staking_address", "<Phase 2 staking>", "", "")))` with regex `/staking_address="([^"]+)"/` — and falls back to the Phase 2 literal while no node reports. It appears as a literal in that fallback (`validator_status.json`, `network_status.json`), the generated public dashboard and the generator's `NETWORKS` table.
+- **Address source of truth**: upstream `genlayer-consensus` `deployments/bradbury-phase-2.json`; none as a file here. The staking address is resolved **at runtime** from telemetry — hidden Prometheus template var `$staking_addr` = `query_result(topk(1, count by (staking_address)(genlayer_node_info{network="$network"}) or label_replace(vector(0), "staking_address", "<Phase 2 staking>", "", "")))` with regex `/staking_address="([^"]+)"/` — and falls back to the Phase 2 literal while no node reports. It appears as a literal in `network.json` (variable-free so it works as a public dashboard) and in the validator profile's fallback.
 - **SDK**: none. No `web3`, `viem`, `ethers` or `genlayer-js` anywhere — raw JSON-RPC, with ABI decoding done in jq inside Infinity `root_selector` expressions (dashboards) or hand-rolled hex slicing in Python (`decode_address_array`).
-- **Code**: `scripts/build_public_validator_status.py:27 (NETWORKS)`, `dashboards/foundation/validator_status.json:171`, `CLAUDE.md:406`, `validator_telemetry_report.py:74 (decode_address_array)`
+- **Code**: `dashboards/foundation/network.json:151`, `validator_telemetry_report.py:74 (decode_address_array)`
 
 ## Environment variables
 
@@ -205,13 +203,12 @@ Dashboard-side credentials (Prometheus/Loki/Infinity datasource auth, the Grafan
 ## Not integrated
 
 - **No CI/CD.** No `.github/`, no workflow, no Makefile, no deploy script. Dashboards and alerts are pushed to Grafana **by hand** (UI import, the Grafana MCP server, or `curl` against the provisioning API). Nothing in this repo verifies that committed JSON matches live Grafana.
-- **No scheduler.** No cron, no systemd timer, no Celery/APScheduler. `validator_telemetry_report.py` and `scripts/build_public_validator_status.py` are both manual one-shot CLI runs. All "cadence" in this file is Grafana's own dashboard refresh or alert evaluation.
+- **No scheduler.** No cron, no systemd timer, no Celery/APScheduler. `validator_telemetry_report.py` and the `scripts/` generators are manual one-shot CLI runs. All "cadence" in this file is Grafana's own dashboard refresh or alert evaluation.
 - **No server, no database, no queue, no object store.** This repo stores JSON and two scripts; it exposes no port and owns no schema.
 - **No chain writes and no signing key** — read-only `eth_call` everywhere.
 - **No PagerDuty / Opsgenie / email**; Slack is the only documented alert channel — and the routing that binds rules to it is **not** in this repo (see the Grafana Alerting entry).
 - **No direct scraping of validator nodes.** This repo never talks to a node's `:9153/health` or `:9151` RPC — node telemetry arrives only through Grafana Cloud Prometheus/Loki, which the nodes push to themselves.
-- **`gl-preclarke-status` deliberately does NOT call the portal.** Pre-Clarke has no roster; its validator list comes from the explorer indexer API, and `activeValidators()` would return empty at epoch 0.
-- **`gl-network-status` does not call the portal either** — it is Prometheus + on-chain `selectableValidators()` only. The portal roster is used by exactly four dashboards: `index`, `validator_profile`, `validator_status`, `validator_status_public`.
+- The portal roster is used by exactly two dashboards: `network` and `validator_profile`.
 - **`dashboards/5ElementsNodes/*` are third-party reference boards**, vendored for reference and not maintained by the Foundation; their integrations (5elementsnodes.com feeds, the GCS bucket, the `/api/ds/query` self-call) are documented above but are not Foundation-owned surface. They are stored in Grafana's `dashboard.grafana.app/v2beta1` resource envelope, unlike the Foundation boards which are unwrapped dashboard models.
 - **`dashboards/grafana_metrics.json` is a stock Grafana Cloud board** bound to `grafanacloud-ml-metrics`; it monitors Grafana itself and carries no GenLayer integration.
 

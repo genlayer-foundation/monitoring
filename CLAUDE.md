@@ -22,7 +22,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   names the network `bradbury-phase2` from its consensus address. Not yet observed:
   as of 2026-10-20 no Prometheus or Loki series carries it. When the first Phase 2
   node reports, confirm with `count by (network)(genlayer_node_info)`; if it differs,
-  change it in every dashboard's `network` var, `index.json` and the generator's
+  change it in every dashboard's `network` var / literal (`network.json`) and the generator's
   `NETWORKS`. (`bradbury-phase-2` with a hyphen was a wrong guess, fixed 2026-10-20.)
 - Portal roster network key is **`bradbury2`** (not the Grafana label): every roster
   target calls `/api/v1/validators/wallets/grafana/?network=bradbury2` and filters
@@ -74,96 +74,129 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   (uid `af7w864ddjnr4f`) still exists in Grafana. `gl-wall-of-shame` /
   `gl-wos-public` were superseded 2026-07-30 by `gl-validator-status` /
   `gl-validator-status-public` (uid+file rename, same content).
+  `gl-preclarke-status` (Pre-Clarke test board, public share
+  `7147dc0e…` died with it) and `genlayer-foundation-overview-v4` (Validator
+  Overview — names/Metrics/Logs/version table, all covered by Validator Status)
+  deleted 2026-10-27 at Ivan's call; JSON and its design notes in git history.
 
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
-- `gl-testnets-index` → `index.json` — landing page; validator directory table
+- `gl-testnet-network` → `network.json` — display title **"GenLayer Testnet |
+  Network"**, built 2026-10-27 as the ONE general board that replaces
+  `gl-testnets-index`, `gl-network-status`, `gl-validator-status` and
+  `gl-validator-status-public` (all four deleted 2026-10-27; their JSON is in git
+  history). Its Validators table IS the old Validator Status table pipeline, so the
+  `gl-validator-status` notes below still describe how that table works. **Variable-free on purpose** (public dashboards don't interpolate
+  vars): `bradbury-phase2`, staking `0xD8fB…7113` and roster key `bradbury2` are
+  literals. **Scope = the CURRENT set only** (on-chain active + quarantined, 51 at
+  launch): never-deployed graduates (`missing`), registered-but-out wallets
+  (`inactive`) and spectator/full nodes appear NOWHERE — Ivan: "that's not part
+  of the testnet". The table enforces it with a `filterByValue live1 >= 1` right
+  before `organize` (look `organize` up by id, never by index — inserting the
+  filter shifted it once and raw columns came back). Layout answers three
+  questions, no pie charts (Ivan rejected donuts and big coloured tiles):
+  **Row 1 = "is the network healthy?"** (Ivan, 2026-10-27): **Validator set**
+  (Active / Quarantined, one batched RPC, ids 21-23) · **Consensus health**
+  (Agreement = majority_agree share of rounds, Succeeded = FINISHED_WITH_RETURN
+  share, average Time to acceptance — latest 500 txs) · **Node health**
+  (Reporting, Synced %, Worst lag in blocks). **Row 2**: **Open issues** — the
+  INVERSE of the old "How the set is run" (Ivan prefers problems-to-solve, like
+  Validatrium): how many of the set are not reporting metrics / not shipping logs /
+  behind target version / profile incomplete / not linked, from the portal's
+  findings, all bars out of the set total (`configFromQuery` max), 0 green, ≥1
+  yellow, ≥10 red · **Nodes online** graph · **Epoch** (number, % through, txs).
+  Then GenLayer-native sections (2026-10-27, Ivan's picks from a Validatrium /
+  5Elements comparison), all from the **GenLayer explorer indexer API
+  `https://scan.bradbury.genlayer.com/api/v1`** (public, no auth; NOT the Conduit
+  `scan.testnet-chain…` explorer, which has no API):
+  - **Consensus — latest 500 transactions**: How rounds end (`enrichment_data.rounds[].result`:
+    majority_agree / majority_disagree / idle / other), How validators vote
+    (`rounds[].validators[].vote`: finished_with_return / finished_with_error /
+    nondet_disagree / not_voted / timeout), Rotations & appeals (rotation = tx with
+    >1 round; succeeded = last round majority_agree; appeals = sum of
+    `successful_appeals_7d`; minority = mean `minority_pct_7d` over the set).
+  - **Transactions**: Usage (`/analytics/general-kpis` + success rate =
+    FINISHED_WITH_RETURN share), Transactions per hour (`/analytics/kpi-histories`
+    `interval=H1`, `${__from:date:seconds}`/`${__to:date:seconds}` — NEVER a far-future
+    `to`, it returns zero-filled buckets: 641k rows), **Time to acceptance** (dots),
+    Transactions per epoch. **Acceptance has no timestamp anywhere in bulk** (not in
+    the tx list, not in any event — only `/transactions/consensus-steps/{hash}` per
+    tx), so it is DERIVED: `finalization − 60s`. On Bradbury Phase 2 the
+    accepted→finalized gap measured 60–66s over 38 txs (2026-10-27) — the finality /
+    appeal window is ~1 minute here, NOT 30 minutes — so it reads up to ~6s high.
+    If the window changes, change `APPEAL_WINDOW_S`. Real fix = an
+    `accepted_timestamp` on the explorer's tx list (ask Labs).
+    **Appeal detection**: every tx carries `enrichment_data…appeal_bond: null`; an
+    appeal = a NON-null `appeal_bond`. Matching the string "appeal" flags every tx.
+  - **Stake** (`/validators`, `/analytics/general-kpis`): Total staked = the
+    explorer's `total_gen_staked` (same source as the "Network stake over time"
+    chart; the sum of the set's self+delegated reads ~0.9M higher — don't mix
+    them), delegated %, delegators, Nakamoto coefficient (fewest validators > 1/3
+    stake), top-5 share, stake in quarantine; stake-by-validator bars.
+  - **Rewards & penalties** — from the chain's own events (genlayer-consensus
+    contracts), `eth_getLogs` from genesis block 47930, topic-only filters:
+    `ValidatorSlash` `0xa627246e…` (staking; validator, validatorSlashing,
+    delegatorSlashing, epoch — all in data), `ValidatorBannedIdleness` `0x46cda53c…`
+    (staking; validator, txId, bannedAt, bannedUntil → quarantine),
+    `ValidatorPenaltyRecorded` `0xb53a9a42…` (fee manager `0x040a…a775`; txId, round,
+    validator indexed — minority vote / timeout penalty; amounts ~1e-16 GEN on
+    testnet, so COUNTED, never summed). Rewards = last finalized epoch's `inflation`
+    (`/epochs`). Fee rewards (`ValidatorFeeDistributed`, 57k events; swept per epoch
+    via `ValidatorFeesSwept`) total ~0.0002 GEN on testnet — not shown.
+    ⚠️ **`SlashEnacted` is NOT a slash**: `Slash.enactSlash()` emits it on every
+    validator prime (cursor advance), so every validator gets one per epoch. The
+    first version of this board showed it as "230 slashes" — wrong.
+  - Table gained explorer columns (target `X`): Stake, Transactions, Idle · 7d,
+    Minority · 7d, Rotations · 7d, Appeals · 7d. Address column hidden; the
+    Validator name link menu has both portal profile and explorer.
+  **Explorer gotchas**: `page_size` max is **100** (larger → 422) and Infinity's
+  built-in pagination ALSO 422s — use explicit `&page=1..5` targets (`scan(...,
+  pages=N)` in the builder) + a `merge` transform. **`merge` then `reduce` only works
+  when every frame has the SAME fields** — pad the odd frame with zeros (the
+  Rotations and Usage stats silently lost their computed rates until padded).
+  `metadata` can be `""`: use `(.metadata | objects | .name)`, and bind the address
+  (`.validator_address as $a`) before any `if` that rebinds `.`.
+  Collapsed **Fleet internals**: blocks behind, p95 CPU/mem, builds (version+commit+genvm).
+  Design rules:
+  - **Colours are the portal's health palette** (`frontend/src/lib/validatorHealth.js`,
+    Tailwind 500s: green `#10b981`, yellow `#fbbf24`, orange `#f97316`, red
+    `#ef4444`, grey `#9ca3af`; neutral counts `#6b7280`). No other status colours.
+  - Table columns, in order: **Health** (portal verdict label, colour cell) ·
+    **Validator** (merged name, no `(portal)` tag; links to explorer) · **Chain**
+    (live on-chain PartCode) · **Telemetry** (`TelCode = 3*MetricsCode + LogsCode`
+    → metrics + logs / no logs / no metrics / silent / metrics only / logs only /
+    -) · **Version** · **Blocks behind** · **Issues** · **Address**. `#`, In Portal,
+    Identity, Linked are gone: Identity/Linked arrive via Issues.
+  - **Validator** links to the portal profile `https://portal.genlayer.foundation/participant/<user id>`
+    via a jq-built `profile_url` (hidden with `custom.hidden`, NOT
+    `excludeByName`, so the data link can read it as `${__data.fields.profile_url}`
+    — the suffixed `"profile_url A"` form resolved empty and Grafana drops
+    empty links). Id source: roster `account_id` (points PR #1371, not yet
+    deployed) else the `user-<id>` node of missing rows, else the explorer.
+  - **Issues** = portal health findings AFTER the headline one (Health already
+    shows `findings[0]`) and excluding `quarantined`/`no_metrics`/`no_logs`
+    (shown live by Chain/Telemetry), labelled with the portal's own English
+    strings. **Version lag = the portal's `version_behind` finding** (computed
+    against `TargetNodeVersion`, which has no public endpoint) → "Version behind"
+    / "Upgrade overdue" in Issues and the **Upgrade needed** stat.
+  - **GOTCHA — identical Infinity RPC bodies on one board collide (2026-10-27).**
+    The Quarantined stat and the table's `Q` target POSTed the same batch body;
+    on a full-board load the table's `Q` came back empty, so every quarantined row
+    read red "not participating" with Telemetry `-` (solo-panel renders were
+    fine, which hid it). The table's `Q` now uses batch ids 11/12 (jq selects
+    `.id==11`/`.id==12`). `gl-validator-status` has the same latent pair.
+  - **PUBLIC**: `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`
+    — the token moved here 2026-10-27 from `gl-validator-status-public` (share
+    deleted there, recreated on this uid with the same `accessToken`, time picker
+    enabled), so every existing link — Deckard's ops console and knowledge base
+    included — kept working. All 23 panels verified through the public query API. (Was: move it
+    `accessToken`) so the shared URL survives.
+
+- **RETIRED 2026-10-27** `gl-testnets-index` → `index.json` — landing page; validator directory table
   (deep-links each row to the profile) + links to the other dashboards. Since
   2026-10-20: two Bradbury Phase 2 stats (reporting / synced, `or on() vector(0)`
   so they read 0, not No data) replace the four Asimov/Bradbury ones.
-- `gl-preclarke-status` → `preclarke_status.json` — ⚠️ **Status 2026-10-20: left
-  unchanged, likely stale.** `https://rpc-bradbury.genlayer.com` still answers but is
-  the OLD ZKsync chain (same head as the zksync RPC; Pre-Clarke `epoch()` = 139), the
-  explorer API still lists 25 validators / 15 active, and **no Prometheus or Loki
-  series carries `network="pre-clarke"`**. Ask whether Pre-Clarke is retired before
-  repointing or deleting it. **Pre-Clarke network status**,
-  a self-contained, portal-free validator-status page for the **Pre-Clarke**
-  network. Pre-Clarke runs on the **Bradbury chain (chainId 4221,
-  `https://rpc-bradbury.genlayer.com`)** with a SEPARATE consensus deployment
-  (`deployment_vesting_pre_clarke`); staking `0x500261a6b5F93Bc940Fb05624a3f1B9A3CE843e3`.
-  It has **no portal roster**, so the validator list comes straight from the
-  **explorer chain-indexer API** and is cross-checked against Grafana telemetry.
-  **PUBLICLY SHARED** (Grafana public dashboard, no login):
-  `https://genlayerfoundation.grafana.net/public-dashboards/7147dc0ed75d4d3f9c05d84cb98c0520`.
-  Built 2026-07-09; at launch epoch 0 all 9 validators are `pending`/primed (they
-  activate at the next epoch boundary). Design notes / gotchas:
-  - **Validator source = the explorer API, NOT raw RPC.** `activeValidators()` on
-    the staking contract is EMPTY at epoch 0 (new validators are `inactive` until
-    the next epoch), so it would show nothing while the explorer lists 9. Use
-    `GET https://internal-explorer.genlayer.com/api/v1/validators?page_size=100`
-    (public, no auth) — returns `{total, validators:[{validator_address, self_stake,
-    delegated_stake, banned_until_epoch, is_active, is_primed_next_epoch, status,
-    operator_address, owner_address, metadata:{name,…}, …}]}`. The table's `V`
-    Infinity target maps each to `{node:(validator_address|lc), name:metadata.name,
-    statuscode, sortweight, stake:(self_stake/1e18), operator, activeflag, rowflag:1}`.
-    `statuscode`: banned=3 / active=1 / primed=2 / pending=0 → colored
-    active(green)/primed·next epoch(blue)/pending(grey)/banned(red).
-  - **Stats** (Infinity API + telemetry): Validators (`.total`), Active
-    (`is_active` count), Primed·next epoch (`is_primed_next_epoch && !is_active`),
-    Reporting (metrics) = `count(genlayer_node_info{network="pre-clarke", node!=""})`,
-    Reporting (logs) = Loki distinct nodes, Epoch = on-chain `epoch()` (selector
-    **`0x900cf0cf`**) decoded via `hexval`. **`node!=""` matters**: a non-validator
-    full node `preclarke-full-1` reports metrics but has no `node` label — without
-    the filter the metrics stat shows 1 while every validator's Metrics cell is `-`
-    (Ivan caught this). Filtering to `node!=""` counts only real validators →
-    consistent with the table. Prometheus/Loki stats end with `or on() vector(0)`
-    so they read `0` pre-launch, not "No data".
-  - **No template vars** (network + staking address hardcoded in every query).
-    REQUIRED for public dashboards: public mode does **NOT interpolate template
-    variables inside Infinity RPC bodies** (`${staking_addr}` stayed literal →
-    `eth_call` to a bad address → `ltrimstr("0x") cannot be applied to: null`).
-  - **Telemetry join by `node` address** (lowercased both sides — the metrics/logs
-    `node` label is CHECKSUMMED, the API side is `ascii_downcase`'d; the leading
-    `formatString → Lower Case` on `node` handles it and DOES lowercase all frames).
-    Validators get a `node` label once they run a node; the tri-state Metrics/Logs
-    math mirrors the main Wall of Shame (`MetricsCode` 2=ON/1=OFF/0=`-`, OFF only
-    when `is_active` and not reporting). `I`/`L` targets filter `node!=""` to drop
-    the node-less full node.
-  - **GOTCHA — the Prometheus value column is `Value`, the Loki one is `Value #L`
-    (NOT `Value #I`).** With frames V (Infinity, no Value field), I (Prometheus),
-    L (Loki), Grafana keeps the FIRST value frame's name bare (`Value` ← Prometheus)
-    and only suffixes the colliding second (`Value #L` ← Loki). Reference `Value`
-    for metrics and `Value #L` for logs. Symptom of getting this wrong: the node
-    pushes fine, the join matches (Node Version populates), but Metrics stays `-`
-    while Logs shows ON — because `Value #I` doesn't exist so `hasm0` is always 0.
-    (This — NOT any address case mismatch — was the real "my node reports but Metrics
-    shows -" bug; the join/lowercasing was always fine.)
-  - **GOTCHA — `joinByField` renames Infinity-frame field NAMES to `<field> V`
-    (the frame's refId), not just displayName.** The join key (`node`) and
-    post-join `calculateField` aliases (`MetricsCode`, `LogsCode`) keep clean
-    names, but the `V` target's own fields become `name V` / `statuscode V` /
-    `stake V` / `operator V` / `activeflag V` / `rowflag V` / `sortweight V`. ALL
-    transform refs AND field overrides for those must use the ` V` suffix; column
-    renames are done via **field overrides** (`byName "name V"` → `displayName
-    "Name"`), because `organize.renameByName` sets displayName but does NOT win over
-    the join's displayName reliably. `renameByName` / `renameByRegex` operate on
-    `field.name` and did NOT help here.
-  - **GOTCHA — after a full `overwrite`, panel INDEX shifts.** This board is
-    `[100,10,11,12,13,14,15,1]` so the **table is `panels[7]`** (id 1), not
-    `panels[6]` (the Epoch stat). Patch ops must resolve the index from the LIVE
-    dashboard (`$.dashboard.panels | to_entries[] | {idx,id}`) — I burned a long
-    loop editing the Epoch stat thinking it was the table, and misread a stale
-    image renderer as "caching" (busting cache via `theme=light` confirmed the
-    table was simply never being changed).
-- `genlayer-foundation-overview-v4` → `validator_overview.json` — display title
-  **"GenLayer Foundation | Validator Overview"**; first committed 2026-10-21 (was
-  UI-only). Table names come from the portal roster (`bradbury2`), Metrics/Logs from
-  native Prometheus/Loki targets joined on lowercased `node`. Until v7 it called
-  Grafana's `/api/ds/query` with a service-account token pasted into the Infinity
-  header — never put a credential in a dashboard; use the native datasources.
-  Default `network` is `bradbury-phase2` (was `bradbury-phase1` until 2026-10-24);
-  the hidden `explorer_url` lookup maps it to `https://scan.testnet-chain.genlayer.com`.
-- `gl-validator-status` → `validator_status.json` — display title **"Testnet |
+- **RETIRED 2026-10-27 — table lives on in `gl-testnet-network`** `gl-validator-status` → `validator_status.json` — display title **"Testnet |
   Validator Status"** (formerly "Wall of Shame" — display titles renamed 2026-07
   for validator-facing neutrality; uid + filenames + generator renamed too on
   2026-07-30, old uid was `gl-wall-of-shame`; displayed "SHAME" strings replaced
@@ -365,7 +398,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     `until_epoch=73` vs epoch 89, also absent from `activeValidators()`); Asimov
     unaffected (all `until_epoch=125` > epoch 124). Don't revert to counting the
     raw list — it over-reports quarantines for ~one epoch (~24h) after each lapse.
-- `gl-validator-status-public` → `validator_status_public.json` — display title
+- **RETIRED 2026-10-27 (public token moved to `gl-testnet-network`; generator script deleted)** `gl-validator-status-public` → `validator_status_public.json` — display title
   **"Testnet | Validator Status (Public)"**, the **PUBLIC** Wall-of-Shame
   variant (Grafana public dashboard, no login):
   `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`.
@@ -398,7 +431,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     `Node Version` column stays. Removing F keeps the `Value #B/#C/#D` suffixes
     (multiple Prometheus targets remain, so Prometheus still suffixes all).
   - Rewrites the Legend once at top; sections are plain uncollapsed rows.
-- `gl-network-status` → `network_status.json` — per-network fleet health
+- **RETIRED 2026-10-27** `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
 - `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
   select by **`validator_name`** (primary), node derives from it; ⚠️ both vars come
