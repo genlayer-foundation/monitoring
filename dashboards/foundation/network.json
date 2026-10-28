@@ -5841,13 +5841,13 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "Open portal profile",
+                    "title": "${__data.fields.profile_title}",
                     "url": "${__data.fields.profile_url}"
                   },
                   {
                     "targetBlank": true,
-                    "title": "Open in explorer",
-                    "url": "https://scan.testnet-chain.genlayer.com/address/${__data.fields[\"Address\"]}"
+                    "title": "Open validator page in Grafana",
+                    "url": "https://genlayerfoundation.grafana.net/d/gl-validator-profile?var-node=${__data.fields[\"Address\"]}"
                   }
                 ]
               },
@@ -6540,6 +6540,18 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "profile_title A"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "Sev"
             },
             "properties": [
@@ -6644,6 +6656,11 @@
               "selector": "profile_url",
               "text": "profile_url",
               "type": "string"
+            },
+            {
+              "selector": "profile_title",
+              "text": "profile_title",
+              "type": "string"
             }
           ],
           "datasource": {
@@ -6654,7 +6671,7 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"https://scan.testnet-chain.genlayer.com/address/\" + .node end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
+          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"https://scan.testnet-chain.genlayer.com/address/\" + .node end), profile_title: (if .account_id != null or ((.node // \"\") | startswith(\"user-\")) then \"Open portal profile\" else \"Not on the portal yet: open in explorer\" end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
@@ -7860,5 +7877,5 @@
   "timezone": "browser",
   "title": "GenLayer Testnet | Network",
   "uid": "gl-testnet-network",
-  "version": 14
+  "version": 15
 }
