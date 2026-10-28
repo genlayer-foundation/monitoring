@@ -148,10 +148,12 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     first version of this board showed it as "230 slashes" — wrong.
   - Table gained explorer columns (target `X`): Stake, Transactions, Idle · 7d,
     Minority · 7d, Rotations · 7d, Appeals · 7d. Address column hidden; the
-    Validator name link menu: (1) portal profile — wallets with no portal account
-    fall back to the explorer, titled so via hidden `profile_title`; (2) the
-    per-validator board `gl-validator-profile?var-node=<address>` (team login only:
-    public links can't carry a variable, so that board cannot be shared publicly).
+    Validator name link menu: (1) portal profile (empty `profile_url` for wallets
+    with no portal account, so Grafana drops it); (2) the per-validator board
+    `gl-validator-profile?var-node=<address>` (team login only: public links can't
+    carry a variable, so that board cannot be shared publicly); (3) Chain Explorer
+    (Conduit, `scan.testnet-chain`) and (4) Network Explorer (Labs,
+    `scan.bradbury`, `/address/<addr>` renders the validator page).
   **Explorer gotchas**: `page_size` max is **100** (larger → 422) and Infinity's
   built-in pagination ALSO 422s — use explicit `&page=1..5` targets (`scan(...,
   pages=N)` in the builder) + a `merge` transform. **`merge` then `reduce` only works
@@ -165,7 +167,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     Tailwind 500s: green `#10b981`, yellow `#fbbf24`, orange `#f97316`, red
     `#ef4444`, grey `#9ca3af`; neutral counts `#6b7280`). No other status colours.
   - Table columns, in order: **Health** (portal verdict label, colour cell) ·
-    **Validator** (merged name, no `(portal)` tag; links to portal + validator board) · **Chain**
+    **Validator** (merged name, no `(portal)` tag; links to portal, validator board, both explorers) · **Chain**
     (live on-chain PartCode) · **Telemetry** (`TelCode = 3*MetricsCode + LogsCode`
     → metrics + logs / no logs / no metrics / silent / metrics only / logs only /
     -) · **Version** · **Blocks behind** · **Issues** · **Address**. `#`, In Portal,
@@ -175,7 +177,7 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     `excludeByName`, so the data link can read it as `${__data.fields.profile_url}`
     — the suffixed `"profile_url A"` form resolved empty and Grafana drops
     empty links). Id source: roster `account_id` (points PR #1371, live in
-    production 2026-10-28) else the `user-<id>` node of missing rows, else the explorer.
+    production 2026-10-28) else the `user-<id>` node of missing rows, else empty.
   - **Issues** = portal health findings AFTER the headline one (Health already
     shows `findings[0]`) and excluding `quarantined`/`no_metrics`/`no_logs`
     (shown live by Chain/Telemetry), labelled with the portal's own English
