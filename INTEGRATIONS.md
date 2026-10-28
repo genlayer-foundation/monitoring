@@ -153,7 +153,7 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
 - **Endpoint we expose**: `https://genlayerfoundation.grafana.net/public-dashboards/<token>` for uid `gl-testnet-network` (Bradbury Phase 2). Linked from Deckard's ops console (`deckard-testnet-agent/dashboard/data.ex:33`) and its knowledge base.
 - **They consume**: network health, consensus / transactions / stake / rewards & penalties, and the per-validator table
 - **Note**: the share **token survived two moves** (`gl-wos-public` → `gl-validator-status-public` 2026-07-30, → `gl-testnet-network` 2026-10-27) — Grafana's public-dashboards create API accepts an explicit `accessToken`, so the share is deleted on the old uid and recreated on the new one with the same token; the public URL never changed
-- **Code**: `dashboards/foundation/network.json:7879` (uid), `CLAUDE.md`
+- **Code**: `dashboards/foundation/network.json:7781` (uid), `CLAUDE.md`
 
 ### Grafana Alerting → contact point (Slack)
 - **Transport**: webhook (Grafana-managed Alertmanager → Slack)

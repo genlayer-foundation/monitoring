@@ -167,11 +167,11 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     Tailwind 500s: green `#10b981`, yellow `#fbbf24`, orange `#f97316`, red
     `#ef4444`, grey `#9ca3af`; neutral counts `#6b7280`). No other status colours.
   - Table columns, in order: **Health** (portal verdict label, colour cell) ·
-    **Validator** (merged name, no `(portal)` tag; links to portal, validator board, both explorers) · **Chain**
-    (live on-chain PartCode) · **Telemetry** (`TelCode = 3*MetricsCode + LogsCode`
+    **Validator** (merged name, no `(portal)` tag; links to portal, validator board, both explorers) · **Telemetry** (`TelCode = 3*MetricsCode + LogsCode`
     → metrics + logs / no logs / no metrics / silent / metrics only / logs only /
     -) · **Version** · **Blocks behind** · **Issues** · **Address**. `#`, In Portal,
-    Identity, Linked are gone: Identity/Linked arrive via Issues.
+    Identity, Linked are gone: Identity/Linked arrive via Issues. **Chain** is
+    hidden too (2026-10-28): in the current set it only repeated Health.
   - **Validator** links to the portal profile `https://portal.genlayer.foundation/participant/<user id>`
     via a jq-built `profile_url` (hidden with `custom.hidden`, NOT
     `excludeByName`, so the data link can read it as `${__data.fields.profile_url}`

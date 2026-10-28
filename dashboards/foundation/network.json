@@ -5877,105 +5877,6 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Chain"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 110
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "color": "#ef4444",
-                        "index": 0,
-                        "text": "not participating"
-                      },
-                      "1": {
-                        "color": "#10b981",
-                        "index": 1,
-                        "text": "active"
-                      },
-                      "10": {
-                        "color": "#ef4444",
-                        "index": 10,
-                        "text": "no longer participating"
-                      },
-                      "11": {
-                        "color": "#ef4444",
-                        "index": 11,
-                        "text": "no longer participating"
-                      },
-                      "2": {
-                        "color": "#f97316",
-                        "index": 2,
-                        "text": "quarantined"
-                      },
-                      "3": {
-                        "color": "#f97316",
-                        "index": 3,
-                        "text": "quarantined"
-                      },
-                      "4": {
-                        "color": "#ef4444",
-                        "index": 4,
-                        "text": "not deployed"
-                      },
-                      "5": {
-                        "color": "#10b981",
-                        "index": 5,
-                        "text": "active"
-                      },
-                      "6": {
-                        "color": "#f97316",
-                        "index": 6,
-                        "text": "quarantined"
-                      },
-                      "7": {
-                        "color": "#f97316",
-                        "index": 7,
-                        "text": "quarantined"
-                      },
-                      "8": {
-                        "color": "#ef4444",
-                        "index": 8,
-                        "text": "no longer participating"
-                      },
-                      "9": {
-                        "color": "#ef4444",
-                        "index": 9,
-                        "text": "no longer participating"
-                      }
-                    },
-                    "type": "value"
-                  },
-                  {
-                    "options": {
-                      "match": "null",
-                      "result": {
-                        "color": "#ef4444",
-                        "index": 98,
-                        "text": "not participating"
-                      }
-                    },
-                    "type": "special"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
               "options": "Telemetry"
             },
             "properties": [
@@ -7467,6 +7368,7 @@
               "Linked": true,
               "LogsCode": true,
               "MetricsCode": true,
+              "PartCode": true,
               "Time 1": true,
               "Time 2": true,
               "Time 3": true,
@@ -7536,23 +7438,23 @@
               "LogsCode": 109,
               "MetricsCode": 108,
               "Name": 1,
-              "PartCode": 2,
-              "TelCode": 3,
-              "Value #B": 5,
-              "appeals X": 11,
+              "PartCode": 107,
+              "TelCode": 2,
+              "Value #B": 4,
+              "appeals X": 10,
               "health_txt A": 0,
               "identity A": 103,
-              "idle X": 8,
-              "issues A": 12,
+              "idle X": 7,
+              "issues A": 11,
               "linked_txt A": 104,
-              "minority X": 9,
+              "minority X": 8,
               "network A": 106,
-              "node": 13,
-              "rotation X": 10,
-              "severity": 14,
-              "stake X": 6,
-              "txs X": 7,
-              "version": 4
+              "node": 12,
+              "rotation X": 9,
+              "severity": 13,
+              "stake X": 5,
+              "txs X": 6,
+              "version": 3
             },
             "renameByName": {
               "LogsCode": "Logs",
@@ -7877,5 +7779,5 @@
   "timezone": "browser",
   "title": "GenLayer Testnet | Network",
   "uid": "gl-testnet-network",
-  "version": 16
+  "version": 17
 }
