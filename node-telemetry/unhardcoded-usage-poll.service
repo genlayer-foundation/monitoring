@@ -1,0 +1,10 @@
+[Unit]
+Description=Log unhardcoded router usage for the Foundation node (LLM Providers board)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=genlayer
+Group=genlayer
+ExecStart=/usr/bin/python3 /opt/genlayer-node/llm-telemetry/unhardcoded-usage-poll.py
+Nice=10

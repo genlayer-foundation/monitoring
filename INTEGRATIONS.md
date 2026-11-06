@@ -91,6 +91,18 @@ This repo is mostly **declarative**: the integration surface lives in Grafana da
 - **Degrades**: **one node shipping a malformed non-JSON line hard-errors the entire metric query for that network** (`JSONParserErr`), taking out Reporting (logs), Not reporting (logs) and the table's Logs column at once. Mitigated by `| __error__=""` immediately after `| json` in every Loki *metric* query — any new one needs it too (`CLAUDE.md:383`).
 - **Code**: `dashboards/foundation/network.json:1229`; `grafana-alerts/alert-error-burst.json`, `grafana-alerts/alert-warning-burst.json`
 
+- **Also consumed by `llm_providers.json`** (2026-11-03): the Foundation node's per-call LLM telemetry, `{validator_name="genlayer-foundation-bradbury-1", filename="/var/log/genlayer/node-llm-calls.log"} | json | __error__="" | event="attempt"|"prompt"`. The file is written by our instrumented `genvm-llm-rotate.lua` ON THE NODE (`opt/genvm/<ver>/config/`; source of truth `node-telemetry/genvm-llm-rotate.lua`, reinstall steps in `node-telemetry/README.md`) and shipped by the node's stock Alloy because `LOG_FILE_PATTERN=/var/log/genlayer/node*.log`. **Degrades**: a node upgrade replaces the Lua → the file stops growing and every Loki panel on the board reads 0 / No data, with no error. Code: `scripts/build_llm_providers.py` (`ATTEMPT`, `PROMPT`).
+
+### unhardcoded LLM router — per-key usage report (`router.ygr.ai`) — via the NODE, not Grafana
+- **Direction**: read (indirect: the Foundation node calls it; this repo only reads the result from Loki)
+- **Transport**: the node runs `/opt/genlayer-node/llm-telemetry/unhardcoded-usage-poll.py` (systemd `unhardcoded-usage-poll.timer`, every 5 min, user `genlayer`) → `GET https://router.ygr.ai/v1/usage` → appends JSON lines to `/var/log/genlayer/node-llm-unhardcoded.log` → stock Alloy ships it (`node*.log`) → Loki `grafanacloud-logs`
+- **Auth**: `UNHARDCODEDKEY` from the node's own `/opt/genlayer-node/.env` (consumer `validators-testnet-004`). **Grafana never holds the key** (owner's call, 2026-11-03). Other `/v1/*` routes 403 `caller_route_not_allowed` for this key.
+- **Cadence**: 5-min poll on the node; per dashboard load + 5m refresh in Grafana
+- **We consume**: `event="router_request"` — `served_model`, `upstream`, `status`, `ok`, `latency_ms` (often absent upstream), `tokens_*`, `cost_usd`, `error_kind` — one line per request NOT seen before (fingerprint set in `/opt/genlayer-node/llm-telemetry/unhardcoded-seen.json`; the first run seeds it silently so history isn't re-stamped as now); `event="router_totals"` — lifetime `requests`, `errors`, `cost_usd` per poll
+- **Degrades**: the Unhardcoded row reads 0 / No data with no error if the timer stops, the key rotates, or the router changes its report (`schema_version` 3 as of 2026-11-03). Loki stamps lines at read time, so a request appears up to ~6 min late. The report keeps only the last 100 requests, so >100 requests in 5 min would drop some (traffic is ~1/day).
+- **Why**: the router answers `profile:default` with whatever model it picks (`x_router.served_model_id`); GenVM hands Lua only the `usage` block, so the LLM path itself can never record the served model.
+- **Code**: `scripts/build_llm_providers.py` (`ROUTER`, `TOTALS`); `node-telemetry/unhardcoded-usage-poll.py` + `.service`/`.timer` (installed copies on the node)
+
 ### Grafana public-dashboard query API (`validator_telemetry_report.py`)
 - **Direction**: read
 - **Transport**: HTTP REST

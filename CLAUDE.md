@@ -438,6 +438,18 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   - Rewrites the Legend once at top; sections are plain uncollapsed rows.
 - **RETIRED 2026-10-27** `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
+- `gl-llm-providers` → `llm_providers.json` — **"GenLayer Foundation | LLM
+  Providers"** (2026-11-03), team-only. GENERATED: edit
+  `scripts/build_llm_providers.py`, never the JSON. What the Foundation node's
+  LLM rotation (unhardcoded / morpheus / pearl, random lead per session) does:
+  prompts vs attempts, answered %, first-try %, failures + timeouts, calls /
+  failures / p95 latency per provider, fallback paths, lead → who answered, and
+  logs of failures/prompts — all from `node-llm-calls.log` written by OUR patched
+  `genvm-llm-rotate.lua` on the node (⚠️ re-apply after every node upgrade, or the
+  board silently goes to 0; source + reinstall steps in `node-telemetry/`). Bottom row = which model/upstream unhardcoded actually
+  served `profile:default`, from `node-llm-unhardcoded.log`, which a 5-min
+  systemd timer on the node writes from the router's `/v1/usage` — the key stays
+  on the node, Grafana never holds it. See INTEGRATIONS.md.
 - `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
   select by **`validator_name`** (primary), node derives from it; ⚠️ both vars come
   from `genlayer_node_info`, so the profile cannot select a validator that does not

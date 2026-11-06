@@ -1,0 +1,1860 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "What the Foundation node's LLM rotation (unhardcoded / morpheus / pearl) is doing: calls, failures, timeouts, latency, fallbacks, and the model unhardcoded served.",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": 906162504126464,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Foundation node \u2014 every LLM call (time range)",
+      "type": "row"
+    },
+    {
+      "description": "LLM prompts the node ran in the selected range (one per gl.nondet LLM call a contract made). Attempts = provider calls, so Attempts > Prompts means fallbacks happened.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Prompts"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Attempts"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        }
+      ],
+      "title": "Prompts",
+      "type": "stat"
+    },
+    {
+      "description": "Share of prompts that got an answer from SOME provider. A miss here means every provider in the chain failed (NO_PROVIDER_FOR_PROMPT) \u2014 the contract call fails.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ef4444",
+                "value": null
+              },
+              {
+                "color": "#fbbf24",
+                "value": 90
+              },
+              {
+                "color": "#10b981",
+                "value": 98
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Answered"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 5,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "100 * sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" | ok=`true` [$__range])) / sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" [$__range]))",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Answered",
+      "type": "stat"
+    },
+    {
+      "description": "Share of prompts the FIRST provider tried answered \u2014 no fallback needed.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#ef4444",
+                "value": null
+              },
+              {
+                "color": "#fbbf24",
+                "value": 90
+              },
+              {
+                "color": "#10b981",
+                "value": 98
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "First try"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 9,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "100 * sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" | ok=`true` | attempts=`1` [$__range])) / sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" [$__range]))",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "First try",
+      "type": "stat"
+    },
+    {
+      "description": "Provider attempts that failed (any reason), and of those the timeouts (HTTP 408/504, or an error mentioning a timeout).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#10b981",
+                "value": null
+              },
+              {
+                "color": "#fbbf24",
+                "value": 1
+              },
+              {
+                "color": "#ef4444",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Failed attempts"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Timeouts"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "C"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Unanswered prompts"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 13,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` | error_kind=~\"timeout|gateway_timeout\" or error=~\"(?i).*time.?out.*\" [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" | ok=`false` [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "C"
+        }
+      ],
+      "title": "Failures",
+      "type": "stat"
+    },
+    {
+      "description": "USD unhardcoded charged the Foundation node's key in the selected range, and over the key's whole life (from the router's own report, polled on the node every 5 min).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "In range"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Key lifetime"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap cost_usd [$__range])) or vector(0)",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "max(max_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_totals\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        }
+      ],
+      "title": "Unhardcoded spend",
+      "type": "stat"
+    },
+    {
+      "description": "Provider attempts per hour, by provider. The rotation picks a random lead per session, so over time the three should be roughly even \u2014 a provider that is never tried first is being skipped (e.g. morpheus has no JSON mode, so JSON prompts skip it).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "pointSize": 6,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 7,
+      "interval": "1h",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" [$__interval]))",
+          "legendFormat": "{{provider}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Calls per provider",
+      "type": "timeseries"
+    },
+    {
+      "description": "Failed attempts per hour, by provider and reason (error_kind from the HTTP status: timeout, gateway_timeout, rate_limit, server_error, auth_error, network_error, \u2026).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "pointSize": 6,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 8,
+      "interval": "1h",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider, error_kind) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` [$__interval]))",
+          "legendFormat": "{{provider}} \u00b7 {{error_kind}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Failures per provider",
+      "type": "timeseries"
+    },
+    {
+      "description": "95th percentile wall time of a SUCCESSFUL provider call, per hour. Points, not lines: calls are sparse.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "min": 0,
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 9,
+      "interval": "1h",
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "quantile_over_time(0.95, {validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`true` | unwrap ms [$__interval]) by (provider)",
+          "legendFormat": "{{provider}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Latency per provider (p95)",
+      "type": "timeseries"
+    },
+    {
+      "description": "Prompts per hour by the path the rotation took: lead > fallback > \u2026 (providers_tried). A long chain means the lead keeps failing.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "pointSize": 6,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 10,
+      "interval": "1h",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (providers_tried) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" [$__interval]))",
+          "legendFormat": "{{providers_tried}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Fallbacks",
+      "type": "timeseries"
+    },
+    {
+      "description": "One row per provider over the selected range. Tried first = attempt #1 of a prompt (normally the session's rotation lead; if the lead can't take the prompt, the next one). As fallback = tried after another provider failed.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "-"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Success %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#ef4444",
+                      "value": null
+                    },
+                    {
+                      "color": "#fbbf24",
+                      "value": 0.9
+                    },
+                    {
+                      "color": "#10b981",
+                      "value": 0.98
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#10b981",
+                      "value": null
+                    },
+                    {
+                      "color": "#fbbf24",
+                      "value": 1
+                    },
+                    {
+                      "color": "#ef4444",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Timeouts"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#10b981",
+                      "value": null
+                    },
+                    {
+                      "color": "#fbbf24",
+                      "value": 1
+                    },
+                    {
+                      "color": "#ef4444",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95 ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 15,
+        "x": 0,
+        "y": 22
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Attempts"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`true` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` | error_kind=~\"timeout|gateway_timeout\" or error=~\"(?i).*time.?out.*\" [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | attempt=`1` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | fallback=`true` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "avg_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`true` | unwrap ms [$__range]) by (provider)",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "quantile_over_time(0.95, {validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`true` | unwrap ms [$__range]) by (provider)",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (provider) (sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`true` | unwrap tokens_total [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "I"
+        }
+      ],
+      "title": "By provider",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "Value #F": 6,
+              "Value #G": 7,
+              "Value #H": 8,
+              "Value #I": 9,
+              "provider": 0
+            },
+            "renameByName": {
+              "Value #A": "Attempts",
+              "Value #B": "OK",
+              "Value #C": "Failed",
+              "Value #D": "Timeouts",
+              "Value #E": "Tried first",
+              "Value #F": "As fallback",
+              "Value #G": "Avg ms",
+              "Value #H": "p95 ms",
+              "Value #I": "Tokens",
+              "provider": "Provider"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Success %",
+            "binary": {
+              "left": "OK",
+              "operator": "/",
+              "right": "Attempts"
+            },
+            "mode": "binary",
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "description": "For each session's rotation lead, which provider actually answered the prompt. Off-diagonal rows are fallbacks or lead skips (morpheus has no JSON mode, so JSON prompts skip it).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "-"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 9,
+        "x": 15,
+        "y": 22
+      },
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Prompts"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (lead, provider, ok) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Rotation lead \u2192 who answered",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value #A": "Prompts",
+              "lead": "Lead",
+              "ok": "OK",
+              "provider": "Answered by"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "description": "Every failed provider attempt, newest first. Expand a line for the full record (http_status, error_kind, error causes, tx_id).",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"attempt\" | ok=`false` | line_format `{{.provider}} \u00b7 {{.error_kind}} {{.http_status}} \u00b7 {{.ms}}ms \u00b7 attempt {{.attempt}} \u00b7 {{.error}} \u00b7 tx {{.tx_id}}`",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed attempts",
+      "type": "logs"
+    },
+    {
+      "description": "Every prompt, newest first: who answered, the path taken, and total time.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 14,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-calls.log\"} | json | __error__=\"\" | event=\"prompt\" | line_format `{{if eq .ok \"true\"}}OK{{else}}FAILED{{end}} \u00b7 {{.providers_tried}} \u00b7 {{.ms}}ms \u00b7 {{.format}} \u00b7 lead {{.lead}} \u00b7 tx {{.tx_id}}`",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "All prompts",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 15,
+      "panels": [],
+      "title": "Unhardcoded \u2014 which model the router actually served",
+      "type": "row"
+    },
+    {
+      "description": "Which model unhardcoded's router actually used for the node's `profile:default` requests, in the selected range (x_router.served_model_id). The node itself can't see this.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "-"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "USD"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#10b981",
+                      "value": null
+                    },
+                    {
+                      "color": "#fbbf24",
+                      "value": 1
+                    },
+                    {
+                      "color": "#ef4444",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 16,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Requests"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (served_model) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (served_model) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | ok=`false` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (served_model) (sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap tokens_total [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (served_model) (sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap cost_usd [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "avg_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap latency_ms [$__range]) by (served_model)",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "E"
+        }
+      ],
+      "title": "Served model",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "served_model": 0
+            },
+            "renameByName": {
+              "Value #A": "Requests",
+              "Value #B": "Errors",
+              "Value #C": "Tokens",
+              "Value #D": "USD",
+              "Value #E": "Avg ms",
+              "served_model": "Served model"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "description": "Which upstream unhardcoded routed to (antseed, openrouter, bedrock, \u2026), in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "-"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "USD"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Tokens"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "#10b981",
+                      "value": null
+                    },
+                    {
+                      "color": "#fbbf24",
+                      "value": 1
+                    },
+                    {
+                      "color": "#ef4444",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "id": 17,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Requests"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (upstream) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (upstream) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | ok=`false` [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (upstream) (sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap tokens_total [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (upstream) (sum_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap cost_usd [$__range]))",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "avg_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | unwrap latency_ms [$__range]) by (upstream)",
+          "format": "table",
+          "legendFormat": "",
+          "queryType": "instant",
+          "refId": "E"
+        }
+      ],
+      "title": "Upstream provider",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "Value #D": 4,
+              "Value #E": 5,
+              "upstream": 0
+            },
+            "renameByName": {
+              "Value #A": "Requests",
+              "Value #B": "Errors",
+              "Value #C": "Tokens",
+              "Value #D": "USD",
+              "Value #E": "Avg ms",
+              "upstream": "Upstream"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "description": "Requests per hour on the Foundation node's key, by the model the router picked. Timestamps are when the node's 5-min poll logged them.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "pointSize": 6,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 46
+      },
+      "id": 18,
+      "interval": "1h",
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "sum by (served_model) (count_over_time({validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" [$__interval]))",
+          "legendFormat": "{{served_model}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Unhardcoded requests by served model",
+      "type": "timeseries"
+    },
+    {
+      "description": "Every request the router logged for this key, newest first: status, served model, upstream, latency, tokens, cost.",
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 10,
+        "y": 46
+      },
+      "id": 19,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "grafanacloud-logs"
+          },
+          "editorMode": "code",
+          "expr": "{validator_name=\"$validator\", filename=\"/var/log/genlayer/node-llm-unhardcoded.log\"} | json | __error__=\"\" | event=\"router_request\" | line_format `{{.status}} \u00b7 {{.served_model}} via {{.upstream}} \u00b7 {{.latency_ms}}ms \u00b7 {{.tokens_total}} tok \u00b7 USD {{.cost_usd}}{{if .error_kind}} \u00b7 {{.error_kind}}{{end}}`",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Unhardcoded requests",
+      "type": "logs"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "tags": [
+    "foundation",
+    "testnet",
+    "llm",
+    "genvm"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "genlayer-foundation-bradbury-1",
+          "value": "genlayer-foundation-bradbury-1"
+        },
+        "hide": 0,
+        "label": "Node",
+        "name": "validator",
+        "options": [
+          {
+            "selected": true,
+            "text": "genlayer-foundation-bradbury-1",
+            "value": "genlayer-foundation-bradbury-1"
+          }
+        ],
+        "query": "genlayer-foundation-bradbury-1",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "GenLayer Foundation | LLM Providers",
+  "uid": "gl-llm-providers",
+  "version": 1
+}
