@@ -484,6 +484,34 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
     "", "")` (`$latest_version` interpolates because it's inside the query),
     format `table`, `reduceOptions.fields="/^disp$/"`, and **regex** value
     mappings color `disp` green/red (`(Up to date)`→green, `(Behind.*)`→red).
+  - **Stake pending activation (2026-11-12)** — one state, one colour across the
+    portal, Deckard and this board: a validator that has staked but whose deposit
+    is not live yet (deposits go live 2 epochs after they are made) is **yellow
+    "Stake pending activation"**, not red / inactive. Three places:
+    (1) **Health (portal verdict)** shows the portal's `health` as-is, so it turns
+    yellow by itself once the portal ships the `activation_pending` finding
+    (points PR #1473; until it is deployed the portal still says red).
+    (2) **Things to fix** has an `activation_pending` row in the generator's `FIX`
+    map ("Nothing to fix…"); same dependency on the portal.
+    (3) **Chain** is live on-chain and does NOT wait for the portal: its batch
+    gained `validatorView(node)` (id 4) and the jq says pending when the node is
+    not selectable, not banned, epoch > 0, `vStake + vDeposit >= 42,000 GEN`, and
+    either `vDeposit > 0` with `vStake` under the minimum (day one, live at
+    epoch+2) or `eBanned == 0 and ePrimed == epoch` (day two: stake credited,
+    `vDeposit` back to 0, still not selectable; live at epoch+1). Day two is an
+    APPROXIMATION of the portal/Deckard rule, which reads the deposit commits
+    (`validatorDepositByEpoch(node, epoch)` / `(node, epoch-1)`): a dashboard
+    target cannot put a computed epoch in a request body. It can differ for an
+    old, fully staked node that re-primes after dropping out (yellow here, red
+    there). 42,000 GEN is `DEFAULT_VALIDATOR_MIN_STAKE()`; the live
+    `validatorMinStake()` reads 0.01 GEN and is not what lets a node join.
+    The **network board** needs nothing: its Health column already maps
+    `yellow|<label>`, and its table only lists the current set (active +
+    quarantined), where a pending node never appears; the Issues label map got
+    `activation_pending` → "Stake pending activation" for completeness.
+    "Status and money per epoch" still shows the explorer's own per-epoch word
+    (`inactive`, red) for those two epochs — that is history, not the verdict.
+    No alert rule looks at participation, so none can fire on a pending node.
   - **Patch-by-index gotcha**: Grafana stores/returns `panels[]` sorted by
     `gridPos` (y,x), which differs from this file's hand order. When patching a
     panel via `update_dashboard` `operations` with `$.panels[N]`, resolve `N`

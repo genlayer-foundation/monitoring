@@ -190,6 +190,7 @@ FIX = {
     "inactive": ("Not participating", "Check self stake is at the minimum and the node is primed for the next epoch."),
     "not_deployed": ("Not deployed", "Deploy a validator wallet and node on this network."),
     "stake_below_minimum": ("Stake below minimum", "Top up self stake to the minimum."),
+    "activation_pending": ("Stake pending activation", "Nothing to fix: a deposit goes live 2 epochs after it is made. Keep the node running and synced."),
     "no_metrics": ("Not sending metrics", "Enable metrics push — docs.genlayer.com/validators/monitoring."),
     "no_logs": ("Not sending logs", "Enable log shipping — docs.genlayer.com/validators/monitoring."),
     "version_behind": ("Version behind", "Upgrade the node to the latest release."),
@@ -238,16 +239,35 @@ panel("table", "Things to fix",
           {"matcher": {"id": "byRegexp", "options": "details|fix"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "auto", "wrapText": True}}]}])
 
 SEL = "0x2d2f135d"
+# STAKE PENDING ACTIVATION (2026-11-12) — the state the portal (`activation_pending`
+# finding) and Deckard (`pending_activation`) show in yellow. A deposit made in epoch
+# N is priced into the stake record when the node is primed in N+1 and the node is
+# selectable at N+2. From validatorView (words: 0 eBanned, 1 ePrimed, 2 vStake,
+# 6 vDeposit): day one = vDeposit > 0 and vStake under the minimum; day two =
+# vStake credited, vDeposit 0, primed for THIS epoch, never banned. Both only when
+# vStake + vDeposit reaches the 42,000 GEN needed to join. Day two is an
+# approximation: the portal and Deckard read the deposit commits
+# (validatorDepositByEpoch) instead, which needs the epoch in the request body and a
+# dashboard target cannot chain two calls.
+MIN_STAKE_WEI = "42000000000000000000000"
+PENDING_JQ = ('| ((map(select(.id==4))[0].result // "") | ltrimstr("0x")) as $v\n'
+              '| ($v[0:64] | if . == "" then 0 else h2i end) as $eb | ($v[64:128] | if . == "" then 0 else h2i end) as $primed\n'
+              '| ($v[128:192] | if . == "" then 0 else h2i end) as $vstake | ($v[384:448] | if . == "" then 0 else h2i end) as $vdep\n'
+              f'| ($ep > 0 and ($vstake + $vdep) >= {MIN_STAKE_WEI} and (($vdep > 0 and $vstake < {MIN_STAKE_WEI}) or ($eb == 0 and $primed == $ep))) as $pending\n'
+              f'| (if $vdep > 0 and $vstake < {MIN_STAKE_WEI} then $ep + 2 else $ep + 1 end) as $live\n')
 panel("stat", "Chain",
-      "Live on-chain participation, same rule as the network board: in the selectable set = active; quarantined until epoch N; permanently quarantined = no longer participating; otherwise not participating. Source: staking `epoch()`, `selectableValidators()`, `validatorBanned(node)`.",
-      [inf_rpc([(STAKING, "0x900cf0cf"), (STAKING, SEL), (STAKING, "0x090d60bd000000000000000000000000${node_hex}")],
+      "Live on-chain participation, same rule as the network board: in the selectable set = active; quarantined until epoch N; permanently quarantined = no longer participating; staked and waiting for the deposit to go live = stake pending activation (yellow, same state as the portal and Deckard); otherwise not participating. Source: staking `epoch()`, `selectableValidators()`, `validatorBanned(node)`, `validatorView(node)`.",
+      [inf_rpc([(STAKING, "0x900cf0cf"), (STAKING, SEL), (STAKING, "0x090d60bd000000000000000000000000${node_hex}"),
+                (STAKING, "0xb83f5b39000000000000000000000000${node_hex}")],
                'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
                '(map(select(.id==1))[0].result | ltrimstr("0x") | h2i) as $ep\n'
                '| (map(select(.id==2))[0].result | ltrimstr("0x") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n'
                '| (map(select(.id==3))[0].result | ltrimstr("0x")) as $b\n'
                '| ($b[64:128] | if . == "" then 0 else h2i end) as $until | (($b[128:192] // "") | if . == "" then 0 else h2i end) as $perm\n'
+               + PENDING_JQ +
                '| [{chain: (if $perm > 0 then "red|No longer participating" elif $until > $ep then "orange|Quarantined until epoch \\($until)" '
-               'elif ($sel | index("${node_hex}")) != null then "green|Active (epoch \\($ep))" else "red|Not participating" end)}]')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
+               'elif ($sel | index("${node_hex}")) != null then "green|Active (epoch \\($ep))" '
+               'elif $pending then "yellow|Stake pending activation (live at epoch \\($live))" else "red|Not participating" end)}]')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
 panel("stat", "Version",
       "The node's version, and whether it is the newest version running on the network. Source: `genlayer_node_info` labels.",
       [prom(f'label_replace(max by (version)(genlayer_node_info{{{N}, version="$latest_version"}}), "disp", "$1 — up to date", "version", "(.*)") '
