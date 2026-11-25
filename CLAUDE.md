@@ -12,9 +12,12 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 `staking`, `fees_processor`, `genesis_block`, `appeal_window_s`, display `name`, uid
 `slug`). `None` = not known yet; never guess one. The two generators read nothing else:
 
-- `python3 scripts/build_network.py [network]` derives a network's copy of the network
-  board from the hand-maintained `network.json` by rewriting its literals profile to
-  profile (it detects which network `network.json` carries from its `network=` label).
+- `python3 scripts/build_network.py [network]` generates a network's copy of the network
+  board from **`scripts/network.template.json`** — the complete, hand-maintained board
+  with every panel's real query — by rewriting the literals it carries (frozen in
+  `TEMPLATE` in the script) to the profile. **Edit panels in the template, never in
+  `network.json` / `network_<slug>.json`**: all of those are generated. (A template is
+  needed because no single network has every source: see the table.)
 - `python3 scripts/build_validator_profile.py [network]` generates the per-validator board.
 
 `networks.CURRENT` (today `bradbury-phase2`) owns the **unsuffixed** uids
@@ -24,8 +27,8 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 
 | Network | Profile | Boards | State 2026-11-25 |
 |---|---|---|---|
-| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; 41 nodes still push `bradbury-phase2` (v0.6.0-rc.5) |
-| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3` (live, team-only); `validator_profile_phase3.json` is in the repo, **not uploaded** | live on chain (epoch 2, 11 selectable); no roster, no explorer, no node telemetry |
+| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; roster yes, **explorer gone**; 41 nodes still push `bradbury-phase2` (v0.6.0-rc.5) |
+| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3`, `gl-validator-profile-phase3` (both live, team-only) | live on chain (epoch 2, 11 selectable); explorer yes, **no roster**, no node telemetry |
 | Clarke | `clarke` (empty slot) | none | starts 2026-11-26, alongside Phase 3 |
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
@@ -37,10 +40,19 @@ and chain explorer) — networks are told apart by contract address only. Stakin
 
 - **Portal roster**: no key (`?network=bradbury3` answers 400 `Unknown network`) →
   `portal_key: None`. Health, Issues, Open issues, names and portal links are empty.
-- **Explorer**: `scan.bradbury.genlayer.com` still says Phase 2, and its `/api/v1`
-  answered 500/503 on every route on 2026-11-25 (so the PUBLIC Phase 2 board's
-  consensus / transactions / stake / epoch panels were erroring that day too — not
-  ours to fix) → `explorer: None`.
+- (It has an **explorer** since 2026-11-25 ~14:00 UTC: `scan.bradbury.genlayer.com`
+  — the host that was Phase 2's — switched to Phase 3 after a morning of 500/503s.
+  Same routes and shapes; all 11 `/validators` are the chain's selectable set.
+  `appeal_window_s` = **1800** (the `decided` timeout; accepted → finalized measured
+  1811 s on 11 txs via `/transactions/consensus-steps/{hash}`), not Phase 2's 60.)
+- ⚠️ **Phase 2 therefore has NO explorer any more** (`explorer: None` in its profile).
+  The repo's `network.json` / `validator_profile.json` are regenerated without explorer
+  queries, but **they are not uploaded**: live `gl-testnet-network` (the public URL)
+  and `gl-validator-profile` still run the 2026-11-22 version, whose explorer panels
+  now show **Phase 3** data (epoch 2, 33 txs, 462K GEN, "GenLayer Labs 1-11") next to
+  Phase 2's validator set, telemetry and roster — and its time to acceptance subtracts
+  60 s instead of 1800 (reads ~29 min). Owner's call: upload the regenerated Phase 2
+  files, or move `CURRENT` to Phase 3. Until then repo ≠ live for those two boards.
 - **Node telemetry**: no node pushes `network="bradbury-phase3"` (metrics or logs). The
   label exists only on the Heartbeat monitors' series (`epoch_monitor_*`, `heartbeat_*`,
   `ban_monitor_*`, `balance_monitor_*`). None of the 11 Phase 3 validators reports under
@@ -52,6 +64,11 @@ for <network> yet", gets an `[Incomplete: …]` description, and a note panel is
 the top (`networks.stub_unavailable`). An unknown roster key would otherwise 400 and
 error the panel. Links to a missing explorer are dropped.
 
+**Validator names without a roster (2026-11-25)**: the table's `Name` merge gained the
+explorer's `metadata.name` (`xname X`) as a fallback after the roster and metrics names,
+so a network with an explorer but no roster shows names ("GenLayer Labs 1"), not
+addresses. Order: portal name > metrics `validator_name` > explorer name > address.
+
 **Penalty events need an address filter (2026-11-25).** Chain 4221 hosts several
 deployments (Phase 2, Phase 3, Phantom Bradbury, Pre Phantom), so a topic-only
 `eth_getLogs` mixes them: since Phase 3 genesis every `ValidatorBannedIdleness` /
@@ -61,16 +78,16 @@ deployments (Phase 2, Phase 3, Phantom Bradbury, Pre Phantom), so a topic-only
 **FeesProcessor** (`ValidatorPenaltyRecorded` — the `0x040a…a775` this file used to call
 "fee manager" is Phase 2's FeesProcessor). The generator writes
 `address` + `fromBlock = genesis_block` into every `eth_getLogs`. ⚠️ The public Phase 2
-`network.json` is still **topic-only** (left as is), so its penalty panels count Phantom
-Bradbury's events too, and the wide range now times out (504) at times. It gets the
-filter the first time the generator rewrites it (see below).
+board live in Grafana is still **topic-only**, so its penalty panels count Phantom
+Bradbury's events too, and the wide range now times out (504) at times. The regenerated
+`network.json` in the repo has the filter; it is not uploaded yet (see above).
 
-**Moving the public URL to another network** (once its roster key and explorer exist):
-fill `portal_key`, `explorer`, `appeal_window_s` in its profile, set `CURRENT` to it, run
-both generators with no argument, upload `network.json` to uid `gl-testnet-network`
-(same uid, so the public share and token `71f94ef4…` stay) and `validator_profile.json`
-to `gl-validator-profile`; the old network comes out as `network_<slug>.json`. The
-generator refuses to make a network with a missing source the public board.
+**Moving the public URL to another network**: set `CURRENT` to it, run both generators
+with no argument, upload `network.json` to uid `gl-testnet-network` (same uid, so the
+public share and token `71f94ef4…` stay) and `validator_profile.json` to
+`gl-validator-profile`; the old network comes out as `network_<slug>.json`. A source
+the network lacks shows as "No <source> for <network> yet" on the public board too —
+the generator says which when it writes the file.
 
 **Adding a network (Clarke)**: fill its profile (the generators list what is missing),
 run `python3 scripts/build_network.py clarke` and
@@ -79,7 +96,9 @@ folder `fkpd6m`, add a row above.
 
 **Uploading**: the Grafana MCP `update_dashboard` takes the JSON inline, which for these
 100 kB boards means pasting it panel by panel (create with the first panels, then
-`add $.panels/-`). Grafana normalises on save (schemaVersion, drops `value: null` and
+`add $.panels/-`). ⚠️ Every patch-mode save strips EMPTY values (`"options": {}`,
+`"targets": []`, nested panels of rows it did not touch) from content already on the
+board; re-send the affected panels in the same call, then compare. Grafana normalises on save (schemaVersion, drops `value: null` and
 empty `transformations`); compare after normalising. An Editor token + the README's
 `curl` is one call instead.
 
@@ -162,8 +181,9 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
 
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
-- `gl-testnet-network` → `network.json` — display title **"GenLayer Testnet |
-  Network"**, built 2026-10-27 as the ONE general board that replaces
+- `gl-testnet-network` → `network.json` (GENERATED since 2026-11-25 from
+  `scripts/network.template.json` — the notes below describe the template) — display
+  title **"GenLayer Testnet | Network"**, built 2026-10-27 as the ONE general board that replaces
   `gl-testnets-index`, `gl-network-status`, `gl-validator-status` and
   `gl-validator-status-public` (all four deleted 2026-10-27; their JSON is in git
   history). Its Validators table IS the old Validator Status table pipeline, so the
@@ -533,8 +553,10 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   systemd timer on the node writes from the router's `/v1/usage` — the key stays
   on the node, Grafana never holds it. See INTEGRATIONS.md.
 - `gl-testnet-network-phase3` → `network_phase3.json` — the network board for Bradbury
-  Phase 3, GENERATED by `scripts/build_network.py` (never edit it; edit `network.json`
-  or the profile). Team-only. See "Networks" at the top for what is empty and why.
+  Phase 3, GENERATED by `scripts/build_network.py` (never edit it; edit
+  `scripts/network.template.json` or the profile). Team-only. See "Networks" at the top
+  for what is empty and why. `gl-validator-profile-phase3` →
+  `validator_profile_phase3.json` is its per-validator board (uploaded 2026-11-25).
 - `gl-validator-profile` → `validator_profile.json` (and `validator_profile_<slug>.json`
   for other networks) — GENERATED by `scripts/build_validator_profile.py [network]`;
   per-validator drill-down;
