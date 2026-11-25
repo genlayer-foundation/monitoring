@@ -5,7 +5,85 @@ JSON file in this repo (unwrapped dashboard model, pretty-printed). Use the
 Grafana MCP server to manage Grafana resources; fall back to the Grafana API for
 anything the MCP doesn't support.
 
-## Current network — Bradbury Phase 2 (since 2026-10-20)
+## Networks — one profile each (since 2026-11-25)
+
+Every per-network fact the boards hard-code lives in **`scripts/networks.py`**: one
+profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
+`staking`, `fees_processor`, `genesis_block`, `appeal_window_s`, display `name`, uid
+`slug`). `None` = not known yet; never guess one. The two generators read nothing else:
+
+- `python3 scripts/build_network.py [network]` derives a network's copy of the network
+  board from the hand-maintained `network.json` by rewriting its literals profile to
+  profile (it detects which network `network.json` carries from its `network=` label).
+- `python3 scripts/build_validator_profile.py [network]` generates the per-validator board.
+
+`networks.CURRENT` (today `bradbury-phase2`) owns the **unsuffixed** uids
+`gl-testnet-network` (public) and `gl-validator-profile`. Every other network gets
+`gl-testnet-network-<slug>` / `gl-validator-profile-<slug>` in files
+`network_<slug>.json` / `validator_profile_<slug>.json`, team-only (no `public` tag).
+
+| Network | Profile | Boards | State 2026-11-25 |
+|---|---|---|---|
+| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; 41 nodes still push `bradbury-phase2` (v0.6.0-rc.5) |
+| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3` (live, team-only); `validator_profile_phase3.json` is in the repo, **not uploaded** | live on chain (epoch 2, 11 selectable); no roster, no explorer, no node telemetry |
+| Clarke | `clarke` (empty slot) | none | starts 2026-11-26, alongside Phase 3 |
+
+**Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
+and chain explorer) — networks are told apart by contract address only. Staking
+`0xcE16862EAf10B97A0619BeBb662991fb4a52e346`, FeesProcessor
+`0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4`, AddressManager deployed at block
+**694191** (2026-11-24 17:03 UTC, found by `eth_getCode` bisection). Source:
+`genlayerlabs/genlayer-networks` `bradbury-phase-3/`. What it lacks, verified 2026-11-25:
+
+- **Portal roster**: no key (`?network=bradbury3` answers 400 `Unknown network`) →
+  `portal_key: None`. Health, Issues, Open issues, names and portal links are empty.
+- **Explorer**: `scan.bradbury.genlayer.com` still says Phase 2, and its `/api/v1`
+  answered 500/503 on every route on 2026-11-25 (so the PUBLIC Phase 2 board's
+  consensus / transactions / stake / epoch panels were erroring that day too — not
+  ours to fix) → `explorer: None`.
+- **Node telemetry**: no node pushes `network="bradbury-phase3"` (metrics or logs). The
+  label exists only on the Heartbeat monitors' series (`epoch_monitor_*`, `heartbeat_*`,
+  `ban_monitor_*`, `balance_monitor_*`). None of the 11 Phase 3 validators reports under
+  any label, so Reporting reads 0 and every table row reads `silent` — true, not a bug.
+
+**A missing source is generated as an empty inline Infinity query** (`source: inline`,
+`data: "[]"`, `root_selector: "[]"`), never a guessed URL: the panel reads "No <source>
+for <network> yet", gets an `[Incomplete: …]` description, and a note panel is added at
+the top (`networks.stub_unavailable`). An unknown roster key would otherwise 400 and
+error the panel. Links to a missing explorer are dropped.
+
+**Penalty events need an address filter (2026-11-25).** Chain 4221 hosts several
+deployments (Phase 2, Phase 3, Phantom Bradbury, Pre Phantom), so a topic-only
+`eth_getLogs` mixes them: since Phase 3 genesis every `ValidatorBannedIdleness` /
+`ValidatorSlash` came from Phantom Bradbury's staking and every
+`ValidatorPenaltyRecorded` from the Phase 2 and Phantom FeesProcessors. Emitters:
+**Staking** (`ValidatorSlash`, `ValidatorBannedIdleness`, `ValidatorJoin`) and
+**FeesProcessor** (`ValidatorPenaltyRecorded` — the `0x040a…a775` this file used to call
+"fee manager" is Phase 2's FeesProcessor). The generator writes
+`address` + `fromBlock = genesis_block` into every `eth_getLogs`. ⚠️ The public Phase 2
+`network.json` is still **topic-only** (left as is), so its penalty panels count Phantom
+Bradbury's events too, and the wide range now times out (504) at times. It gets the
+filter the first time the generator rewrites it (see below).
+
+**Moving the public URL to another network** (once its roster key and explorer exist):
+fill `portal_key`, `explorer`, `appeal_window_s` in its profile, set `CURRENT` to it, run
+both generators with no argument, upload `network.json` to uid `gl-testnet-network`
+(same uid, so the public share and token `71f94ef4…` stay) and `validator_profile.json`
+to `gl-validator-profile`; the old network comes out as `network_<slug>.json`. The
+generator refuses to make a network with a missing source the public board.
+
+**Adding a network (Clarke)**: fill its profile (the generators list what is missing),
+run `python3 scripts/build_network.py clarke` and
+`python3 scripts/build_validator_profile.py clarke`, upload the two files they name to
+folder `fkpd6m`, add a row above.
+
+**Uploading**: the Grafana MCP `update_dashboard` takes the JSON inline, which for these
+100 kB boards means pasting it panel by panel (create with the first panels, then
+`add $.panels/-`). Grafana normalises on save (schemaVersion, drops `value: null` and
+empty `transformations`); compare after normalising. An Editor token + the README's
+`curl` is one call instead.
+
+## Bradbury Phase 2 — the network on the public board (since 2026-10-20)
 
 The testnet restarted on **Arbitrum Orbit (Conduit)**, replacing ZKsync. **Asimov
 (`asimov-phase5`) and Bradbury Phase 1 (`bradbury-phase1`) are sunset**; the only
@@ -44,6 +122,9 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   `node` join key is the **wallet**, never the owner.
 - Alerts (`grafana-alerts/`) are label-agnostic — no `network` filter in any expr,
   `network` is only carried through `by()` and templates — so they need no change.
+  Re-checked against live Grafana 2026-11-25 for Phase 3: still 9 rules, none names a
+  network, so Phase 3 nodes are covered the moment they push telemetry and Phase 2
+  nodes keep alerting until they stop pushing.
 
 ## Grafana instance & datasources
 
@@ -439,7 +520,8 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
 - **RETIRED 2026-10-27** `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
 - `gl-llm-providers` → `llm_providers.json` — **"GenLayer Foundation | LLM
-  Providers"** (2026-11-03), team-only. GENERATED: edit
+  Providers"** (2026-11-03), team-only, network-independent (it follows the Foundation
+  node by `validator_name`). GENERATED: edit
   `scripts/build_llm_providers.py`, never the JSON. What the Foundation node's
   LLM rotation (unhardcoded / morpheus / pearl, random lead per session) does:
   prompts vs attempts, answered %, first-try %, failures + timeouts, calls /
@@ -450,7 +532,12 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   served `profile:default`, from `node-llm-unhardcoded.log`, which a 5-min
   systemd timer on the node writes from the router's `/v1/usage` — the key stays
   on the node, Grafana never holds it. See INTEGRATIONS.md.
-- `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
+- `gl-testnet-network-phase3` → `network_phase3.json` — the network board for Bradbury
+  Phase 3, GENERATED by `scripts/build_network.py` (never edit it; edit `network.json`
+  or the profile). Team-only. See "Networks" at the top for what is empty and why.
+- `gl-validator-profile` → `validator_profile.json` (and `validator_profile_<slug>.json`
+  for other networks) — GENERATED by `scripts/build_validator_profile.py [network]`;
+  per-validator drill-down;
   select by **`validator_name`** (primary), node derives from it; ⚠️ both vars come
   from `genlayer_node_info`, so the profile cannot select a validator that does not
   push metrics (true of every Phase 2 validator as of 2026-10-20); has an
