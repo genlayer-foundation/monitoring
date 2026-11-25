@@ -20,15 +20,15 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
   needed because no single network has every source: see the table.)
 - `python3 scripts/build_validator_profile.py [network]` generates the per-validator board.
 
-`networks.CURRENT` (today `bradbury-phase2`) owns the **unsuffixed** uids
+`networks.CURRENT` (**`bradbury-phase3` since 2026-11-25**, Ivan's call) owns the **unsuffixed** uids
 `gl-testnet-network` (public) and `gl-validator-profile`. Every other network gets
 `gl-testnet-network-<slug>` / `gl-validator-profile-<slug>` in files
 `network_<slug>.json` / `validator_profile_<slug>.json`, team-only (no `public` tag).
 
 | Network | Profile | Boards | State 2026-11-25 |
 |---|---|---|---|
-| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; **roster gone** (portal returns `[]` for `bradbury2` since 2026-11-25) and **explorer gone**; ~40 nodes still push `bradbury-phase2` |
-| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3`, `gl-validator-profile-phase3` (both live, team-only) | every source present since 2026-11-25 ~15:45 UTC: chain, explorer, roster key `bradbury3` (54 rows: 11 active, 1 inactive = the Foundation wallet pending activation, 42 `missing`), telemetry label (only the Foundation node pushes it so far) |
+| Bradbury Phase 3 | `bradbury-phase3` (CURRENT) | `gl-testnet-network` (**public**), `gl-validator-profile` | every source present: chain, explorer `scan.bradbury.genlayer.com`, roster key `bradbury3`, telemetry label. `gl-testnet-network-phase3` / `gl-validator-profile-phase3` (files `*_phase3.json`) are the pre-move team copies: now duplicates, no longer regenerated, left in place |
+| Bradbury Phase 2 | `bradbury-phase2` | none live; `network_phase2.json` / `validator_profile_phase2.json` are repo-only | halted, retired from the boards 2026-11-25: no roster (portal returns `[]`), no explorer; ~40 nodes still push the label |
 | Clarke | `clarke` (empty slot) | none | starts 2026-11-26, alongside Phase 3 |
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
@@ -106,15 +106,10 @@ board live in Grafana is still **topic-only**, so its penalty panels count Phant
 Bradbury's events too, and the wide range now times out (504) at times. The regenerated
 `network.json` in the repo has the filter; it is not uploaded yet (see above).
 
-**The move to Phase 3 is prepared, not done** (owner has not said yes):
-`dashboards/foundation/public-move/network.json` and `validator_profile.json` are
-Phase 3 generated as the public boards (`NETWORK_CURRENT=bradbury-phase3
-NETWORK_OUT=dashboards/foundation/public-move/ python3 scripts/build_network.py
-bradbury-phase3`, same for `build_validator_profile.py`). To do it: upload those two
-files to uids `gl-testnet-network` and `gl-validator-profile` (overwrite), then set
-`CURRENT = "bradbury-phase3"` in `scripts/networks.py`, run both generators with no
-argument, commit, and delete `public-move/`. Until then the live public board is the
-2026-11-22 Phase 2 version reading an empty roster and a Phase 3 explorer.
+**The public URL moved to Phase 3 on 2026-11-25**: `network.json` (Phase 3) went to uid
+`gl-testnet-network` and `validator_profile.json` to `gl-validator-profile`, same uids,
+so the public token `71f94ef4…` and every old link kept working. The upload goes panel
+by panel, so the public board is incomplete for a few minutes while it runs.
 
 **Moving the public URL to another network** in general: set `CURRENT` to it, run both generators
 with no argument, upload `network.json` to uid `gl-testnet-network` (same uid, so the
@@ -136,7 +131,7 @@ board; re-send the affected panels in the same call, then compare. Grafana norma
 empty `transformations`); compare after normalising. An Editor token + the README's
 `curl` is one call instead.
 
-## Bradbury Phase 2 — the network on the public board (since 2026-10-20)
+## Bradbury Phase 2 — on the public board 2026-10-20 → 2026-11-25 (history)
 
 The testnet restarted on **Arbitrum Orbit (Conduit)**, replacing ZKsync. **Asimov
 (`asimov-phase5`) and Bradbury Phase 1 (`bradbury-phase1`) are sunset**; the only

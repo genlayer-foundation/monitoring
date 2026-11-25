@@ -165,7 +165,7 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
 ### Validators and the public (via Grafana public dashboards)
 - **Transport**: HTTP REST (Grafana-hosted public dashboard, no login)
 - **Auth**: unauthenticated share link gated by a `public-dashboards` access token (token URLs are recorded in `CLAUDE.md`, not repeated here)
-- **Endpoint we expose**: `https://genlayerfoundation.grafana.net/public-dashboards/<token>` for uid `gl-testnet-network` (Bradbury Phase 2 — whichever network is `CURRENT` in `scripts/networks.py`; `gl-testnet-network-phase3` is team-only, not shared). Linked from Deckard's ops console (`deckard-testnet-agent/dashboard/data.ex:33`) and its knowledge base.
+- **Endpoint we expose**: `https://genlayerfoundation.grafana.net/public-dashboards/<token>` for uid `gl-testnet-network` (**Bradbury Phase 3 since 2026-11-25** — whichever network is `CURRENT` in `scripts/networks.py`; `gl-testnet-network-phase3` is the pre-move team copy, not shared). Linked from Deckard's ops console (`deckard-testnet-agent/dashboard/data.ex:33`) and its knowledge base.
 - **They consume**: network health, consensus / transactions / stake / rewards & penalties, and the per-validator table
 - **Note**: the share **token survived two moves** (`gl-wos-public` → `gl-validator-status-public` 2026-07-30, → `gl-testnet-network` 2026-10-27) — Grafana's public-dashboards create API accepts an explicit `accessToken`, so the share is deleted on the old uid and recreated on the new one with the same token; the public URL never changed
 - **Code**: `dashboards/foundation/network.json:7781` (uid), `CLAUDE.md`
@@ -233,4 +233,4 @@ Dashboard-side credentials (Prometheus/Loki/Infinity datasource auth, the Grafan
 - `validator_telemetry_report.py:42` contains a **hardcoded Grafana public-dashboard access token** as a literal. It is a capability URL credential for the "Who is pushing?" board (uid `agfnnmw`) — anyone with the file can query that dashboard's panels. Rotate via Grafana's public-dashboards API and move to an env var if this script is revived.
 - `dashboards/5ElementsNodes/WOS | Internal.json:139` carries an `Authorization` header with the placeholder value `<APIKEY>` — harmless as committed, but a reminder that re-exporting that board from live Grafana may capture a real key. Check before committing any 5Elements re-export.
 
-<!-- scanned: e16a614 2026-08-12; Bradbury Phase 2 cut-over 2026-10-20; Bradbury Phase 3 boards + network profiles 2026-11-25 -->
+<!-- scanned: e16a614 2026-08-12; Bradbury Phase 2 cut-over 2026-10-20; Bradbury Phase 3 boards + network profiles 2026-11-25; public board moved to Phase 3 2026-11-25 -->
