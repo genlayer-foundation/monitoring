@@ -49,15 +49,11 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
-      "root_selector": "[.[] | select(.node | startswith(\"0x\")) | {text: ((.name // .moniker // .node) + \" \u2014 \" + .node[0:10]), value: .node}] | unique_by(.value) | sort_by(.text | ascii_downcase)"
+      "source": "inline",
+      "data": "[]",
+      "root_selector": "[]"
      }
     },
     "refresh": 1,
@@ -80,14 +76,10 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
+      "source": "inline",
+      "data": "[]",
       "root_selector": "[{v: ((\"${node}\" | ascii_downcase) | ltrimstr(\"0x\"))}] "
      }
     },
@@ -220,7 +212,7 @@
    "transparent": true,
    "options": {
     "mode": "markdown",
-    "content": "**Bradbury Phase 2 has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
+    "content": "**Bradbury Phase 2 has no GenLayer explorer and portal roster yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
    }
   },
   {
@@ -265,7 +257,7 @@
    "id": 3,
    "type": "table",
    "title": "Facts",
-   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Identity facts. Sources: chain `ValidatorJoin` event (since, initial stake), explorer `/address` (status, operator, owner), portal roster (portal link, identity completeness).",
+   "description": "[Incomplete: no GenLayer explorer and portal roster for Bradbury Phase 2 yet.] Identity facts. Sources: chain `ValidatorJoin` event (since, initial stake), explorer `/address` (status, operator, owner), portal roster (portal link, identity completeness).",
    "targets": [
     {
      "datasource": {
@@ -312,15 +304,11 @@
      },
      "refId": "B",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-     "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map([{fact: \"Portal\", value: (if .linked == true then (\"linked\" + (if (.account_name // \"\") != \"\" then \" \u2014 \" + .account_name else \"\" end)) elif .linked == false then \"NOT LINKED\" else \"-\" end)}, {fact: \"On-chain identity\", value: ([(if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end)] | if length == 0 then \"complete\" else \"missing: \" + join(\", \") end)}]) | add // []",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -719,7 +707,7 @@
    "id": 10,
    "type": "stat",
    "title": "Health (portal verdict)",
-   "description": "The portal's single health verdict for this node \u2014 the same colour the validator sees on the portal and Deckard. Source: portal roster `health`.",
+   "description": "[Incomplete: no portal roster for Bradbury Phase 2 yet.] The portal's single health verdict for this node \u2014 the same colour the validator sees on the portal and Deckard. Source: portal roster `health`.",
    "targets": [
     {
      "datasource": {
@@ -728,15 +716,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-     "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map({health: ((.health.color // \"gray\") + \"|\" + (.health.label // .health.color // \"not checked\"))})",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -806,7 +790,7 @@
       "mode": "fixed",
       "fixedColor": "#808080"
      },
-     "noValue": "No data"
+     "noValue": "No portal roster for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -835,7 +819,7 @@
    "id": 11,
    "type": "table",
    "title": "Things to fix",
-   "description": "Everything that is off for this node, worst first, with what to do. Rows come from the portal verdict (Portal) and from the node's own condition checks (Node). Empty = nothing to fix.",
+   "description": "[Incomplete: no portal roster for Bradbury Phase 2 yet.] Everything that is off for this node, worst first, with what to do. Rows come from the portal verdict (Portal) and from the node's own condition checks (Node). Empty = nothing to fix.",
    "targets": [
     {
      "datasource": {
@@ -844,15 +828,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-     "root_selector": "{\"quarantined\": {problem: \"Quarantined\", fix: \"Keep the node up and responsive until the quarantine lifts; see 'Why did it go wrong?' for the cause.\"}, \"permanently_quarantined\": {problem: \"No longer participating\", fix: \"Permanently quarantined: restake with a new validator wallet.\"}, \"inactive\": {problem: \"Not participating\", fix: \"Check self stake is at the minimum and the node is primed for the next epoch.\"}, \"not_deployed\": {problem: \"Not deployed\", fix: \"Deploy a validator wallet and node on this network.\"}, \"stake_below_minimum\": {problem: \"Stake below minimum\", fix: \"Top up self stake to the minimum.\"}, \"activation_pending\": {problem: \"Stake pending activation\", fix: \"Nothing to fix: a deposit goes live 2 epochs after it is made. Keep the node running and synced.\"}, \"no_metrics\": {problem: \"Not sending metrics\", fix: \"Enable metrics push \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"no_logs\": {problem: \"Not sending logs\", fix: \"Enable log shipping \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"version_behind\": {problem: \"Version behind\", fix: \"Upgrade the node to the latest release.\"}, \"identity_incomplete\": {problem: \"Profile incomplete\", fix: \"Set the missing on-chain identity fields (moniker, logo, description) on the validator wallet.\"}, \"not_linked\": {problem: \"Not linked to portal\", fix: \"Link this validator wallet to your portal account.\"}, \"blocks_behind\": {problem: \"Behind on blocks\", fix: \"The node lags the chain head: check its RPC provider, disk and CPU (Sync & connectivity).\"}, \"source_unavailable\": {problem: \"Monitoring delayed\", fix: \"Monitoring has not checked this node recently \\u2014 nothing to do on your side.\"}} as $fix | [.[] | select(.node == (\"${node}\" | ascii_downcase))] | [.[] | (.health.findings // [])[] | {severity, problem: ($fix[.type].problem // (.type | gsub(\"_\"; \" \"))), details: .detail, fix: ($fix[.type].fix // \"\"), from: \"Portal\"}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {

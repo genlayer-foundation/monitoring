@@ -31,7 +31,7 @@
   ],
   "panels": [
     {
-      "id": 30,
+      "id": 31,
       "type": "text",
       "title": "",
       "gridPos": {
@@ -43,7 +43,7 @@
       "transparent": true,
       "options": {
         "mode": "markdown",
-        "content": "**Bradbury Phase 2 has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
+        "content": "**Bradbury Phase 2 has no GenLayer explorer and portal roster yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
       }
     },
     {
@@ -735,7 +735,7 @@
       "type": "stat"
     },
     {
-      "description": "How many validators in the current set (active + quarantined) still have each problem, out of the whole set. Per the portal's latest health check. The goal is zero everywhere; click a validator in the table below to see who.",
+      "description": "[Incomplete: no portal roster for Bradbury Phase 2 yet.] How many validators in the current set (active + quarantined) still have each problem, out of the whole set. Per the portal's latest health check. The goal is zero everywhere; click a validator in the table below to see who.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -760,7 +760,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No portal roster for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -855,76 +856,30 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "Not reporting metrics",
-              "text": "Not reporting metrics",
-              "type": "number"
-            },
-            {
-              "selector": "Not shipping logs",
-              "text": "Not shipping logs",
-              "type": "number"
-            },
-            {
-              "selector": "Behind target version",
-              "text": "Behind target version",
-              "type": "number"
-            },
-            {
-              "selector": "Profile incomplete",
-              "text": "Profile incomplete",
-              "type": "number"
-            },
-            {
-              "selector": "Not linked to portal",
-              "text": "Not linked to portal",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "def bad($s; $t): [ $s[] | select((((.health | objects) // {}).findings // []) | any(.type == $t)) ] | length; [ .[] | select(.status == \"active\" or .status == \"quarantined\") ] as $s | [{ \"Not reporting metrics\": bad($s; \"no_metrics\"), \"Not shipping logs\": bad($s; \"no_logs\"), \"Behind target version\": bad($s; \"version_behind\"), \"Profile incomplete\": bad($s; \"identity_incomplete\"), \"Not linked to portal\": bad($s; \"not_linked\") }]",
-          "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B",
-          "root_selector": "[{\"total\": ([ .[] | select(.status == \"active\" or .status == \"quarantined\") ] | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Open issues",
@@ -4333,7 +4288,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
+      "description": "[Incomplete: no GenLayer explorer and portal roster for Bradbury Phase 2 yet.] One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -5167,94 +5122,17 @@
       "pluginVersion": "11.3.0",
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "node",
-              "text": "node",
-              "type": "string"
-            },
-            {
-              "selector": "name",
-              "text": "name",
-              "type": "string"
-            },
-            {
-              "selector": "status",
-              "text": "status",
-              "type": "string"
-            },
-            {
-              "selector": "account_name",
-              "text": "account_name",
-              "type": "string"
-            },
-            {
-              "selector": "network",
-              "text": "network",
-              "type": "string"
-            },
-            {
-              "selector": "rone",
-              "text": "rone",
-              "type": "number"
-            },
-            {
-              "selector": "identity",
-              "text": "identity",
-              "type": "string"
-            },
-            {
-              "selector": "misone",
-              "text": "misone",
-              "type": "number"
-            },
-            {
-              "selector": "linked_txt",
-              "text": "linked_txt",
-              "type": "string"
-            },
-            {
-              "selector": "pref_name",
-              "text": "pref_name",
-              "type": "string"
-            },
-            {
-              "selector": "health_txt",
-              "text": "health_txt",
-              "type": "string"
-            },
-            {
-              "selector": "hrank",
-              "text": "hrank",
-              "type": "number"
-            },
-            {
-              "selector": "issues",
-              "text": "issues",
-              "type": "string"
-            },
-            {
-              "selector": "profile_url",
-              "text": "profile_url",
-              "type": "string"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"\" end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"activation_pending\": \"Stake pending activation\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
-          "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
           "datasource": {
@@ -6163,12 +6041,125 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "description": "[Incomplete: no portal roster for Bradbury Phase 2 yet.] Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "No portal roster for Bradbury Phase 2 yet"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open portal profile",
+                    "url": "${__data.fields.profile_url}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Portal status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#ef4444",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "profile_url"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 95
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "format": "table",
+          "parser": "jq-backend",
+          "refId": "A",
+          "type": "json",
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
+        }
+      ],
+      "title": "Graduated validators not on this network yet",
+      "type": "table"
+    },
+    {
       "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 95
+        "y": 105
       },
       "id": 29,
       "panels": [
@@ -6229,7 +6220,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 96
+            "y": 106
           },
           "id": 26,
           "options": {
@@ -6304,7 +6295,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 96
+            "y": 106
           },
           "id": 27,
           "options": {
@@ -6366,7 +6357,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 104
+            "y": 114
           },
           "id": 28,
           "options": {
