@@ -47,7 +47,7 @@
       }
     },
     {
-      "description": "Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts. Pending = joined, with a deposit that is not live yet (stake pending activation; from the explorer).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -100,6 +100,25 @@
                 "id": "color",
                 "value": {
                   "fixedColor": "#f97316",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pending"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#fbbf24",
                   "mode": "fixed"
                 }
               }
@@ -173,11 +192,28 @@
             ],
             "method": "POST"
           }
+        },
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "format": "table",
+          "parser": "jq-backend",
+          "refId": "B",
+          "type": "json",
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Validator set",
       "transformations": [],
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      }
     },
     {
       "datasource": {
@@ -4297,7 +4333,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] One row per validator in the current set (on-chain active + quarantined). Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -5056,6 +5092,55 @@
                 "value": true
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending activation"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "#9ca3af",
+                        "index": 99,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#fbbf24",
+                  "mode": "fixed"
+                }
+              }
+            ]
           }
         ]
       },
@@ -5347,7 +5432,8 @@
                 "onchain_active E",
                 "repone",
                 "rone A",
-                "onchain_quarantined Q"
+                "onchain_quarantined Q",
+                "pend X"
               ],
               "reducer": "max"
             },
@@ -5889,6 +5975,34 @@
           }
         },
         {
+          "id": "calculateField",
+          "options": {
+            "alias": "pendflag",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "pend X",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "shown",
+            "replaceFields": false,
+            "mode": "binary",
+            "binary": {
+              "left": "live1",
+              "operator": "+",
+              "right": "pendflag"
+            }
+          }
+        },
+        {
           "id": "filterByValue",
           "options": {
             "filters": [
@@ -5899,7 +6013,7 @@
                     "value": 1
                   }
                 },
-                "fieldName": "live1"
+                "fieldName": "shown"
               }
             ],
             "match": "all",
@@ -5980,7 +6094,10 @@
               "universalone": true,
               "validator_name": true,
               "zeroU": true,
-              "xname X": true
+              "xname X": true,
+              "pend X": true,
+              "pendflag": true,
+              "shown": true
             },
             "indexByName": {
               "#": 100,
@@ -5990,20 +6107,21 @@
               "PartCode": 107,
               "TelCode": 2,
               "Value #B": 4,
-              "appeals X": 10,
+              "appeals X": 11,
               "health_txt A": 0,
               "identity A": 103,
-              "idle X": 7,
-              "issues A": 11,
+              "idle X": 8,
+              "issues A": 12,
               "linked_txt A": 104,
-              "minority X": 8,
+              "minority X": 9,
               "network A": 106,
-              "node": 12,
-              "rotation X": 9,
-              "severity": 13,
+              "node": 13,
+              "rotation X": 10,
+              "severity": 14,
               "stake X": 5,
-              "txs X": 6,
-              "version": 3
+              "txs X": 7,
+              "version": 3,
+              "pending_gen X": 6
             },
             "renameByName": {
               "LogsCode": "Logs",
@@ -6024,7 +6142,8 @@
               "severity": "Sev",
               "stake X": "Stake",
               "txs X": "Transactions",
-              "version": "Version"
+              "version": "Version",
+              "pending_gen X": "Pending activation"
             }
           }
         },

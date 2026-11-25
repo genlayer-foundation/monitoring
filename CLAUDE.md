@@ -69,6 +69,24 @@ explorer's `metadata.name` (`xname X`) as a fallback after the roster and metric
 so a network with an explorer but no roster shows names ("GenLayer Labs 1"), not
 addresses. Order: portal name > metrics `validator_name` > explorer name > address.
 
+**Stake pending activation (2026-11-25)**: a validator that joined but whose deposit is
+not live yet is in `getValidatorsJoined` and NOT in `selectableValidators()`, so the
+"current set only" table hid it (the Foundation's Phase 3 node, joined in epoch 2, was
+the report). The table's explorer target `X` now emits `pend` (explorer
+`status == "inactive"` with a non-empty `pending_deposits`) and `pending_gen`; rows pass
+the final filter on `shown = live1 + pendflag` (was `live1`), and a yellow **Pending
+activation** column shows the GEN waiting. Missing metrics/logs stay gated on `live1`,
+so a pending validator is never counted as a problem: Telemetry reads its real state if
+it reports, `-` if not. **Validator set** gained a yellow **Pending** count (second
+target, explorer). Both need the explorer: a network without one (Phase 2) shows neither.
+Exited `inactive` wallets with no pending deposit still appear nowhere.
+
+**Red error badges on the four RPC panels at full-board load** (incentives, penalties
+per epoch, penalties by validator, Validators): present on the public Phase 2 board
+too, so not new. NOT the RPC rate limit as far as tested — 11 concurrent `eth_getLogs`
+through Grafana and each panel's own queries all return 200 with no error, and each
+panel is clean when rendered alone. Cause not found; read the badge tooltip in a browser.
+
 **Penalty events need an address filter (2026-11-25).** Chain 4221 hosts several
 deployments (Phase 2, Phase 3, Phantom Bradbury, Pre Phantom), so a topic-only
 `eth_getLogs` mixes them: since Phase 3 genesis every `ValidatorBannedIdleness` /
