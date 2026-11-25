@@ -17,12 +17,6 @@
  "description": "One validator: who it is, whether it is OK and what to fix, earnings, work done, why it went wrong, and node internals. Design: VALIDATOR-PROFILE-PLAN.md",
  "links": [
   {
-   "title": "Open in explorer",
-   "type": "link",
-   "url": "https://scan.bradbury.genlayer.com/address/${node}",
-   "targetBlank": true
-  },
-  {
    "title": "Validator Status",
    "type": "link",
    "url": "/d/gl-validator-status",
@@ -115,15 +109,11 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
-      "root_selector": "[{v: (.validator.metadata.name // \"\" | if . == \"\" then \"Unnamed validator\" else . end)}]"
+      "source": "inline",
+      "data": "[]",
+      "root_selector": "[]"
      }
     }
    },
@@ -142,15 +132,11 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
-      "root_selector": "[{v: (.validator.metadata.description // \"\" | if . == \"\" then \"No description set on-chain.\" else . end)}]"
+      "source": "inline",
+      "data": "[]",
+      "root_selector": "[]"
      }
     }
    },
@@ -169,15 +155,11 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
-      "root_selector": "[{v: (.validator.metadata.image_url // \"\" | if . == \"\" then \"<div style=\\\"width:128px;height:128px;border-radius:18px;border:1px dashed #888;display:flex;align-items:center;justify-content:center;opacity:.6\\\">no logo</div>\" else \"<img src=\\\"\" + . + \"\\\" style=\\\"width:128px;height:128px;border-radius:18px;object-fit:cover\\\">\" end)}]"
+      "source": "inline",
+      "data": "[]",
+      "root_selector": "[]"
      }
     }
    },
@@ -196,15 +178,11 @@
      "infinityQuery": {
       "refId": "variable",
       "type": "json",
-      "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-      "url_options": {
-       "method": "GET",
-       "data": ""
-      },
-      "root_selector": "[{v: (.validator.metadata as $m | [(if ($m.url // \"\") != \"\" then \"<a href=\\\"\" + $m.url + \"\\\" target=\\\"_blank\\\">\" + $m.url + \"</a>\" else empty end), (if ($m.twitter // \"\") != \"\" then \"X: \" + $m.twitter else empty end), (if ($m.github // \"\") != \"\" then \"GitHub: \" + $m.github else empty end), (if ($m.telegram // \"\") != \"\" then \"Telegram: \" + $m.telegram else empty end), (if ($m.email // \"\") != \"\" then $m.email else empty end)] | if length == 0 then \"No links set\" else join(\" &nbsp;\u00b7&nbsp; \") end)}]"
+      "source": "inline",
+      "data": "[]",
+      "root_selector": "[]"
      }
     }
    },
@@ -230,6 +208,22 @@
  },
  "panels": [
   {
+   "id": 63,
+   "type": "text",
+   "title": "",
+   "gridPos": {
+    "h": 2,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "transparent": true,
+   "options": {
+    "mode": "markdown",
+    "content": "**Bradbury Phase 2 has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
+   }
+  },
+  {
    "id": 1,
    "type": "row",
    "title": "Profile",
@@ -238,7 +232,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 0
+    "y": 2
    },
    "panels": []
   },
@@ -264,14 +258,14 @@
     "h": 8,
     "w": 15,
     "x": 0,
-    "y": 1
+    "y": 3
    }
   },
   {
    "id": 3,
    "type": "table",
    "title": "Facts",
-   "description": "Identity facts. Sources: chain `ValidatorJoin` event (since, initial stake), explorer `/address` (status, operator, owner), portal roster (portal link, identity completeness).",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Identity facts. Sources: chain `ValidatorJoin` event (since, initial stake), explorer `/address` (status, operator, owner), portal roster (portal link, identity completeness).",
    "targets": [
     {
      "datasource": {
@@ -305,15 +299,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | [{fact: \"Status\", value: .status}, {fact: \"Operator\", value: (.operator_address | ascii_downcase)}, {fact: \"Owner\", value: (.owner_address | ascii_downcase)}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -417,7 +407,7 @@
     "h": 8,
     "w": 9,
     "x": 15,
-    "y": 1
+    "y": 3
    }
   },
   {
@@ -485,14 +475,14 @@
     "h": 3,
     "w": 5,
     "x": 0,
-    "y": 9
+    "y": 11
    }
   },
   {
    "id": 5,
    "type": "stat",
    "title": "Total stake",
-   "description": "Self + delegated stake, GEN. Source: explorer `/validators` (same number as the network board).",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Self + delegated stake, GEN. Source: explorer `/validators` (same number as the network board).",
    "targets": [
     {
      "datasource": {
@@ -501,15 +491,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18)}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -523,7 +509,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -545,14 +531,14 @@
     "h": 3,
     "w": 5,
     "x": 5,
-    "y": 9
+    "y": 11
    }
   },
   {
    "id": 6,
    "type": "stat",
    "title": "Transactions",
-   "description": "Transactions this validator has taken part in. Source: explorer `/validators` `transaction_count`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Transactions this validator has taken part in. Source: explorer `/validators` `transaction_count`.",
    "targets": [
     {
      "datasource": {
@@ -561,15 +547,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {txs: (.transaction_count // 0)}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -583,7 +565,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -605,14 +587,14 @@
     "h": 3,
     "w": 5,
     "x": 10,
-    "y": 9
+    "y": 11
    }
   },
   {
    "id": 7,
    "type": "stat",
    "title": "Delegators",
-   "description": "Delegators staking with this validator. Source: explorer `/address`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Delegators staking with this validator. Source: explorer `/address`.",
    "targets": [
     {
      "datasource": {
@@ -621,15 +603,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | {d: (.delegators | length)}",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -643,7 +621,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -665,7 +643,7 @@
     "h": 3,
     "w": 4,
     "x": 15,
-    "y": 9
+    "y": 11
    }
   },
   {
@@ -721,7 +699,7 @@
     "h": 3,
     "w": 5,
     "x": 19,
-    "y": 9
+    "y": 11
    }
   },
   {
@@ -733,7 +711,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 12
+    "y": 14
    },
    "panels": []
   },
@@ -850,7 +828,7 @@
     "h": 8,
     "w": 5,
     "x": 0,
-    "y": 13
+    "y": 15
    }
   },
   {
@@ -1101,7 +1079,7 @@
     "h": 8,
     "w": 19,
     "x": 5,
-    "y": 13
+    "y": 15
    }
   },
   {
@@ -1221,7 +1199,7 @@
     "h": 3,
     "w": 5,
     "x": 0,
-    "y": 21
+    "y": 23
    }
   },
   {
@@ -1304,14 +1282,14 @@
     "h": 3,
     "w": 4,
     "x": 5,
-    "y": 21
+    "y": 23
    }
   },
   {
    "id": 14,
    "type": "stat",
    "title": "Strikes",
-   "description": "Idleness strikes in the current epoch / the limit that quarantines. Source: explorer `/address` `strikes_current`, `strikes_max` (it resets each epoch, so a quarantined node usually shows 0).",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Idleness strikes in the current epoch / the limit that quarantines. Source: explorer `/address` `strikes_current`, `strikes_max` (it resets each epoch, so a quarantined node usually shows 0).",
    "targets": [
     {
      "datasource": {
@@ -1320,15 +1298,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | {strikes: \"\\(.strikes_current // 0) / \\(.strikes_max // 3)\"}",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -1341,7 +1315,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -1363,14 +1337,14 @@
     "h": 3,
     "w": 3,
     "x": 9,
-    "y": 21
+    "y": 23
    }
   },
   {
    "id": 15,
    "type": "stat",
    "title": "Primed",
-   "description": "Whether the node has primed for the next epoch. A node that stops priming drops out. Source: explorer `/address` `is_primed_next_epoch`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Whether the node has primed for the next epoch. A node that stops priming drops out. Source: explorer `/address` `is_primed_next_epoch`.",
    "targets": [
     {
      "datasource": {
@@ -1379,15 +1353,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | {primed: (if .is_primed_next_epoch then \"yes\" else \"no\" end)}",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -1413,7 +1383,7 @@
        }
       }
      ],
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -1435,7 +1405,7 @@
     "h": 3,
     "w": 3,
     "x": 12,
-    "y": 21
+    "y": 23
    }
   },
   {
@@ -1506,7 +1476,7 @@
     "h": 3,
     "w": 3,
     "x": 15,
-    "y": 21
+    "y": 23
    }
   },
   {
@@ -1578,7 +1548,7 @@
     "h": 3,
     "w": 3,
     "x": 18,
-    "y": 21
+    "y": 23
    }
   },
   {
@@ -1647,7 +1617,7 @@
     "h": 3,
     "w": 3,
     "x": 21,
-    "y": 21
+    "y": 23
    }
   },
   {
@@ -1659,7 +1629,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 24
+    "y": 26
    },
    "panels": []
   },
@@ -1777,7 +1747,7 @@
     "h": 10,
     "w": 8,
     "x": 0,
-    "y": 25
+    "y": 27
    }
   },
   {
@@ -1884,7 +1854,7 @@
     "h": 10,
     "w": 16,
     "x": 8,
-    "y": 25
+    "y": 27
    }
   },
   {
@@ -1923,7 +1893,7 @@
     "h": 8,
     "w": 16,
     "x": 0,
-    "y": 35
+    "y": 37
    }
   },
   {
@@ -1983,7 +1953,7 @@
     "h": 8,
     "w": 8,
     "x": 16,
-    "y": 35
+    "y": 37
    }
   },
   {
@@ -1995,7 +1965,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 43
+    "y": 45
    },
    "panels": []
   },
@@ -2003,7 +1973,7 @@
    "id": 25,
    "type": "stat",
    "title": "Stake now (explorer)",
-   "description": "Self stake and delegated stake, in GEN. Source: explorer `/address` (indexed at the last epoch boundary \u2014 a slash enacted since may not be in it yet).",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Self stake and delegated stake, in GEN. Source: explorer `/address` (indexed at the last epoch boundary \u2014 a slash enacted since may not be in it yet).",
    "targets": [
     {
      "datasource": {
@@ -2012,15 +1982,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | {self_stake: (.self_stake | (tonumber / 1e18)), delegated: (.delegated_stake | (tonumber / 1e18)), delegators: (.delegators | length)}",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -2035,7 +2001,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -2057,7 +2023,7 @@
     "h": 4,
     "w": 8,
     "x": 0,
-    "y": 44
+    "y": 46
    }
   },
   {
@@ -2125,7 +2091,7 @@
     "h": 4,
     "w": 8,
     "x": 8,
-    "y": 44
+    "y": 46
    }
   },
   {
@@ -2181,14 +2147,14 @@
     "h": 4,
     "w": 8,
     "x": 16,
-    "y": 44
+    "y": 46
    }
   },
   {
    "id": 28,
    "type": "barchart",
    "title": "Rewards vs slashing per epoch",
-   "description": "Green = rewards paid (validator + fee rewards), red = slashing and fee penalties, in GEN. Source: explorer `/epochs/{n}/validators`, one query per epoch (stopgap, covers epochs 1\u201314).",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Green = rewards paid (validator + fee rewards), red = slashing and fee penalties, in GEN. Source: explorer `/epochs/{n}/validators`, one query per epoch (stopgap, covers epochs 1\u201314).",
    "targets": [
     {
      "datasource": {
@@ -2197,15 +2163,11 @@
      },
      "refId": "E01",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2214,15 +2176,11 @@
      },
      "refId": "E02",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2231,15 +2189,11 @@
      },
      "refId": "E03",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2248,15 +2202,11 @@
      },
      "refId": "E04",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2265,15 +2215,11 @@
      },
      "refId": "E05",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2282,15 +2228,11 @@
      },
      "refId": "E06",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2299,15 +2241,11 @@
      },
      "refId": "E07",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2316,15 +2254,11 @@
      },
      "refId": "E08",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2333,15 +2267,11 @@
      },
      "refId": "E09",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2350,15 +2280,11 @@
      },
      "refId": "E10",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2367,15 +2293,11 @@
      },
      "refId": "E11",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2384,15 +2306,11 @@
      },
      "refId": "E12",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2401,15 +2319,11 @@
      },
      "refId": "E13",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2418,15 +2332,11 @@
      },
      "refId": "E14",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -2439,7 +2349,7 @@
      "custom": {
       "fillOpacity": 80
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": [
      {
@@ -2513,14 +2423,14 @@
     "h": 9,
     "w": 12,
     "x": 0,
-    "y": 48
+    "y": 50
    }
   },
   {
    "id": 29,
    "type": "barchart",
    "title": "Self stake per epoch",
-   "description": "Self stake at each epoch, in GEN. Rewards compound into stake; slashes take it away. Source: explorer `/epochs/{n}/validators`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Self stake at each epoch, in GEN. Rewards compound into stake; slashes take it away. Source: explorer `/epochs/{n}/validators`.",
    "targets": [
     {
      "datasource": {
@@ -2529,15 +2439,11 @@
      },
      "refId": "E01",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2546,15 +2452,11 @@
      },
      "refId": "E02",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2563,15 +2465,11 @@
      },
      "refId": "E03",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2580,15 +2478,11 @@
      },
      "refId": "E04",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2597,15 +2491,11 @@
      },
      "refId": "E05",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2614,15 +2504,11 @@
      },
      "refId": "E06",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2631,15 +2517,11 @@
      },
      "refId": "E07",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2648,15 +2530,11 @@
      },
      "refId": "E08",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2665,15 +2543,11 @@
      },
      "refId": "E09",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2682,15 +2556,11 @@
      },
      "refId": "E10",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2699,15 +2569,11 @@
      },
      "refId": "E11",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2716,15 +2582,11 @@
      },
      "refId": "E12",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2733,15 +2595,11 @@
      },
      "refId": "E13",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -2750,15 +2608,11 @@
      },
      "refId": "E14",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -2775,7 +2629,7 @@
      "custom": {
       "fillOpacity": 80
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -2816,7 +2670,7 @@
     "h": 9,
     "w": 12,
     "x": 12,
-    "y": 48
+    "y": 50
    }
   },
   {
@@ -2853,7 +2707,7 @@
     "h": 7,
     "w": 24,
     "x": 0,
-    "y": 57
+    "y": 59
    }
   },
   {
@@ -2865,7 +2719,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 64
+    "y": 66
    },
    "panels": []
   },
@@ -2873,7 +2727,7 @@
    "id": 32,
    "type": "stat",
    "title": "Last 7 days (explorer)",
-   "description": "Leader turns, how often it was rotated out as leader, votes cast, votes in the minority, idle rounds, successful appeals against it. Source: explorer `/address` `*_7d`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Leader turns, how often it was rotated out as leader, votes cast, votes in the minority, idle rounds, successful appeals against it. Source: explorer `/address` `*_7d`.",
    "targets": [
     {
      "datasource": {
@@ -2882,15 +2736,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/address/${node}",
-     "root_selector": ".validator | {\"leader turns\": .total_as_leader_7d, \"rotated %\": .rotation_pct_7d, \"votes\": .total_votes_7d, \"minority %\": .minority_pct_7d, \"idle\": .idle_count_7d, \"idle %\": .idle_pct_7d, \"appeals lost\": .successful_appeals_7d}",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -2903,7 +2753,7 @@
       "mode": "fixed",
       "fixedColor": "text"
      },
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": []
    },
@@ -2925,7 +2775,7 @@
     "h": 4,
     "w": 24,
     "x": 0,
-    "y": 65
+    "y": 67
    }
   },
   {
@@ -3008,7 +2858,7 @@
     "h": 8,
     "w": 12,
     "x": 0,
-    "y": 69
+    "y": 71
    }
   },
   {
@@ -3051,14 +2901,14 @@
     "h": 8,
     "w": 12,
     "x": 12,
-    "y": 69
+    "y": 71
    }
   },
   {
    "id": 35,
    "type": "table",
    "title": "Recent transactions",
-   "description": "The last ~100 rounds this node took part in, newest first: role and how it went. Click a tx to open it in the explorer. Source: explorer `/transactions/participations`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] The last ~100 rounds this node took part in, newest first: role and how it went. Click a tx to open it in the explorer. Source: explorer `/transactions/participations`.",
    "targets": [
     {
      "datasource": {
@@ -3067,15 +2917,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/transactions/participations?address=${node}&page_size=100",
-     "root_selector": ".participations | map({time: (.submission_timestamp * 1000), round: .round_label, role, outcome, color: .outcome_color, tx: .hash})",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -3084,7 +2930,7 @@
    },
    "fieldConfig": {
     "defaults": {
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": [
      {
@@ -3111,13 +2957,7 @@
       "properties": [
        {
         "id": "links",
-        "value": [
-         {
-          "title": "Open in explorer",
-          "url": "https://scan.bradbury.genlayer.com/tx/${__value.raw}",
-          "targetBlank": true
-         }
-        ]
+        "value": []
        }
       ]
      },
@@ -3206,7 +3046,7 @@
     "h": 10,
     "w": 24,
     "x": 0,
-    "y": 77
+    "y": 79
    }
   },
   {
@@ -3218,7 +3058,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 87
+    "y": 89
    },
    "panels": []
   },
@@ -3226,7 +3066,7 @@
    "id": 37,
    "type": "table",
    "title": "Idle rounds",
-   "description": "Rounds where the node was picked but did not act in time. Idle rounds give strikes; 3 strikes in an epoch quarantine the node and slash it. Source: explorer `/transactions/participations?role_filter=idle`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Rounds where the node was picked but did not act in time. Idle rounds give strikes; 3 strikes in an epoch quarantine the node and slash it. Source: explorer `/transactions/participations?role_filter=idle`.",
    "targets": [
     {
      "datasource": {
@@ -3235,15 +3075,11 @@
      },
      "refId": "A",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/transactions/participations?address=${node}&page_size=100&role_filter=idle",
-     "root_selector": ".participations | map({time: (.submission_timestamp * 1000), round: .round_label, role, outcome, color: .outcome_color, tx: .hash}) | map(select(.outcome == \"Idle\"))",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -3252,7 +3088,7 @@
    },
    "fieldConfig": {
     "defaults": {
-     "noValue": "No idle rounds"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": [
      {
@@ -3279,13 +3115,7 @@
       "properties": [
        {
         "id": "links",
-        "value": [
-         {
-          "title": "Open in explorer",
-          "url": "https://scan.bradbury.genlayer.com/tx/${__value.raw}",
-          "targetBlank": true
-         }
-        ]
+        "value": []
        }
       ]
      },
@@ -3374,14 +3204,14 @@
     "h": 8,
     "w": 12,
     "x": 0,
-    "y": 88
+    "y": 90
    }
   },
   {
    "id": 38,
    "type": "table",
    "title": "Status and money per epoch",
-   "description": "Per epoch: on-chain status, rewards, slashing, self stake (GEN). Source: explorer `/epochs/{n}/validators`.",
+   "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Per epoch: on-chain status, rewards, slashing, self stake (GEN). Source: explorer `/epochs/{n}/validators`.",
    "targets": [
     {
      "datasource": {
@@ -3390,15 +3220,11 @@
      },
      "refId": "E01",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/1/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"01\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3407,15 +3233,11 @@
      },
      "refId": "E02",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/2/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"02\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3424,15 +3246,11 @@
      },
      "refId": "E03",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/3/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"03\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3441,15 +3259,11 @@
      },
      "refId": "E04",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/4/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"04\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3458,15 +3272,11 @@
      },
      "refId": "E05",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/5/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"05\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3475,15 +3285,11 @@
      },
      "refId": "E06",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/6/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"06\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3492,15 +3298,11 @@
      },
      "refId": "E07",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/7/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"07\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3509,15 +3311,11 @@
      },
      "refId": "E08",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/8/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"08\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3526,15 +3324,11 @@
      },
      "refId": "E09",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/9/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"09\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3543,15 +3337,11 @@
      },
      "refId": "E10",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/10/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"10\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3560,15 +3350,11 @@
      },
      "refId": "E11",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/11/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"11\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3577,15 +3363,11 @@
      },
      "refId": "E12",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/12/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"12\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3594,15 +3376,11 @@
      },
      "refId": "E13",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/13/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"13\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     },
     {
      "datasource": {
@@ -3611,15 +3389,11 @@
      },
      "refId": "E14",
      "type": "json",
-     "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/14/validators?page_size=100",
-     "root_selector": "[.validators[] | select((.validator_address | ascii_downcase) == (\"${node}\" | ascii_downcase)) | {epoch: \"14\", self_stake: (.self_stake | (tonumber / 1e18)), rewards: (((.validator_rewards // \"0\") | (tonumber / 1e18)) + ((.fee_rewards // \"0\") | (tonumber / 1e18))), slashing: (-(((.validator_slashing // \"0\") | (tonumber / 1e18)) + ((.fee_penalties // \"0\") | (tonumber / 1e18)))), status}]",
-     "url_options": {
-      "method": "GET",
-      "data": ""
-     }
+     "source": "inline",
+     "data": "[]",
+     "root_selector": "[]"
     }
    ],
    "datasource": {
@@ -3629,7 +3403,7 @@
    "fieldConfig": {
     "defaults": {
      "decimals": 0,
-     "noValue": "No data"
+     "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
     },
     "overrides": [
      {
@@ -3743,7 +3517,7 @@
     "h": 8,
     "w": 12,
     "x": 12,
-    "y": 88
+    "y": 90
    }
   },
   {
@@ -3782,7 +3556,7 @@
     "h": 8,
     "w": 24,
     "x": 0,
-    "y": 96
+    "y": 98
    }
   },
   {
@@ -3794,7 +3568,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 104
+    "y": 106
    },
    "panels": [
     {
@@ -3874,7 +3648,7 @@
       "h": 4,
       "w": 24,
       "x": 0,
-      "y": 105
+      "y": 107
      }
     },
     {
@@ -3931,7 +3705,7 @@
       "h": 7,
       "w": 12,
       "x": 0,
-      "y": 109
+      "y": 111
      }
     },
     {
@@ -3967,7 +3741,7 @@
       "h": 7,
       "w": 12,
       "x": 12,
-      "y": 109
+      "y": 111
      }
     },
     {
@@ -4003,7 +3777,7 @@
       "h": 7,
       "w": 12,
       "x": 0,
-      "y": 116
+      "y": 118
      }
     },
     {
@@ -4068,7 +3842,7 @@
       "h": 7,
       "w": 12,
       "x": 12,
-      "y": 116
+      "y": 118
      }
     },
     {
@@ -4103,7 +3877,7 @@
       "h": 6,
       "w": 24,
       "x": 0,
-      "y": 123
+      "y": 125
      }
     }
    ]
@@ -4117,7 +3891,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 129
+    "y": 131
    },
    "panels": [
     {
@@ -4152,7 +3926,7 @@
       "h": 7,
       "w": 8,
       "x": 0,
-      "y": 130
+      "y": 132
      }
     },
     {
@@ -4188,7 +3962,7 @@
       "h": 7,
       "w": 8,
       "x": 8,
-      "y": 130
+      "y": 132
      }
     },
     {
@@ -4223,7 +3997,7 @@
       "h": 7,
       "w": 8,
       "x": 16,
-      "y": 130
+      "y": 132
      }
     },
     {
@@ -4261,7 +4035,7 @@
       "h": 8,
       "w": 24,
       "x": 0,
-      "y": 137
+      "y": 139
      }
     }
    ]
@@ -4275,7 +4049,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 145
+    "y": 147
    },
    "panels": [
     {
@@ -4311,7 +4085,7 @@
       "h": 7,
       "w": 12,
       "x": 0,
-      "y": 146
+      "y": 148
      }
     },
     {
@@ -4347,7 +4121,7 @@
       "h": 7,
       "w": 12,
       "x": 12,
-      "y": 146
+      "y": 148
      }
     },
     {
@@ -4383,7 +4157,7 @@
       "h": 7,
       "w": 12,
       "x": 0,
-      "y": 153
+      "y": 155
      }
     },
     {
@@ -4467,7 +4241,7 @@
       "h": 7,
       "w": 12,
       "x": 12,
-      "y": 153
+      "y": 155
      }
     },
     {
@@ -4522,7 +4296,7 @@
       "h": 4,
       "w": 6,
       "x": 0,
-      "y": 160
+      "y": 162
      }
     }
    ]
@@ -4536,7 +4310,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 164
+    "y": 166
    },
    "panels": [
     {
@@ -4605,7 +4379,7 @@
       "h": 7,
       "w": 24,
       "x": 0,
-      "y": 165
+      "y": 167
      }
     },
     {
@@ -4660,7 +4434,7 @@
       "h": 8,
       "w": 24,
       "x": 0,
-      "y": 172
+      "y": 174
      }
     },
     {
@@ -4699,7 +4473,7 @@
       "h": 8,
       "w": 24,
       "x": 0,
-      "y": 180
+      "y": 182
      }
     },
     {
@@ -4738,7 +4512,7 @@
       "h": 8,
       "w": 24,
       "x": 0,
-      "y": 188
+      "y": 190
      }
     }
    ]

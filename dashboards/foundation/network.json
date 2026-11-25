@@ -17,13 +17,6 @@
     {
       "icon": "external link",
       "targetBlank": true,
-      "title": "Network Explorer",
-      "type": "link",
-      "url": "https://scan.bradbury.genlayer.com"
-    },
-    {
-      "icon": "external link",
-      "targetBlank": true,
       "title": "Portal",
       "type": "link",
       "url": "https://portal.genlayer.foundation/"
@@ -37,6 +30,22 @@
     }
   ],
   "panels": [
+    {
+      "id": 30,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "transparent": true,
+      "options": {
+        "mode": "markdown",
+        "content": "**Bradbury Phase 2 has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
+      }
+    },
     {
       "description": "Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts.",
       "fieldConfig": {
@@ -102,7 +111,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 1,
       "options": {
@@ -175,7 +184,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Over the latest 500 transactions. Agreement: share of consensus rounds that ended with a majority agreeing. Succeeded: transactions whose contract returned rather than erroring. Time to acceptance: average seconds from activation to the network accepting the result (derived as finalization minus the ~60s appeal window).",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Over the latest 500 transactions. Agreement: share of consensus rounds that ended with a majority agreeing. Succeeded: transactions whose contract returned rather than erroring. Time to acceptance: average seconds from activation to the network accepting the result (derived as finalization minus the ~60s appeal window).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -192,7 +201,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -339,7 +349,7 @@
         "h": 5,
         "w": 9,
         "x": 6,
-        "y": 0
+        "y": 2
       },
       "id": 2,
       "options": {
@@ -364,259 +374,69 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "rounds",
-              "text": "rounds",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "acc_sum",
-              "text": "acc_sum",
-              "type": "number"
-            },
-            {
-              "selector": "acc_n",
-              "text": "acc_n",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "rounds",
-              "text": "rounds",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "acc_sum",
-              "text": "acc_sum",
-              "type": "number"
-            },
-            {
-              "selector": "acc_n",
-              "text": "acc_n",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "rounds",
-              "text": "rounds",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "acc_sum",
-              "text": "acc_sum",
-              "type": "number"
-            },
-            {
-              "selector": "acc_n",
-              "text": "acc_n",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "rounds",
-              "text": "rounds",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "acc_sum",
-              "text": "acc_sum",
-              "type": "number"
-            },
-            {
-              "selector": "acc_n",
-              "text": "acc_n",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "rounds",
-              "text": "rounds",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "acc_sum",
-              "text": "acc_sum",
-              "type": "number"
-            },
-            {
-              "selector": "acc_n",
-              "text": "acc_n",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Consensus health",
@@ -810,7 +630,7 @@
         "h": 5,
         "w": 9,
         "x": 15,
-        "y": 0
+        "y": 2
       },
       "id": 3,
       "options": {
@@ -973,7 +793,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 5
+        "y": 7
       },
       "id": 4,
       "options": {
@@ -1178,7 +998,7 @@
         "h": 9,
         "w": 10,
         "x": 8,
-        "y": 5
+        "y": 7
       },
       "id": 5,
       "options": {
@@ -1241,7 +1061,7 @@
       "type": "timeseries"
     },
     {
-      "description": "The current epoch, how far through its minimum 24h it is, and transactions processed in it so far.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] The current epoch, how far through its minimum 24h it is, and transactions processed in it so far.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1258,7 +1078,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -1311,7 +1132,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 5
+        "y": 7
       },
       "id": 6,
       "options": {
@@ -1336,40 +1157,17 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "Epoch",
-              "text": "Epoch",
-              "type": "number"
-            },
-            {
-              "selector": "Progress",
-              "text": "Progress",
-              "type": "number"
-            },
-            {
-              "selector": "Transactions",
-              "text": "Transactions",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.current | {\"Epoch\": .epoch_number, \"Progress\": ([((now - .started_at) / .min_duration * 100), 100] | min), \"Transactions\": .transaction_count}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/epochs/current",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Epoch",
@@ -1382,7 +1180,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 16
       },
       "id": 7,
       "panels": [],
@@ -1390,7 +1188,7 @@
       "type": "row"
     },
     {
-      "description": "Every consensus round in the latest 500 transactions, by outcome. Majority agreed is the happy path; disagreed or idle rounds trigger a rotation to a new leader; undetermined means no majority at all.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Every consensus round in the latest 500 transactions, by outcome. Majority agreed is the happy path; disagreed or idle rounds trigger a rotation to a new leader; undetermined means no majority at all.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1400,7 +1198,8 @@
           "decimals": 1,
           "max": 1,
           "min": 0,
-          "unit": "percentunit"
+          "unit": "percentunit",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -1485,7 +1284,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 17
       },
       "id": 8,
       "options": {
@@ -1511,234 +1310,69 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "disagree",
-              "text": "disagree",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "undetermined",
-              "text": "undetermined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ] as $r | {total: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), disagree: ($r | map(select(. == \"majority_disagree\")) | length), idle: ($r | map(select(. == \"idle\")) | length), undetermined: ($r | map(select(. != \"majority_agree\" and . != \"majority_disagree\" and . != \"idle\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "disagree",
-              "text": "disagree",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "undetermined",
-              "text": "undetermined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ] as $r | {total: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), disagree: ($r | map(select(. == \"majority_disagree\")) | length), idle: ($r | map(select(. == \"idle\")) | length), undetermined: ($r | map(select(. != \"majority_agree\" and . != \"majority_disagree\" and . != \"idle\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "disagree",
-              "text": "disagree",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "undetermined",
-              "text": "undetermined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ] as $r | {total: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), disagree: ($r | map(select(. == \"majority_disagree\")) | length), idle: ($r | map(select(. == \"idle\")) | length), undetermined: ($r | map(select(. != \"majority_agree\" and . != \"majority_disagree\" and . != \"idle\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "disagree",
-              "text": "disagree",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "undetermined",
-              "text": "undetermined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ] as $r | {total: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), disagree: ($r | map(select(. == \"majority_disagree\")) | length), idle: ($r | map(select(. == \"idle\")) | length), undetermined: ($r | map(select(. != \"majority_agree\" and . != \"majority_disagree\" and . != \"idle\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "agree",
-              "text": "agree",
-              "type": "number"
-            },
-            {
-              "selector": "disagree",
-              "text": "disagree",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "undetermined",
-              "text": "undetermined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ] as $r | {total: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), disagree: ($r | map(select(. == \"majority_disagree\")) | length), idle: ($r | map(select(. == \"idle\")) | length), undetermined: ($r | map(select(. != \"majority_agree\" and . != \"majority_disagree\" and . != \"idle\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "How rounds end",
@@ -1821,7 +1455,7 @@
       "type": "bargauge"
     },
     {
-      "description": "Every validator vote in the latest 500 transactions. Disagreed with leader = the validator judged the non-deterministic (AI / web) output differently from the leader. Contract error = the contract itself failed, and validators agreed on that.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Every validator vote in the latest 500 transactions. Disagreed with leader = the validator judged the non-deterministic (AI / web) output differently from the leader. Contract error = the contract itself failed, and validators agreed on that.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1831,7 +1465,8 @@
           "decimals": 1,
           "max": 1,
           "min": 0,
-          "unit": "percentunit"
+          "unit": "percentunit",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -1935,7 +1570,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 15
+        "y": 17
       },
       "id": 9,
       "options": {
@@ -1961,259 +1596,69 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "err",
-              "text": "err",
-              "type": "number"
-            },
-            {
-              "selector": "nondet",
-              "text": "nondet",
-              "type": "number"
-            },
-            {
-              "selector": "nv",
-              "text": "nv",
-              "type": "number"
-            },
-            {
-              "selector": "to",
-              "text": "to",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | (.validators // [])[] | .vote ] as $v | {total: ($v | length), ok: ($v | map(select(. == \"finished_with_return\")) | length), err: ($v | map(select(. == \"finished_with_error\")) | length), nondet: ($v | map(select(. == \"nondet_disagree\")) | length), nv: ($v | map(select(. == \"not_voted\")) | length), to: ($v | map(select(. == \"timeout\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "err",
-              "text": "err",
-              "type": "number"
-            },
-            {
-              "selector": "nondet",
-              "text": "nondet",
-              "type": "number"
-            },
-            {
-              "selector": "nv",
-              "text": "nv",
-              "type": "number"
-            },
-            {
-              "selector": "to",
-              "text": "to",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | (.validators // [])[] | .vote ] as $v | {total: ($v | length), ok: ($v | map(select(. == \"finished_with_return\")) | length), err: ($v | map(select(. == \"finished_with_error\")) | length), nondet: ($v | map(select(. == \"nondet_disagree\")) | length), nv: ($v | map(select(. == \"not_voted\")) | length), to: ($v | map(select(. == \"timeout\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "err",
-              "text": "err",
-              "type": "number"
-            },
-            {
-              "selector": "nondet",
-              "text": "nondet",
-              "type": "number"
-            },
-            {
-              "selector": "nv",
-              "text": "nv",
-              "type": "number"
-            },
-            {
-              "selector": "to",
-              "text": "to",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | (.validators // [])[] | .vote ] as $v | {total: ($v | length), ok: ($v | map(select(. == \"finished_with_return\")) | length), err: ($v | map(select(. == \"finished_with_error\")) | length), nondet: ($v | map(select(. == \"nondet_disagree\")) | length), nv: ($v | map(select(. == \"not_voted\")) | length), to: ($v | map(select(. == \"timeout\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "err",
-              "text": "err",
-              "type": "number"
-            },
-            {
-              "selector": "nondet",
-              "text": "nondet",
-              "type": "number"
-            },
-            {
-              "selector": "nv",
-              "text": "nv",
-              "type": "number"
-            },
-            {
-              "selector": "to",
-              "text": "to",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | (.validators // [])[] | .vote ] as $v | {total: ($v | length), ok: ($v | map(select(. == \"finished_with_return\")) | length), err: ($v | map(select(. == \"finished_with_error\")) | length), nondet: ($v | map(select(. == \"nondet_disagree\")) | length), nv: ($v | map(select(. == \"not_voted\")) | length), to: ($v | map(select(. == \"timeout\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            },
-            {
-              "selector": "err",
-              "text": "err",
-              "type": "number"
-            },
-            {
-              "selector": "nondet",
-              "text": "nondet",
-              "type": "number"
-            },
-            {
-              "selector": "nv",
-              "text": "nv",
-              "type": "number"
-            },
-            {
-              "selector": "to",
-              "text": "to",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions | [ .[] | ((.enrichment_data // {}).rounds // [])[] | (.validators // [])[] | .vote ] as $v | {total: ($v | length), ok: ($v | map(select(. == \"finished_with_return\")) | length), err: ($v | map(select(. == \"finished_with_error\")) | length), nondet: ($v | map(select(. == \"nondet_disagree\")) | length), nv: ($v | map(select(. == \"not_voted\")) | length), to: ($v | map(select(. == \"timeout\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "How validators vote",
@@ -2309,7 +1754,7 @@
       "type": "bargauge"
     },
     {
-      "description": "Rotation: a transaction needed another round with a new leader (latest 500 transactions); succeeded = its last round reached majority agreement. Appeals: successful appeals across the set in the last 7 days. Minority votes: share of the set's votes in the last 7 days that ended on the losing side.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Rotation: a transaction needed another round with a new leader (latest 500 transactions); succeeded = its last round reached majority agreement. Appeals: successful appeals across the set in the last 7 days. Minority votes: share of the set's votes in the last 7 days that ended on the losing side.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2326,7 +1771,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -2475,7 +1921,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 15
+        "y": 17
       },
       "id": 10,
       "options": {
@@ -2500,340 +1946,82 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions | {tx: length, rotated: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1)) | length), rotated_ok: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1 and ((.enrichment_data.rounds | last | .result) == \"majority_agree\"))) | length), appealed: (map(select(((.status // \"\") | test(\"appeal\"; \"i\")) or ([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0))) | length), appeals7: 0, minority7: 0, idle7: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions | {tx: length, rotated: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1)) | length), rotated_ok: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1 and ((.enrichment_data.rounds | last | .result) == \"majority_agree\"))) | length), appealed: (map(select(((.status // \"\") | test(\"appeal\"; \"i\")) or ([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0))) | length), appeals7: 0, minority7: 0, idle7: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions | {tx: length, rotated: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1)) | length), rotated_ok: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1 and ((.enrichment_data.rounds | last | .result) == \"majority_agree\"))) | length), appealed: (map(select(((.status // \"\") | test(\"appeal\"; \"i\")) or ([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0))) | length), appeals7: 0, minority7: 0, idle7: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions | {tx: length, rotated: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1)) | length), rotated_ok: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1 and ((.enrichment_data.rounds | last | .result) == \"majority_agree\"))) | length), appealed: (map(select(((.status // \"\") | test(\"appeal\"; \"i\")) or ([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0))) | length), appeals7: 0, minority7: 0, idle7: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions | {tx: length, rotated: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1)) | length), rotated_ok: (map(select((((.enrichment_data // {}).rounds // []) | length) > 1 and ((.enrichment_data.rounds | last | .result) == \"majority_agree\"))) | length), appealed: (map(select(((.status // \"\") | test(\"appeal\"; \"i\")) or ([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0))) | length), appeals7: 0, minority7: 0, idle7: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "rotated",
-              "text": "rotated",
-              "type": "number"
-            },
-            {
-              "selector": "rotated_ok",
-              "text": "rotated_ok",
-              "type": "number"
-            },
-            {
-              "selector": "appealed",
-              "text": "appealed",
-              "type": "number"
-            },
-            {
-              "selector": "appeals7",
-              "text": "appeals7",
-              "type": "number"
-            },
-            {
-              "selector": "minority7",
-              "text": "minority7",
-              "type": "number"
-            },
-            {
-              "selector": "idle7",
-              "text": "idle7",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B",
-          "root_selector": "[[.validators[] | select(.status == \"active\" or .status == \"quarantined\")] | {tx: 0, rotated: 0, rotated_ok: 0, appealed: 0, appeals7: (map(.successful_appeals_7d // 0) | add), minority7: ((map(.minority_pct_7d // 0) | add) / ([length, 1] | max) / 100), idle7: ((map(.idle_pct_7d // 0) | add) / ([length, 1] | max) / 100)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Rotations & appeals",
@@ -2903,7 +2091,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 26
       },
       "id": 11,
       "panels": [],
@@ -2915,7 +2103,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Network totals from the explorer since Bradbury Phase 2 genesis; success rate over the latest 500 transactions (a contract that returned vs one that ended in an error).",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Network totals from the explorer since Bradbury Phase 2 genesis; success rate over the latest 500 transactions (a contract that returned vs one that ended in an error).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2932,7 +2120,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -3047,7 +2236,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 27
       },
       "id": 12,
       "options": {
@@ -3072,340 +2261,82 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[{tx: .total_transactions, fin: .total_finalized_transactions, contracts: .total_contracts, accounts: .total_accounts, senders: .total_unique_genlayer_senders, done: 0, ok: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/analytics/general-kpis",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B1",
-          "root_selector": "[.transactions | {tx: 0, fin: 0, contracts: 0, accounts: 0, senders: 0, done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B2",
-          "root_selector": "[.transactions | {tx: 0, fin: 0, contracts: 0, accounts: 0, senders: 0, done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B3",
-          "root_selector": "[.transactions | {tx: 0, fin: 0, contracts: 0, accounts: 0, senders: 0, done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B4",
-          "root_selector": "[.transactions | {tx: 0, fin: 0, contracts: 0, accounts: 0, senders: 0, done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "tx",
-              "text": "tx",
-              "type": "number"
-            },
-            {
-              "selector": "fin",
-              "text": "fin",
-              "type": "number"
-            },
-            {
-              "selector": "contracts",
-              "text": "contracts",
-              "type": "number"
-            },
-            {
-              "selector": "accounts",
-              "text": "accounts",
-              "type": "number"
-            },
-            {
-              "selector": "senders",
-              "text": "senders",
-              "type": "number"
-            },
-            {
-              "selector": "done",
-              "text": "done",
-              "type": "number"
-            },
-            {
-              "selector": "ok",
-              "text": "ok",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B5",
-          "root_selector": "[.transactions | {tx: 0, fin: 0, contracts: 0, accounts: 0, senders: 0, done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Usage",
@@ -3458,7 +2389,7 @@
       "type": "stat"
     },
     {
-      "description": "Submitted vs finalized GenLayer transactions per hour (explorer). A widening gap means a backlog.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Submitted vs finalized GenLayer transactions per hour (explorer). A widening gap means a backlog.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3476,7 +2407,8 @@
             "spanNulls": true
           },
           "min": 0,
-          "unit": "short"
+          "unit": "short",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -3523,7 +2455,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 29
+        "y": 31
       },
       "id": 13,
       "options": {
@@ -3543,73 +2475,37 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "value",
-              "text": "value",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.histories[] | {time: .timestamp, value: (.value | tonumber)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/analytics/kpi-histories?from_timestamp=${__from:date:seconds}&to_timestamp=${__to:date:seconds}&interval=H1&metric=total_submitted_transactions",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "value",
-              "text": "value",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B",
-          "root_selector": "[.histories[] | {time: .timestamp, value: (.value | tonumber)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/analytics/kpi-histories?from_timestamp=${__from:date:seconds}&to_timestamp=${__to:date:seconds}&interval=H1&metric=total_finalized_transactions",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Transactions per hour",
       "type": "timeseries"
     },
     {
-      "description": "Each dot is one of the latest 500 transactions. Accepted: seconds from activation until the network accepted the result. Queue: seconds it waited before activation. Acceptance is derived as finalization minus the 60s appeal window (measured 60-66s on this testnet), so it can read up to ~6s high; the explorer does not publish an accepted timestamp in bulk.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Each dot is one of the latest 500 transactions. Accepted: seconds from activation until the network accepted the result. Queue: seconds it waited before activation. Acceptance is derived as finalization minus the 60s appeal window (measured 60-66s on this testnet), so it can read up to ~6s high; the explorer does not publish an accepted timestamp in bulk.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3626,7 +2522,8 @@
             "spanNulls": false
           },
           "min": 0,
-          "unit": "s"
+          "unit": "s",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -3673,7 +2570,7 @@
         "h": 8,
         "w": 9,
         "x": 9,
-        "y": 29
+        "y": 31
       },
       "id": 14,
       "options": {
@@ -3693,184 +2590,69 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "accept",
-              "text": "accept",
-              "type": "number"
-            },
-            {
-              "selector": "queue",
-              "text": "queue",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "accept",
-              "text": "accept",
-              "type": "number"
-            },
-            {
-              "selector": "queue",
-              "text": "queue",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "accept",
-              "text": "accept",
-              "type": "number"
-            },
-            {
-              "selector": "queue",
-              "text": "queue",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "accept",
-              "text": "accept",
-              "type": "number"
-            },
-            {
-              "selector": "queue",
-              "text": "queue",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "accept",
-              "text": "accept",
-              "type": "number"
-            },
-            {
-              "selector": "queue",
-              "text": "queue",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Time to acceptance",
@@ -3893,7 +2675,7 @@
       "type": "timeseries"
     },
     {
-      "description": "GenLayer transactions processed in each finalized epoch (epochs run a minimum of 24h).",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] GenLayer transactions processed in each finalized epoch (epochs run a minimum of 24h).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3906,7 +2688,8 @@
             "gradientMode": "none",
             "lineWidth": 0
           },
-          "unit": "short"
+          "unit": "short",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -3930,7 +2713,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 29
+        "y": 31
       },
       "id": 15,
       "options": {
@@ -3954,35 +2737,17 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "epoch",
-              "text": "epoch",
-              "type": "string"
-            },
-            {
-              "selector": "Transactions",
-              "text": "Transactions",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.epochs[] | select(.state == \"finalized\" and .epoch_number > 1) | {epoch: (\"Epoch \" + (.epoch_number | tostring)), n: .epoch_number, Transactions: .transaction_count}] | sort_by(.n) | map(del(.n))",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/epochs?page_size=60",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Transactions per epoch",
@@ -3995,7 +2760,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 39
       },
       "id": 16,
       "panels": [],
@@ -4007,7 +2772,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Stake securing the current set (self + delegated, GEN). Nakamoto coefficient = the fewest validators that together hold more than a third of stake (enough to halt consensus) — higher is healthier. Top 5 share = stake held by the five largest. In quarantine = stake sitting with quarantined validators.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Stake securing the current set (self + delegated, GEN). Nakamoto coefficient = the fewest validators that together hold more than a third of stake (enough to halt consensus) — higher is healthier. Top 5 share = stake held by the five largest. In quarantine = stake sitting with quarantined validators.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4024,7 +2789,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -4231,7 +2997,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 40
       },
       "id": 17,
       "options": {
@@ -4256,81 +3022,30 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "total",
-              "text": "total",
-              "type": "number"
-            },
-            {
-              "selector": "delegated",
-              "text": "delegated",
-              "type": "number"
-            },
-            {
-              "selector": "nakamoto",
-              "text": "nakamoto",
-              "type": "number"
-            },
-            {
-              "selector": "top5",
-              "text": "top5",
-              "type": "number"
-            },
-            {
-              "selector": "quarantined",
-              "text": "quarantined",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.validators[] | select(.status == \"active\" or .status == \"quarantined\") | . + {s: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18)}] | (map(.s) | add) as $tot | (map(.s) | sort | reverse) as $sorted | [{total: $tot, delegated: ((map(.delegated_stake | tonumber) | add) / 1e18 / $tot), nakamoto: (reduce $sorted[] as $x ({c: 0, n: 0}; if .c > $tot / 3 then . else {c: (.c + $x), n: (.n + 1)} end) | .n), top5: (($sorted[0:5] | add) / $tot), quarantined: ((map(select(.status == \"quarantined\") | .s) | add // 0) / $tot)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
-          "columns": [
-            {
-              "selector": "delegators",
-              "text": "delegators",
-              "type": "number"
-            },
-            {
-              "selector": "staked",
-              "text": "staked",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "B",
-          "root_selector": "[{delegators: .total_delegators, staked: (.total_gen_staked / 1e18)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/analytics/general-kpis",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Stake",
@@ -4355,7 +3070,7 @@
       "type": "stat"
     },
     {
-      "description": "The 25 largest validators in the set by stake (GEN), self vs delegated.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] The 25 largest validators in the set by stake (GEN), self vs delegated.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4368,7 +3083,8 @@
             "gradientMode": "none",
             "lineWidth": 0
           },
-          "unit": "short"
+          "unit": "short",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -4407,7 +3123,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 42
+        "y": 44
       },
       "id": 18,
       "options": {
@@ -4431,40 +3147,17 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "validator",
-              "text": "validator",
-              "type": "string"
-            },
-            {
-              "selector": "Self",
-              "text": "Self",
-              "type": "number"
-            },
-            {
-              "selector": "Delegated",
-              "text": "Delegated",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.validators[] | select(.status == \"active\" or .status == \"quarantined\") | . + {s: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18)}] | sort_by(-.s) | .[0:25] | map({validator: (((.metadata | objects | .name) // \"\") | if . == \"\" then null else . end) // (.validator_address[0:6] + \"…\" + .validator_address[-4:]), Self: ((.self_stake | tonumber) / 1e18), Delegated: ((.delegated_stake | tonumber) / 1e18)})",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Stake by validator",
@@ -4472,7 +3165,7 @@
       "type": "barchart"
     },
     {
-      "description": "Total GEN staked on the network over time (explorer, hourly) — same source as Total staked above.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Total GEN staked on the network over time (explorer, hourly) — same source as Total staked above.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4489,7 +3182,8 @@
             "spanNulls": true
           },
           "min": null,
-          "unit": "short"
+          "unit": "short",
+          "noValue": "No GenLayer explorer for Bradbury Phase 2 yet"
         },
         "overrides": [
           {
@@ -4517,7 +3211,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 42
+        "y": 44
       },
       "id": 19,
       "options": {
@@ -4538,35 +3232,17 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "time",
-              "text": "time",
-              "type": "timestamp_epoch_s"
-            },
-            {
-              "selector": "staked",
-              "text": "staked",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.histories[] | {time: .timestamp, staked: ((.value | tonumber) / 1e18)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/analytics/kpi-histories?from_timestamp=${__from:date:seconds}&to_timestamp=${__to:date:seconds}&interval=H1&metric=total_gen_staked",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Network stake over time",
@@ -4578,7 +3254,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 55
       },
       "id": 20,
       "panels": [],
@@ -4590,7 +3266,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Rewards: GEN minted to the set in the last finalized epoch (inflation). Stake slashed: GEN taken from validator + delegator stake since genesis (ValidatorSlash). Idleness quarantines: a validator failed to act on a transaction and was set aside (ValidatorBannedIdleness). Penalized votes: a validator voted with the minority or timed out and was charged a fee penalty (ValidatorPenaltyRecorded) — testnet fees are near zero, so these are counted, not summed in GEN.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Rewards: GEN minted to the set in the last finalized epoch (inflation). Stake slashed: GEN taken from validator + delegator stake since genesis (ValidatorSlash). Idleness quarantines: a validator failed to act on a transaction and was set aside (ValidatorBannedIdleness). Penalized votes: a validator voted with the minority or timed out and was charged a fee penalty (ValidatorPenaltyRecorded) — testnet fees are near zero, so these are counted, not summed in GEN.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4732,7 +3408,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 56
       },
       "id": 21,
       "options": {
@@ -4757,55 +3433,17 @@
       },
       "targets": [
         {
-          "columns": [
-            {
-              "selector": "rewards",
-              "text": "rewards",
-              "type": "number"
-            },
-            {
-              "selector": "slashed_gen",
-              "text": "slashed_gen",
-              "type": "number"
-            },
-            {
-              "selector": "slashes",
-              "text": "slashes",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "penalties",
-              "text": "penalties",
-              "type": "number"
-            },
-            {
-              "selector": "penalized",
-              "text": "penalized",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[.epochs | map(select(.state == \"finalized\")) | .[0] | {rewards: ((.inflation | tonumber) / 1e18), slashed_gen: 0, slashes: 0, idle: 0, penalties: 0, penalized: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/epochs?page_size=2",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         },
         {
           "columns": [
@@ -4856,7 +3494,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":51,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":51,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -4915,7 +3553,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":52,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":52,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -4974,7 +3612,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":53,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":53,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0x040a455CA9c6A8Cdc696F6fE603152692D4CA775\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5070,7 +3708,7 @@
         "h": 10,
         "w": 10,
         "x": 0,
-        "y": 58
+        "y": 60
       },
       "id": 22,
       "options": {
@@ -5122,7 +3760,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":54,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":54,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5161,7 +3799,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":55,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":55,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5216,7 +3854,7 @@
       "type": "barchart"
     },
     {
-      "description": "Every validator that has been penalized since genesis. Penalized votes = minority or timeout fee penalties; Slashes / GEN slashed = stake taken; Idleness = quarantines for not acting on a transaction.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] Every validator that has been penalized since genesis. Penalized votes = minority or timeout fee penalties; Slashes / GEN slashed = stake taken; Idleness = quarantines for not acting on a transaction.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -5301,7 +3939,7 @@
         "h": 10,
         "w": 14,
         "x": 10,
-        "y": 58
+        "y": 60
       },
       "id": 23,
       "options": {
@@ -5364,7 +4002,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":56,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":56,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0x040a455CA9c6A8Cdc696F6fE603152692D4CA775\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5428,7 +4066,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":57,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":57,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5492,7 +4130,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":58,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":58,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5503,60 +4141,17 @@
           }
         },
         {
-          "columns": [
-            {
-              "selector": "validator",
-              "text": "validator",
-              "type": "string"
-            },
-            {
-              "selector": "name",
-              "text": "name",
-              "type": "string"
-            },
-            {
-              "selector": "status",
-              "text": "status",
-              "type": "string"
-            },
-            {
-              "selector": "pen",
-              "text": "pen",
-              "type": "number"
-            },
-            {
-              "selector": "slashes",
-              "text": "slashes",
-              "type": "number"
-            },
-            {
-              "selector": "gen",
-              "text": "gen",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "N",
-          "root_selector": "[.validators[] | .validator_address as $a | {validator: ($a | ascii_downcase), name: (((.metadata | objects | .name) // \"\") | if . == \"\" then ($a[0:6] + \"…\" + $a[-4:]) else . end), status, pen: 0, slashes: 0, gen: 0, idle: 0}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Penalties by validator",
@@ -5690,7 +4285,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 68
+        "y": 70
       },
       "id": 25,
       "panels": [],
@@ -5702,7 +4297,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "One row per validator in the current set (on-chain active + quarantined). Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
+      "description": "[Incomplete: no GenLayer explorer for Bradbury Phase 2 yet.] One row per validator in the current set (on-chain active + quarantined). Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -5860,11 +4455,6 @@
                     "targetBlank": true,
                     "title": "Open in Chain Explorer",
                     "url": "https://scan.testnet-chain.genlayer.com/address/${__data.fields[\"Address\"]}"
-                  },
-                  {
-                    "targetBlank": true,
-                    "title": "Open in Network Explorer",
-                    "url": "https://scan.bradbury.genlayer.com/address/${__data.fields[\"Address\"]}"
                   }
                 ]
               },
@@ -6473,7 +5063,7 @@
         "h": 24,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 71
       },
       "id": 24,
       "options": {
@@ -6705,60 +5295,17 @@
           }
         },
         {
-          "columns": [
-            {
-              "selector": "node",
-              "text": "node",
-              "type": "string"
-            },
-            {
-              "selector": "stake",
-              "text": "stake",
-              "type": "number"
-            },
-            {
-              "selector": "idle",
-              "text": "idle",
-              "type": "number"
-            },
-            {
-              "selector": "minority",
-              "text": "minority",
-              "type": "number"
-            },
-            {
-              "selector": "rotation",
-              "text": "rotation",
-              "type": "number"
-            },
-            {
-              "selector": "appeals",
-              "text": "appeals",
-              "type": "number"
-            },
-            {
-              "selector": "txs",
-              "text": "txs",
-              "type": "number"
-            }
-          ],
           "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "grafanacloud-infinity"
           },
-          "filters": [],
           "format": "table",
-          "method": "GET",
           "parser": "jq-backend",
           "refId": "X",
-          "root_selector": "[.validators[] | {node: (.validator_address | ascii_downcase), stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18), idle: ((.idle_pct_7d // 0) / 100), minority: ((.minority_pct_7d // 0) / 100), rotation: (if .rotation_pct_7d == null then null else .rotation_pct_7d / 100 end), appeals: (.successful_appeals_7d // 0), txs: (.transaction_count // 0)}]",
-          "source": "url",
           "type": "json",
-          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "source": "inline",
+          "data": "[]",
+          "root_selector": "[]"
         }
       ],
       "title": "Validators",
@@ -7500,7 +6047,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 93
+        "y": 95
       },
       "id": 29,
       "panels": [
@@ -7561,7 +6108,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 94
+            "y": 96
           },
           "id": 26,
           "options": {
@@ -7636,7 +6183,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 94
+            "y": 96
           },
           "id": 27,
           "options": {
@@ -7698,7 +6245,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 102
+            "y": 104
           },
           "id": 28,
           "options": {
