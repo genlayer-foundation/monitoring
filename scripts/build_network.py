@@ -21,7 +21,7 @@ import json, re, sys
 sys.path.insert(0, __file__.rsplit("/", 1)[0])
 import networks as nw
 
-DIR = "dashboards/foundation/"
+DIR = nw.OUT
 SRC = "scripts/network.template.json"
 # The literals the template carries. Frozen with the template: they say what to look for in it,
 # not what any network is today (profiles change; e.g. this explorer host now serves Phase 3).

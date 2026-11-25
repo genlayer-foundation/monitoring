@@ -7644,12 +7644,148 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "description": "Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "Every graduated validator is on this network"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open portal profile",
+                    "url": "${__data.fields.profile_url}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Portal status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#ef4444",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "profile_url"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 93
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Validator",
+              "text": "Validator",
+              "type": "string"
+            },
+            {
+              "selector": "Portal status",
+              "text": "Portal status",
+              "type": "string"
+            },
+            {
+              "selector": "profile_url",
+              "text": "profile_url",
+              "type": "string"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "method": "GET",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "[ .[] | select(.status == \"missing\") | {\"Validator\": ((.account_name // \"\") | if . == \"\" then null else . end) // .name, \"Portal status\": ((((.health | objects) // {}).label // \"\") | if . == \"\" then \"Not deployed\" else . end), profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) else \"\" end)} ] | sort_by(.Validator | ascii_downcase)",
+          "source": "url",
+          "type": "json",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Graduated validators not on this network yet",
+      "type": "table"
+    },
+    {
       "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 93
+        "y": 103
       },
       "id": 29,
       "panels": [
@@ -7710,7 +7846,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 94
+            "y": 104
           },
           "id": 26,
           "options": {
@@ -7785,7 +7921,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 94
+            "y": 104
           },
           "id": 27,
           "options": {
@@ -7847,7 +7983,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 102
+            "y": 112
           },
           "id": 28,
           "options": {

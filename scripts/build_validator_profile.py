@@ -561,6 +561,6 @@ for p in allp():
     nv = NOVAL.get(p["title"]) or ("No data from this node's telemetry" if ds in ("grafanacloud-prom", "grafanacloud-logs") else "No data")
     p["fieldConfig"]["defaults"].setdefault("noValue", nv)
 missing = nw.stub_unavailable(dash, NET, keep_jq=("node_hex",))  # node_hex only lowercases $node: its jq reads no input
-out = "dashboards/foundation/" + nw.filename("validator_profile", NET)
+out = nw.OUT + nw.filename("validator_profile", NET)
 json.dump(dash, open(out, "w"), indent=1)
 print(f"{NET['key']}: wrote {out} -> upload as uid {dash['uid']}" + (f" (empty for now: {', '.join(nw.SOURCE_NAMES[m] for m in missing)})" if missing else ""))

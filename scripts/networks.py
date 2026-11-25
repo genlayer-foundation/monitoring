@@ -10,20 +10,26 @@ A value of None means "not known / not available yet". Never guess one: leave it
   - any REQUIRED field None      -> the generators refuse to build that network.
 """
 
+import os
+
 PORTAL_ROSTER = "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network="
 
 # The network that owns the UNSUFFIXED uids: gl-testnet-network (the public board,
 # dashboards/foundation/network.json) and gl-validator-profile. Every other network
 # gets gl-testnet-network-<slug> / gl-validator-profile-<slug>, team-only.
 # Changing this line and re-running the generators is how the public URL moves.
-CURRENT = "bradbury-phase2"
+# NETWORK_CURRENT / NETWORK_OUT override it for one run, to generate into another folder
+# what the boards would be after a move, without changing what is committed as current.
+CURRENT = os.environ.get("NETWORK_CURRENT", "bradbury-phase2")
+OUT = os.environ.get("NETWORK_OUT", "dashboards/foundation/")
 
 NETWORKS = {
     "bradbury-phase2": {
         "name": "Bradbury Phase 2",        # display name, used in titles and descriptions
         "slug": "phase2",                  # uid + file suffix when the network is not CURRENT
         "label": "bradbury-phase2",        # Prometheus / Loki `network` label (node NETWORK_NAME)
-        "portal_key": "bradbury2",         # ?network=<key> on the portal roster endpoint
+        "portal_key": None,                # ?network=<key> on the portal roster endpoint. Was "bradbury2" until
+                                           # 2026-11-25, when the portal switched Phase 2 off (the key now returns [])
         "rpc": "https://rpc.testnet-chain.genlayer.com",
         "chain_explorer": "https://scan.testnet-chain.genlayer.com",
         "explorer": None,                  # GenLayer explorer; its indexer API is <explorer>/api/v1. Phase 2 had
@@ -43,7 +49,7 @@ NETWORKS = {
         "name": "Bradbury Phase 3",
         "slug": "phase3",
         "label": "bradbury-phase3",        # carried today only by the Heartbeat monitors; no node pushes it yet (2026-11-25)
-        "portal_key": None,                # TODO: the portal has no Phase 3 roster key yet ("bradbury3" -> Unknown network)
+        "portal_key": "bradbury3",         # live since 2026-11-25 ~15:45 UTC
         "rpc": "https://rpc.testnet-chain.genlayer.com",
         "chain_explorer": "https://scan.testnet-chain.genlayer.com",
         "explorer": "https://scan.bradbury.genlayer.com",   # serves Phase 3 since 2026-11-25 ~14:00 UTC (was Phase 2's)
