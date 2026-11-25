@@ -26,11 +26,13 @@ NETWORKS = {
         "portal_key": "bradbury2",         # ?network=<key> on the portal roster endpoint
         "rpc": "https://rpc.testnet-chain.genlayer.com",
         "chain_explorer": "https://scan.testnet-chain.genlayer.com",
-        "explorer": "https://scan.bradbury.genlayer.com",   # GenLayer explorer; its indexer API is <explorer>/api/v1
+        "explorer": None,                  # GenLayer explorer; its indexer API is <explorer>/api/v1. Phase 2 had
+                                           # scan.bradbury.genlayer.com until 2026-11-25, when that host moved to Phase 3
         "staking": "0xD8fBa96C0dBB0257028dBc0107060b958e5c7113",         # emits ValidatorSlash, ValidatorBannedIdleness, ValidatorJoin
         "fees_processor": "0x040a455CA9c6A8Cdc696F6fE603152692D4CA775",  # emits ValidatorPenaltyRecorded
         "genesis_block": 47930,            # AddressManager deployment block: eth_getLogs start
         "appeal_window_s": 60,             # accepted -> finalized gap; "time to acceptance" = finalization - this
+        "appeal_window_note": "measured 60-66s on this testnet), so it can read up to ~6s high",
         # reference only, no board reads them:
         "address_manager": "0x3F71AE080BD6270A91dBcc7960d88797828538E0",
         "consensus_main": "0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019",
@@ -44,11 +46,12 @@ NETWORKS = {
         "portal_key": None,                # TODO: the portal has no Phase 3 roster key yet ("bradbury3" -> Unknown network)
         "rpc": "https://rpc.testnet-chain.genlayer.com",
         "chain_explorer": "https://scan.testnet-chain.genlayer.com",
-        "explorer": None,                  # TODO: scan.bradbury.genlayer.com still says Phase 2 (and its API 500s, 2026-11-25)
+        "explorer": "https://scan.bradbury.genlayer.com",   # serves Phase 3 since 2026-11-25 ~14:00 UTC (was Phase 2's)
         "staking": "0xcE16862EAf10B97A0619BeBb662991fb4a52e346",
         "fees_processor": "0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4",
         "genesis_block": 694191,           # found by eth_getCode bisection, 2026-11-24 17:03 UTC
-        "appeal_window_s": None,           # TODO: measure once an explorer indexes Phase 3 (needed only with `explorer`)
+        "appeal_window_s": 1800,           # the `decided` timeout; accepted -> finalized measured 1811s on 11 txs, 2026-11-25
+        "appeal_window_note": "measured 1811s on this testnet), so it can read up to ~11s high",
         "address_manager": "0x0192C6C9482251790965B7136352B26234d81d79",
         "consensus_main": "0x0f4F0e05475723790E4a2ed0598370783C300926",
     },
@@ -64,7 +67,8 @@ NETWORKS = {
         "staking": None,                   # TODO: deployment book, key "Staking"
         "fees_processor": None,            # TODO: deployment book, key "FeesProcessor"
         "genesis_block": None,             # TODO: AddressManager deployment block
-        "appeal_window_s": None,           # TODO
+        "appeal_window_s": None,           # TODO: measure via <explorer>/api/v1/transactions/consensus-steps/<hash>
+        "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
         "address_manager": None,
         "consensus_main": None,
     },
@@ -83,8 +87,8 @@ def profile(key):
     missing = [f for f in REQUIRED if p[f] is None]
     if missing:
         raise SystemExit(f"{key}: fill these in scripts/networks.py first: {', '.join(missing)}")
-    if p["explorer"] and p["appeal_window_s"] is None:
-        raise SystemExit(f"{key}: an explorer is set, so appeal_window_s must be too")
+    if p["explorer"] and None in (p["appeal_window_s"], p["appeal_window_note"]):
+        raise SystemExit(f"{key}: an explorer is set, so appeal_window_s and appeal_window_note must be too")
     return p
 
 

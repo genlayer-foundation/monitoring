@@ -1,18 +1,18 @@
-"""Derive the per-network copies of the network board from dashboards/foundation/network.json.
+"""Generate every network's copy of the network board from scripts/network.template.json.
 
-network.json (uid gl-testnet-network, the PUBLIC board) is hand-maintained and variable-free:
-public dashboards do not interpolate variables, so every network fact in it is a literal.
-This script rewrites those literals from one profile in scripts/networks.py to another.
+The board is variable-free (public dashboards do not interpolate variables), so every network
+fact in it is a literal. The template is the complete board, with every panel's real query,
+carrying the literals in TEMPLATE below. This script rewrites them to a profile from
+scripts/networks.py. Change a panel in the template, never in the generated files.
 
 Usage, from the repo root:
     python3 scripts/build_network.py                  # every network whose profile is filled in
     python3 scripts/build_network.py bradbury-phase3  # just that one
 
-  - a network that is not networks.CURRENT -> dashboards/foundation/network_<slug>.json,
-    uid gl-testnet-network-<slug>, team-only (no "public" tag);
-  - networks.CURRENT -> network.json itself. Nothing to do while network.json already carries
-    that network; after CURRENT changes, this converts network.json in place (same uid, so the
-    public share and its URL stay) and the old network becomes a network_<slug>.json copy.
+  - networks.CURRENT -> dashboards/foundation/network.json, uid gl-testnet-network (the PUBLIC
+    board: same uid whatever the network, so the public share and its URL stay);
+  - any other network -> dashboards/foundation/network_<slug>.json, uid
+    gl-testnet-network-<slug>, team-only (no "public" tag).
 
 Then upload each file it names to Grafana, folder fkpd6m, overwrite.
 """
@@ -22,7 +22,15 @@ sys.path.insert(0, __file__.rsplit("/", 1)[0])
 import networks as nw
 
 DIR = "dashboards/foundation/"
-SRC = DIR + "network.json"
+SRC = "scripts/network.template.json"
+# The literals the template carries. Frozen with the template: they say what to look for in it,
+# not what any network is today (profiles change; e.g. this explorer host now serves Phase 3).
+TEMPLATE = {
+    "key": "template", "name": "Bradbury Phase 2", "label": "bradbury-phase2", "portal_key": "bradbury2",
+    "rpc": "https://rpc.testnet-chain.genlayer.com", "chain_explorer": "https://scan.testnet-chain.genlayer.com",
+    "explorer": "https://scan.bradbury.genlayer.com", "staking": "0xD8fBa96C0dBB0257028dBc0107060b958e5c7113",
+    "appeal_window_s": 60, "appeal_window_note": "measured 60-66s on this testnet), so it can read up to ~6s high",
+}
 PROFILE_BOARD = "/d/gl-validator-profile?"
 # who emits which penalty event (genlayer-consensus); used as the eth_getLogs address filter
 EMITTER = {
@@ -51,6 +59,7 @@ def build(text, t, p):
         if not n:
             raise SystemExit(f"{SRC}: appeal-window arithmetic not found")
         text = text.replace(f"{t['appeal_window_s']}s appeal window", f"{p['appeal_window_s']}s appeal window")
+        text = swap(text, t["appeal_window_note"], p["appeal_window_note"], "appeal-window note")
     dash = json.loads(text)
 
     # penalty events: this network's emitter and genesis only (several deployments share the chain)
@@ -76,26 +85,17 @@ def build(text, t, p):
 
 
 def main(keys):
-    text = open(SRC).read()
-    template = [k for k, v in nw.NETWORKS.items() if v["label"] and f'network=\\"{v["label"]}\\"' in text]
-    if len(template) != 1:
-        raise SystemExit(f"{SRC}: cannot tell which network it carries (found {template})")
-    t = nw.profile(template[0])
-    text = json.dumps(json.load(open(SRC)))
+    text = json.dumps(json.load(open(SRC)), ensure_ascii=False)
     for key in keys or [k for k, v in nw.NETWORKS.items() if all(v[f] is not None for f in nw.REQUIRED)]:
         p = nw.profile(key)
-        if key == nw.CURRENT == t["key"]:
-            print(f"{key}: {SRC} already carries it (hand-maintained source), nothing to do")
-            continue
-        dash, missing = build(text, t, p)
-        if key == nw.CURRENT and missing:
-            raise SystemExit(f"{key}: cannot become the public board without: {', '.join(missing)}")
+        dash, missing = build(text, TEMPLATE, p)
         out = DIR + nw.filename("network", p)
         with open(out, "w") as f:
             json.dump(dash, f, indent=2, ensure_ascii=False)
             f.write("\n")
         note = f" (empty for now: {', '.join(nw.SOURCE_NAMES[m] for m in missing)})" if missing else ""
-        print(f"{key}: wrote {out} -> upload as uid {dash['uid']}{note}")
+        public = " [PUBLIC board]" if key == nw.CURRENT else ""
+        print(f"{key}: wrote {out} -> upload as uid {dash['uid']}{public}{note}")
 
 
 if __name__ == "__main__":
