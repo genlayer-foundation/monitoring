@@ -20,7 +20,7 @@ PORTAL_ROSTER = "https://portal-admin.genlayer.foundation/api/v1/validators/wall
 # Changing this line and re-running the generators is how the public URL moves.
 # NETWORK_CURRENT / NETWORK_OUT override it for one run, to generate into another folder
 # what the boards would be after a move, without changing what is committed as current.
-CURRENT = os.environ.get("NETWORK_CURRENT", "bradbury-phase2")
+CURRENT = os.environ.get("NETWORK_CURRENT", "bradbury-phase3")
 OUT = os.environ.get("NETWORK_OUT", "dashboards/foundation/")
 
 NETWORKS = {
