@@ -27,8 +27,8 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 
 | Network | Profile | Boards | State 2026-11-25 |
 |---|---|---|---|
-| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; roster yes, **explorer gone**; 41 nodes still push `bradbury-phase2` (v0.6.0-rc.5) |
-| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3`, `gl-validator-profile-phase3` (both live, team-only) | live on chain (epoch 2, 11 selectable); explorer yes, **no roster**, no node telemetry |
+| Bradbury Phase 2 | `bradbury-phase2` (CURRENT) | `gl-testnet-network` (public), `gl-validator-profile` | halted, being retired; **roster gone** (portal returns `[]` for `bradbury2` since 2026-11-25) and **explorer gone**; ~40 nodes still push `bradbury-phase2` |
+| Bradbury Phase 3 | `bradbury-phase3` | `gl-testnet-network-phase3`, `gl-validator-profile-phase3` (both live, team-only) | every source present since 2026-11-25 ~15:45 UTC: chain, explorer, roster key `bradbury3` (54 rows: 11 active, 1 inactive = the Foundation wallet pending activation, 42 `missing`), telemetry label (only the Foundation node pushes it so far) |
 | Clarke | `clarke` (empty slot) | none | starts 2026-11-26, alongside Phase 3 |
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
@@ -38,8 +38,14 @@ and chain explorer) — networks are told apart by contract address only. Stakin
 **694191** (2026-11-24 17:03 UTC, found by `eth_getCode` bisection). Source:
 `genlayerlabs/genlayer-networks` `bradbury-phase-3/`. What it lacks, verified 2026-11-25:
 
-- **Portal roster**: no key (`?network=bradbury3` answers 400 `Unknown network`) →
-  `portal_key: None`. Health, Issues, Open issues, names and portal links are empty.
+- (**Portal roster**: key `bradbury3` exists since 2026-11-25 ~15:45 UTC; until then
+  the key answered 400 `Unknown network`. The row's `network` field is the Grafana label
+  `bradbury-phase3`.)
+- **Graduated validators with no wallet on the network** (roster `status: "missing"`,
+  portal health "Not deployed") are not part of the set: they stay out of the Validators
+  table and are listed in their own panel right below it, **"Graduated validators not on
+  this network yet"** (name, portal status, portal link, row count in the footer) — the
+  outreach list of who has not rejoined.
 - (It has an **explorer** since 2026-11-25 ~14:00 UTC: `scan.bradbury.genlayer.com`
   — the host that was Phase 2's — switched to Phase 3 after a morning of 500/503s.
   Same routes and shapes; all 11 `/validators` are the chain's selectable set.
@@ -100,7 +106,17 @@ board live in Grafana is still **topic-only**, so its penalty panels count Phant
 Bradbury's events too, and the wide range now times out (504) at times. The regenerated
 `network.json` in the repo has the filter; it is not uploaded yet (see above).
 
-**Moving the public URL to another network**: set `CURRENT` to it, run both generators
+**The move to Phase 3 is prepared, not done** (owner has not said yes):
+`dashboards/foundation/public-move/network.json` and `validator_profile.json` are
+Phase 3 generated as the public boards (`NETWORK_CURRENT=bradbury-phase3
+NETWORK_OUT=dashboards/foundation/public-move/ python3 scripts/build_network.py
+bradbury-phase3`, same for `build_validator_profile.py`). To do it: upload those two
+files to uids `gl-testnet-network` and `gl-validator-profile` (overwrite), then set
+`CURRENT = "bradbury-phase3"` in `scripts/networks.py`, run both generators with no
+argument, commit, and delete `public-move/`. Until then the live public board is the
+2026-11-22 Phase 2 version reading an empty roster and a Phase 3 explorer.
+
+**Moving the public URL to another network** in general: set `CURRENT` to it, run both generators
 with no argument, upload `network.json` to uid `gl-testnet-network` (same uid, so the
 public share and token `71f94ef4…` stay) and `validator_profile.json` to
 `gl-validator-profile`; the old network comes out as `network_<slug>.json`. A source
