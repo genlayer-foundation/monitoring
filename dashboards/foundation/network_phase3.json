@@ -6633,6 +6633,11 @@
               "selector": "txs",
               "text": "txs",
               "type": "number"
+            },
+            {
+              "selector": "xname",
+              "text": "xname",
+              "type": "string"
             }
           ],
           "datasource": {
@@ -6644,7 +6649,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "X",
-          "root_selector": "[.validators[] | {node: (.validator_address | ascii_downcase), stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18), idle: ((.idle_pct_7d // 0) / 100), minority: ((.minority_pct_7d // 0) / 100), rotation: (if .rotation_pct_7d == null then null else .rotation_pct_7d / 100 end), appeals: (.successful_appeals_7d // 0), txs: (.transaction_count // 0)}]",
+          "root_selector": "[.validators[] | {node: (.validator_address | ascii_downcase), stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18), idle: ((.idle_pct_7d // 0) / 100), minority: ((.minority_pct_7d // 0) / 100), rotation: (if .rotation_pct_7d == null then null else .rotation_pct_7d / 100 end), appeals: (.successful_appeals_7d // 0), txs: (.transaction_count // 0), xname: ((.metadata | objects | .name) // null | if . == \"\" then null else . end)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
@@ -7201,6 +7206,7 @@
               "include": [
                 "pref_name A",
                 "validator_name",
+                "xname X",
                 "addr_last",
                 "node_last"
               ],
@@ -7324,7 +7330,8 @@
               "status A": true,
               "universalone": true,
               "validator_name": true,
-              "zeroU": true
+              "zeroU": true,
+              "xname X": true
             },
             "indexByName": {
               "#": 100,

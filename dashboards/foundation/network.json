@@ -5855,6 +5855,7 @@
               "include": [
                 "pref_name A",
                 "validator_name",
+                "xname X",
                 "addr_last",
                 "node_last"
               ],
@@ -5978,7 +5979,8 @@
               "status A": true,
               "universalone": true,
               "validator_name": true,
-              "zeroU": true
+              "zeroU": true,
+              "xname X": true
             },
             "indexByName": {
               "#": 100,
