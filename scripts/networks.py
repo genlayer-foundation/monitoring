@@ -24,27 +24,6 @@ CURRENT = os.environ.get("NETWORK_CURRENT", "bradbury-phase3")
 OUT = os.environ.get("NETWORK_OUT", "dashboards/foundation/")
 
 NETWORKS = {
-    "bradbury-phase2": {
-        "name": "Bradbury Phase 2",        # display name, used in titles and descriptions
-        "slug": "phase2",                  # uid + file suffix when the network is not CURRENT
-        "label": "bradbury-phase2",        # Prometheus / Loki `network` label (node NETWORK_NAME)
-        "portal_key": None,                # ?network=<key> on the portal roster endpoint. Was "bradbury2" until
-                                           # 2026-11-25, when the portal switched Phase 2 off (the key now returns [])
-        "rpc": "https://rpc.testnet-chain.genlayer.com",
-        "chain_explorer": "https://scan.testnet-chain.genlayer.com",
-        "explorer": None,                  # GenLayer explorer; its indexer API is <explorer>/api/v1. Phase 2 had
-                                           # scan.bradbury.genlayer.com until 2026-11-25, when that host moved to Phase 3
-        "staking": "0xD8fBa96C0dBB0257028dBc0107060b958e5c7113",         # emits ValidatorSlash, ValidatorBannedIdleness, ValidatorJoin
-        "fees_processor": "0x040a455CA9c6A8Cdc696F6fE603152692D4CA775",  # emits ValidatorPenaltyRecorded
-        "genesis_block": 47930,            # AddressManager deployment block: eth_getLogs start
-        "appeal_window_s": 60,             # accepted -> finalized gap; "time to acceptance" = finalization - this
-        "appeal_window_note": "measured 60-66s on this testnet), so it can read up to ~6s high",
-        "boards": False,                   # True = its boards are live in Grafana: the others link to them
-        "foundation_node": "0xb0dab7fc62e276f5be045b7ec3674f7168623342",  # validator-profile default; None = no default
-        # reference only, no board reads them:
-        "address_manager": "0x3F71AE080BD6270A91dBcc7960d88797828538E0",
-        "consensus_main": "0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019",
-    },
     # Same chain as Phase 2 (4221): told apart by contract address only.
     # Source: genlayerlabs/genlayer-networks bradbury-phase-3 (deployed 2026-11-24).
     "bradbury-phase3": {
@@ -84,7 +63,7 @@ NETWORKS = {
         "joined_label": "Joined, waiting for epoch 0 to end",  # lists joined-but-not-selectable validators (build_network
                                            # show_joined); epoch 0 cannot end before 2026-12-10. Reword or drop after it
         "roster_no_missing_rows": True,    # the portal lists joined wallets only (1 row 2026-11-26), no "missing" rows:
-                                           # the not-joined panel says so instead of "every graduated validator is on
+                                           # the not-joined panel says so instead of "every validator is on
                                            # this network". Drop when the portal adds them
         "public_token": "8ce16ef9604c446d8f78714dae6def95",  # public share of gl-testnet-network-clarke, 2026-11-26 (Ivan)
         "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26

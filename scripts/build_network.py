@@ -176,7 +176,7 @@ def build(text, t, p):
     missing = nw.stub_unavailable(dash, p)
     if p.get("roster_no_missing_rows"):  # the portal does not list who is absent: an empty panel is not good news
         for panel in nw._panels(dash["panels"]):
-            if panel.get("fieldConfig", {}).get("defaults", {}).get("noValue") == "Every graduated validator is on this network":
+            if panel.get("fieldConfig", {}).get("defaults", {}).get("noValue") == "Every validator is on this network":
                 panel["fieldConfig"]["defaults"]["noValue"] = f"The portal does not list who is missing on {p['name']} yet"
                 panel["description"] = (f"[The portal roster for {p['name']} has no `missing` rows yet, so this panel "
                                         "cannot say who has not joined.] " + panel.get("description", ""))

@@ -7648,7 +7648,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
+      "description": "Validators (portal Validator role; pending validators, still on the waitlist, are not listed) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -7658,7 +7658,7 @@
             },
             "filterable": true
           },
-          "noValue": "Every graduated validator is on this network"
+          "noValue": "Every validator is on this network"
         },
         "overrides": [
           {
@@ -7776,7 +7776,7 @@
           }
         }
       ],
-      "title": "Graduated validators not on this network yet",
+      "title": "Validators not on this network yet",
       "type": "table"
     },
     {

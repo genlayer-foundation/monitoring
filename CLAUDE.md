@@ -28,8 +28,13 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 | Network | Profile | Boards | State |
 |---|---|---|---|
 | Bradbury Phase 3 | `bradbury-phase3` (CURRENT) | `gl-testnet-network` (**public**), `gl-validator-profile` | every source present: chain, explorer `scan.bradbury.genlayer.com`, roster key `bradbury3`, telemetry label. `gl-testnet-network-phase3` / `gl-validator-profile-phase3` (files `*_phase3.json`) are the pre-move team copies: now duplicates, no longer regenerated, left in place |
-| Bradbury Phase 2 | `bradbury-phase2` | none live; `network_phase2.json` / `validator_profile_phase2.json` are repo-only | halted, retired from the boards 2026-11-25: no roster (portal returns `[]`), no explorer; ~40 nodes still push the label |
+| ~~Bradbury Phase 2~~ | removed 2026-11-26 | none (never live as a separate board; its repo-only files and its profile were deleted 2026-11-26, recoverable from git history) | halted, retired from the boards 2026-11-25; Ivan 2026-11-26: off the dashboards entirely. The template still carries Phase 2 literals as frozen placeholders (`TEMPLATE` in `build_network.py`): that is not a network board |
 | Clarke | `clarke` | `gl-testnet-network-clarke` (**public**, token `8ce16ef9…`), `gl-validator-profile-clarke` (team-only), files `*_clarke.json` | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (joined wallets only), label `clarke` (Foundation node reports); **no explorer** |
+
+**Terminology on the boards (2026-11-26, Ivan)**: nothing a viewer reads says
+"graduated". The portal's Validator role is a **validator**; someone still on the waitlist
+is a **pending validator**. Internal notes below that say "graduated" mean the same
+Validator role.
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
 and chain explorer) — networks are told apart by contract address only. Staking
@@ -41,10 +46,10 @@ and chain explorer) — networks are told apart by contract address only. Stakin
 - (**Portal roster**: key `bradbury3` exists since 2026-11-25 ~15:45 UTC; until then
   the key answered 400 `Unknown network`. The row's `network` field is the Grafana label
   `bradbury-phase3`.)
-- **Graduated validators with no wallet on the network** (roster `status: "missing"`,
-  portal health "Not deployed") are not part of the set: they stay out of the Validators
-  table and are listed in their own panel right below it, **"Graduated validators not on
-  this network yet"** (name, portal status, portal link, row count in the footer) — the
+- **Validators with no wallet on the network** (portal Validator role, formerly called
+  "graduated"; roster `status: "missing"`, portal health "Not deployed") are not part of
+  the set: they stay out of the Validators table and are listed in their own panel right
+  below it, **"Validators not on this network yet"** (name, portal status, portal link, row count in the footer) — the
   outreach list of who has not rejoined.
 - (It has an **explorer** since 2026-11-25 ~14:00 UTC: `scan.bradbury.genlayer.com`
   — the host that was Phase 2's — switched to Phase 3 after a morning of 500/503s.
@@ -137,9 +142,9 @@ team-only; nothing about Phase 3 was re-pointed. What it lacks:
   with the explorer.
 - **Roster**: key `clarke` lists joined wallets only (1 row 2026-11-26 ~16:00 UTC: the
   Foundation, `inactive`), with no `missing` rows and no Grafana label set in the portal.
-  Profile flag `roster_no_missing_rows: True` makes "Graduated validators not on this
+  Profile flag `roster_no_missing_rows: True` makes "Validators not on this
   network yet" read "The portal does not list who is missing on Clarke yet" instead of
-  "Every graduated validator is on this network". **Drop the flag and regenerate once
+  "Every validator is on this network". **Drop the flag and regenerate once
   the portal adds `missing` rows for Clarke.**
 - **Joined validators are listed (2026-11-26, profile `joined_label`)**: in epoch 0 nobody
   is selectable, so the current-set table would be empty although validators have
