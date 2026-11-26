@@ -198,7 +198,7 @@ This repo exposes **no server and no endpoint of its own**. Everything below con
 ## On-chain
 
 - **Networks**:
-  - **Bradbury Phase 2** (`network` label `bradbury-phase2`, per docs.genlayer.com/validators/monitoring, not yet observed; portal key `bradbury2`) — staking proxy `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113`, via `https://rpc.testnet-chain.genlayer.com` (chainId 4221, Arbitrum Orbit / Conduit)
+  - Bradbury Phase 2 (`bradbury-phase2`, staking `0xD8fBa96C0dBB0257028dBc0107060b958e5c7113`): **no longer queried** since 2026-11-26 — its profile was removed from `scripts/networks.py` and no board reads it. Its literals survive only as the template's frozen placeholders, rewritten on every build
   - **Bradbury Phase 3** (`network` label `bradbury-phase3`, carried only by the Heartbeat monitors as of 2026-11-25; no portal key yet) — same chain and RPC; staking `0xcE16862EAf10B97A0619BeBb662991fb4a52e346`, FeesProcessor `0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4`, AddressManager `0x0192C6C9482251790965B7136352B26234d81d79` (deployed at block 694191). Read by `gl-testnet-network-phase3`
   - **Clarke** (`network` label `clarke`, nothing reports it yet as of 2026-11-26; portal key `clarke`) — same chain and RPC; staking `0x711d111510Af2Bb35c3929b709677a1E9f8ffce2`, FeesProcessor `0x7e226Fe81eF152b7eF249404a7877Be8f83FBdcF`, AddressManager `0xA79dA7c238905fD0F10298cD579B0733ad1B1d0E` (first has code at block 713692). Read by `gl-testnet-network-clarke`, `gl-validator-profile-clarke`
   - Sunset 2026-10-20, no longer queried: Asimov (`asimov-phase5`, staking `0x63Fa5E0bb10fb6fA98F44726C5518223F767687A`) and Bradbury Phase 1 (`bradbury-phase1`, staking `0x4A4449E617F8D10FDeD0b461CadEf83939E821A5`), both on `https://zksync-os-testnet-genlayer.zksync.dev`
@@ -238,4 +238,4 @@ Dashboard-side credentials (Prometheus/Loki/Infinity datasource auth, the Grafan
 - `validator_telemetry_report.py:42` contains a **hardcoded Grafana public-dashboard access token** as a literal. It is a capability URL credential for the "Who is pushing?" board (uid `agfnnmw`) — anyone with the file can query that dashboard's panels. Rotate via Grafana's public-dashboards API and move to an env var if this script is revived.
 - `dashboards/5ElementsNodes/WOS | Internal.json:139` carries an `Authorization` header with the placeholder value `<APIKEY>` — harmless as committed, but a reminder that re-exporting that board from live Grafana may capture a real key. Check before committing any 5Elements re-export.
 
-<!-- scanned: e16a614 2026-08-12; Bradbury Phase 2 cut-over 2026-10-20; Bradbury Phase 3 boards + network profiles 2026-11-25; public board moved to Phase 3 2026-11-25; Clarke boards 2026-11-26 -->
+<!-- scanned: e16a614 2026-08-12; Bradbury Phase 2 cut-over 2026-10-20; Bradbury Phase 3 boards + network profiles 2026-11-25; public board moved to Phase 3 2026-11-25; Clarke boards 2026-11-26; Phase 2 profile removed 2026-11-26 -->
