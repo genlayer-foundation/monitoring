@@ -141,11 +141,29 @@ team-only; nothing about Phase 3 was re-pointed. What it lacks:
   network yet" read "The portal does not list who is missing on Clarke yet" instead of
   "Every graduated validator is on this network". **Drop the flag and regenerate once
   the portal adds `missing` rows for Clarke.**
-- **Validators table hides joined-but-pending validators**: in epoch 0 the selectable set
-  is empty, and the "pending activation" row state needs the explorer, so the
-  Foundation's validator (`0x80f49656…`, joined, reporting) is NOT in the table yet. It
-  shows in Node health (1 reporting, 100 % synced), Nodes online, Blocks behind, CPU and
-  Builds. It appears in the table once it is selectable or Clarke has an explorer.
+- **Joined validators are listed (2026-11-26, profile `joined_label`)**: in epoch 0 nobody
+  is selectable, so the current-set table would be empty although validators have
+  registered (Ivan wants the public Clarke board to show who is registering). For a profile
+  with `joined_label`, `build_network.show_joined` adds:
+  - **Validator set** gains **Joined**: roster rows with a real wallet (status not `missing`).
+  - **Validators** table: every such row passes the filter (`joinflag` from a roster field
+    `joined`, added to target A's `columns`, since Infinity emits listed columns only), and a
+    row the portal calls `inactive` reads Health "Joined, waiting for epoch 0 to end" (yellow).
+  - **Latest joins** (right of the not-joined panel): chain `ValidatorJoin` events since
+    genesis (time, self stake, address) with the portal name.
+  Joined comes from the **portal roster, not the chain**, on purpose: see the 429 note below.
+  Reword or drop `joined_label` once epoch 0 has ended (not before 2026-12-10). Phase 3
+  has no `joined_label`: its board is unchanged.
+- ⚠️ **The red badges are the public RPC rate-limiting (HTTP 429)**. With ~10 RPC targets
+  firing together at board load, `rpc.testnet-chain.genlayer.com` answers 429 to several
+  (reproduced 3/3 by querying every panel of the public Clarke board in parallel: incentives,
+  penalties, Validators E/Q, Latest joins). This explains the "cause not found" badges above
+  and they hit the Phase 3 public board too. A panel whose RPC target fails keeps its other
+  data, but only if its transformations do not depend on that frame: in the Validators
+  table, the joined rows are kept because the `universalone` include also lists the
+  unsuffixed names (`rone`, `joined`), and field names lose their ` A` suffix when frames are
+  missing. Real fix not done: fewer RPC calls (batch E into Q, fold panel 1's batch) or a
+  cached RPC source.
 - **Telemetry**: the Foundation's Clarke node reports `network="clarke"` since
   2026-11-26 afternoon (the first and, at ~16:00 UTC, only one).
 - The validator profile opens on the Foundation's Clarke validator (`foundation_node`).
