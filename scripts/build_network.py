@@ -74,6 +74,9 @@ def build(text, t, p):
                 target["url_options"]["data"] = json.dumps(call, separators=(",", ":"))
 
     missing = nw.stub_unavailable(dash, p)
+    # the boards of the other networks running in parallel (team-only boards: a link from the
+    # public board needs a login; public dashboards do not show dashboard links anyway)
+    dash["links"] = nw.board_links(p, "gl-testnet-network", "{name} board") + dash.get("links", [])
     if p["key"] != nw.CURRENT:
         dash.pop("id", None)
         dash.pop("version", None)

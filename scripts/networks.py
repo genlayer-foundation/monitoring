@@ -39,6 +39,8 @@ NETWORKS = {
         "genesis_block": 47930,            # AddressManager deployment block: eth_getLogs start
         "appeal_window_s": 60,             # accepted -> finalized gap; "time to acceptance" = finalization - this
         "appeal_window_note": "measured 60-66s on this testnet), so it can read up to ~6s high",
+        "boards": False,                   # True = its boards are live in Grafana: the others link to them
+        "foundation_node": "0xb0dab7fc62e276f5be045b7ec3674f7168623342",  # validator-profile default; None = no default
         # reference only, no board reads them:
         "address_manager": "0x3F71AE080BD6270A91dBcc7960d88797828538E0",
         "consensus_main": "0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019",
@@ -58,6 +60,8 @@ NETWORKS = {
         "genesis_block": 694191,           # found by eth_getCode bisection, 2026-11-24 17:03 UTC
         "appeal_window_s": 1800,           # the `decided` timeout; accepted -> finalized measured 1811s on 11 txs, 2026-11-25
         "appeal_window_note": "measured 1811s on this testnet), so it can read up to ~11s high",
+        "boards": True,
+        "foundation_node": "0xe04bb8b6766dd7baaeacf38a41b1338216e631b7",  # joined 2026-11-25, block 706253
         "address_manager": "0x0192C6C9482251790965B7136352B26234d81d79",
         "consensus_main": "0x0f4F0e05475723790E4a2ed0598370783C300926",
     },
@@ -116,6 +120,13 @@ def uid(base, p):
 
 def filename(base, p):
     return f"{base}.json" if p["key"] == CURRENT else f"{base}_{p['slug']}.json"
+
+
+def board_links(p, base, label="{name}"):
+    """Dashboard links from `p`'s board to the `base` board of every other network with live boards."""
+    others = [dict(v, key=k) for k, v in NETWORKS.items() if v.get("boards") and k != p["key"]]
+    return [{"title": label.format(name=q["name"]), "type": "link", "icon": "dashboard",
+             "url": f"/d/{uid(base, q)}", "targetBlank": False} for q in others]
 
 
 def _panels(panels):

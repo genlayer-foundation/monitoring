@@ -27,6 +27,13 @@
    "type": "link",
    "url": "/d/gl-validator-status",
    "targetBlank": false
+  },
+  {
+   "title": "Bradbury Phase 3 network board",
+   "type": "link",
+   "icon": "dashboard",
+   "url": "/d/gl-testnet-network",
+   "targetBlank": false
   }
  ],
  "templating": {
@@ -68,8 +75,8 @@
     },
     "refresh": 1,
     "current": {
-     "text": "GenLayer Foundation \u2014 0xb0dab7fc",
-     "value": "0xb0dab7fc62e276f5be045b7ec3674f7168623342"
+     "text": "GenLayer Foundation \u2014 0xe04bb8b6",
+     "value": "0xe04bb8b6766dd7baaeacf38a41b1338216e631b7"
     },
     "sort": 0
    },
@@ -1121,7 +1128,7 @@
      "parser": "jq-backend",
      "format": "table",
      "url": "https://rpc.testnet-chain.genlayer.com",
-     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n(map(select(.id==1))[0].result | ltrimstr(\"0x\") | h2i) as $ep\n| (map(select(.id==2))[0].result | ltrimstr(\"0x\") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n| (map(select(.id==3))[0].result | ltrimstr(\"0x\")) as $b\n| ($b[64:128] | if . == \"\" then 0 else h2i end) as $until | (($b[128:192] // \"\") | if . == \"\" then 0 else h2i end) as $perm\n| ((map(select(.id==4))[0].result // \"\") | ltrimstr(\"0x\")) as $v\n| ($v[0:64] | if . == \"\" then 0 else h2i end) as $eb | ($v[64:128] | if . == \"\" then 0 else h2i end) as $primed\n| ($v[128:192] | if . == \"\" then 0 else h2i end) as $vstake | ($v[384:448] | if . == \"\" then 0 else h2i end) as $vdep\n| ($ep > 0 and ($vstake + $vdep) >= 42000000000000000000000 and (($vdep > 0 and $vstake < 42000000000000000000000) or ($eb == 0 and $primed == $ep))) as $pending\n| (if $vdep > 0 and $vstake < 42000000000000000000000 then $ep + 2 else $ep + 1 end) as $live\n| [{chain: (if $perm > 0 then \"red|No longer participating\" elif $until > $ep then \"orange|Quarantined until epoch \\($until)\" elif ($sel | index(\"${node_hex}\")) != null then \"green|Active (epoch \\($ep))\" elif $pending then \"yellow|Stake pending activation (live at epoch \\($live))\" else \"red|Not participating\" end)}]",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\nif \"${node_hex}\" == \"\" then [] else\n(map(select(.id==1))[0].result | ltrimstr(\"0x\") | h2i) as $ep\n| (map(select(.id==2))[0].result | ltrimstr(\"0x\") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n| (map(select(.id==3))[0].result | ltrimstr(\"0x\")) as $b\n| ($b[64:128] | if . == \"\" then 0 else h2i end) as $until | (($b[128:192] // \"\") | if . == \"\" then 0 else h2i end) as $perm\n| ((map(select(.id==4))[0].result // \"\") | ltrimstr(\"0x\")) as $v\n| ($v[0:64] | if . == \"\" then 0 else h2i end) as $eb | ($v[64:128] | if . == \"\" then 0 else h2i end) as $primed\n| ($v[128:192] | if . == \"\" then 0 else h2i end) as $vstake | ($v[384:448] | if . == \"\" then 0 else h2i end) as $vdep\n| ($ep > 0 and ($vstake + $vdep) >= 42000000000000000000000 and (($vdep > 0 and $vstake < 42000000000000000000000) or ($eb == 0 and $primed == $ep))) as $pending\n| (if $vdep > 0 and $vstake < 42000000000000000000000 then $ep + 2 else $ep + 1 end) as $live\n| [{chain: (if $perm > 0 then \"red|No longer participating\" elif $until > $ep then \"orange|Quarantined until epoch \\($until)\" elif ($sel | index(\"${node_hex}\")) != null then \"green|Active (epoch \\($ep))\" elif $pending then \"yellow|Stake pending activation (live at epoch \\($live))\" else \"red|Not participating\" end)}] end",
      "url_options": {
       "method": "POST",
       "body_type": "raw",
@@ -2077,7 +2084,7 @@
      "parser": "jq-backend",
      "format": "table",
      "url": "https://rpc.testnet-chain.genlayer.com",
-     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n.[0].result | ltrimstr(\"0x\") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)}",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\nif .[0].result == null then [] else .[0].result | ltrimstr(\"0x\") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)} end",
      "url_options": {
       "method": "POST",
       "body_type": "raw",
