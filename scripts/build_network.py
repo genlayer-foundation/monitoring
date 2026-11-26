@@ -92,12 +92,20 @@ def build(text, t, p):
     # the boards of the other networks running in parallel (team-only boards: a link from the
     # public board needs a login; public dashboards do not show dashboard links anyway)
     dash["links"] = nw.board_links(p, "gl-testnet-network", "{name} board") + dash.get("links", [])
+    links_md = nw.public_links_markdown(p)
+    if links_md:  # a link public viewers can follow: the link bar is hidden on public dashboards
+        for panel in dash["panels"]:
+            panel["gridPos"]["y"] += 2
+        dash["panels"].insert(0, {
+            "id": max(x["id"] for x in nw._panels(dash["panels"])) + 1, "type": "text", "title": "",
+            "gridPos": {"h": 2, "w": 24, "x": 0, "y": 0}, "transparent": True,
+            "options": {"mode": "markdown", "content": links_md}})
     if p["key"] != nw.CURRENT:
         dash.pop("id", None)
         dash.pop("version", None)
         dash["uid"] = nw.uid("gl-testnet-network", p)
         dash["title"] += " | " + p["name"]
-        dash["tags"] = [x for x in dash["tags"] if x != "public"]
+        dash["tags"] = [x for x in dash["tags"] if x != "public" or p.get("public_token")]
         dash = json.loads(swap(json.dumps(dash), PROFILE_BOARD, f"/d/{nw.uid('gl-validator-profile', p)}?", "validator-board link"))
     return dash, missing
 

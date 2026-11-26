@@ -61,6 +61,7 @@ NETWORKS = {
         "appeal_window_s": 1800,           # the `decided` timeout; accepted -> finalized measured 1811s on 11 txs, 2026-11-25
         "appeal_window_note": "measured 1811s on this testnet), so it can read up to ~11s high",
         "boards": True,
+        "public_token": "71f94ef49b8340cc8a6707aa00cd68d9",  # public share of its network board (gl-testnet-network)
         "foundation_node": "0xe04bb8b6766dd7baaeacf38a41b1338216e631b7",  # joined 2026-11-25, block 706253
         "address_manager": "0x0192C6C9482251790965B7136352B26234d81d79",
         "consensus_main": "0x0f4F0e05475723790E4a2ed0598370783C300926",
@@ -82,6 +83,7 @@ NETWORKS = {
         "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
         "roster_empty": True,              # portal key answers [] (nobody joined, no "missing" rows): say so on the
                                            # board instead of "every graduated validator is on this network". Drop when it fills
+        "public_token": None,              # TODO: Ivan asked for a public share 2026-11-26; set its token once created
         "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26
         "foundation_node": None,           # TODO: the Foundation's Clarke validator wallet, once it has joined
         "idleness": "0x86e53f1775BdC173468D4fA2d87154dbbB0889F2",       # reference only (emits ValidatorReceivedStrike)
@@ -133,6 +135,21 @@ def board_links(p, base, label="{name}"):
     others = [dict(v, key=k) for k, v in NETWORKS.items() if v.get("boards") and k != p["key"]]
     return [{"title": label.format(name=q["name"]), "type": "link", "icon": "dashboard",
              "url": f"/d/{uid(base, q)}", "targetBlank": False} for q in others]
+
+
+PUBLIC_BASE = "https://genlayerfoundation.grafana.net/public-dashboards/"
+
+
+def public_links_markdown(p):
+    """Markdown linking the public network boards of the other networks, or None.
+
+    Public dashboards hide the dashboard link bar, so a cross-network link a public viewer can
+    follow has to be a text panel, and has to target the other board's public URL (/d/<uid>
+    needs a login)."""
+    others = [v for k, v in NETWORKS.items() if v.get("public_token") and k != p["key"]]
+    if not others:
+        return None
+    return "Also live: " + " · ".join(f"[{q['name']} network board]({PUBLIC_BASE}{q['public_token']})" for q in others)
 
 
 def _panels(panels):

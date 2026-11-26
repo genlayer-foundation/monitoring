@@ -29,7 +29,7 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 |---|---|---|---|
 | Bradbury Phase 3 | `bradbury-phase3` (CURRENT) | `gl-testnet-network` (**public**), `gl-validator-profile` | every source present: chain, explorer `scan.bradbury.genlayer.com`, roster key `bradbury3`, telemetry label. `gl-testnet-network-phase3` / `gl-validator-profile-phase3` (files `*_phase3.json`) are the pre-move team copies: now duplicates, no longer regenerated, left in place |
 | Bradbury Phase 2 | `bradbury-phase2` | none live; `network_phase2.json` / `validator_profile_phase2.json` are repo-only | halted, retired from the boards 2026-11-25: no roster (portal returns `[]`), no explorer; ~40 nodes still push the label |
-| Clarke | `clarke` | `gl-testnet-network-clarke`, `gl-validator-profile-clarke` (team-only, files `*_clarke.json`) | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (answers `[]`), label `clarke` (nothing reports it yet); **no explorer** |
+| Clarke | `clarke` | `gl-testnet-network-clarke` (public share decided, not yet created; see below), `gl-validator-profile-clarke` (team-only), files `*_clarke.json` | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (answers `[]`), label `clarke` (nothing reports it yet); **no explorer** |
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
 and chain explorer) — networks are told apart by contract address only. Staking
@@ -151,8 +151,23 @@ team-only; nothing about Phase 3 was re-pointed. What it lacks:
 **Links between networks**: every network board's link bar starts with "<Name> board" for
 each other network whose profile has `boards: True` (`networks.board_links`); each
 validator profile links to its own network board and to the other networks' profiles.
-The public board carries the "Clarke board" link too: it needs a login (team-only target),
-and public dashboards do not render dashboard links anyway.
+The public board carries the "Clarke board" link too, but it needs a login and public
+dashboards do not render the link bar anyway.
+
+**Links public viewers can follow**: a profile's `public_token` is the public share token
+of its network board. Every network board gets a 2-row text panel at the top, "Also live:
+[<Name> network board](https://genlayerfoundation.grafana.net/public-dashboards/<token>)",
+for each OTHER network with a `public_token` (`networks.public_links_markdown`), and a
+board whose own profile has a token keeps the `public` tag. Phase 3 has `71f94ef4…`.
+**Clarke: Ivan decided 2026-11-26 to make `gl-testnet-network-clarke` public (its own
+share, Phase 3's URL unchanged), but the share is NOT created yet**: the agent's attempt
+was refused by the permission system. To finish: create the share (Grafana UI → Share →
+Public dashboard, or `POST /api/dashboards/uid/gl-testnet-network-clarke/public-dashboards`
+with `{"isEnabled": true, "share": "public", "timeSelectionEnabled": true,
+"annotationsEnabled": false}`), set `public_token` in the Clarke profile, regenerate
+both network boards, upload both (`gl-testnet-network` gains the link to Clarke). The
+Clarke board already links to Phase 3's public URL. Its Validators-table link to
+`gl-validator-profile-clarke` needs a login, the same as on Phase 3's public board.
 
 **Uploading**: the Grafana MCP `update_dashboard` takes the JSON inline, which for these
 100 kB boards means pasting it panel by panel (create with the first panels, then
