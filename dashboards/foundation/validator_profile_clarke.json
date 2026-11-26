@@ -75,7 +75,10 @@
      }
     },
     "refresh": 1,
-    "current": {},
+    "current": {
+     "text": "GenLayer Foundation \u2014 0x80f49656",
+     "value": "0x80f49656ba8640f213c803a307e6924b60f64c32"
+    },
     "sort": 0
    },
    {

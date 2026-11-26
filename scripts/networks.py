@@ -85,7 +85,7 @@ NETWORKS = {
                                            # board instead of "every graduated validator is on this network". Drop when it fills
         "public_token": None,              # TODO: Ivan asked for a public share 2026-11-26; set its token once created
         "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26
-        "foundation_node": None,           # TODO: the Foundation's Clarke validator wallet, once it has joined
+        "foundation_node": "0x80f49656ba8640f213c803a307e6924b60f64c32",  # joined 2026-11-26, block 715656
         "idleness": "0x86e53f1775BdC173468D4fA2d87154dbbB0889F2",       # reference only (emits ValidatorReceivedStrike)
         "address_manager": "0xA79dA7c238905fD0F10298cD579B0733ad1B1d0E",
         "consensus_main": "0xa44222E0beDaB12329557499ae6E555b1c9D02ee",
