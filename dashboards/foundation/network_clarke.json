@@ -37,7 +37,7 @@
   ],
   "panels": [
     {
-      "id": 32,
+      "id": 33,
       "type": "text",
       "title": "",
       "gridPos": {
@@ -53,7 +53,7 @@
       }
     },
     {
-      "id": 31,
+      "id": 32,
       "type": "text",
       "title": "",
       "gridPos": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "description": "[Incomplete: no GenLayer explorer for Clarke yet.] Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts. Pending = joined, with a deposit that is not live yet (stake pending activation; from the explorer).",
+      "description": "[Incomplete: no GenLayer explorer for Clarke yet.] Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts. Pending = joined, with a deposit that is not live yet (stake pending activation; from the explorer). Joined = every validator wallet the portal roster lists on this network (synced from the Staking contract), active or not.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -141,6 +141,25 @@
                 "id": "color",
                 "value": {
                   "fixedColor": "#fbbf24",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Joined"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Joined"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "text",
                   "mode": "fixed"
                 }
               }
@@ -227,6 +246,25 @@
           "source": "inline",
           "data": "[]",
           "root_selector": "[]"
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "parser": "jq-backend",
+          "refId": "J",
+          "root_selector": "[{Joined: ([.[] | select((.status != \"missing\" and ((.node // \"\") | startswith(\"0x\")))) | .node | ascii_downcase] | unique | length)}]",
+          "source": "url",
+          "type": "json",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=clarke",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
         }
       ],
       "title": "Validator set",
@@ -4355,7 +4393,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "[Incomplete: no GenLayer explorer for Clarke yet.] One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
+      "description": "[Incomplete: no GenLayer explorer for Clarke yet.] [Clarke: also lists every validator the portal roster has on this network but that is not in the set yet, marked \"Joined, waiting for epoch 0 to end\" in Health.] One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -4388,7 +4426,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 170
+                "value": 268
               },
               {
                 "id": "custom.cellOptions",
@@ -5259,6 +5297,11 @@
               "selector": "profile_url",
               "text": "profile_url",
               "type": "string"
+            },
+            {
+              "selector": "joined",
+              "text": "joined",
+              "type": "number"
             }
           ],
           "datasource": {
@@ -5269,7 +5312,7 @@
           "format": "table",
           "parser": "jq-backend",
           "refId": "A",
-          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"\" end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"activation_pending\": \"Stake pending activation\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
+          "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"\" end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"activation_pending\": \"Stake pending activation\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), joined: (if (.status != \"missing\" and ((.node // \"\") | startswith(\"0x\"))) then 1 else 0 end), health_txt: (if .status == \"inactive\" and ((.node // \"\") | startswith(\"0x\")) then \"yellow|Joined, waiting for epoch 0 to end\" else (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
           "source": "url",
           "type": "json",
           "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=clarke",
@@ -5455,7 +5498,10 @@
                 "repone",
                 "rone A",
                 "onchain_quarantined Q",
-                "pend X"
+                "pend X",
+                "rone",
+                "joined A",
+                "joined"
               ],
               "reducer": "max"
             },
@@ -6014,13 +6060,32 @@
         {
           "id": "calculateField",
           "options": {
+            "alias": "joinflag",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "joined A",
+                "joined",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
             "alias": "shown",
             "replaceFields": false,
-            "mode": "binary",
-            "binary": {
-              "left": "live1",
-              "operator": "+",
-              "right": "pendflag"
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "live1",
+                "pendflag",
+                "joinflag"
+              ],
+              "reducer": "sum"
             }
           }
         },
@@ -6119,7 +6184,10 @@
               "xname X": true,
               "pend X": true,
               "pendflag": true,
-              "shown": true
+              "shown": true,
+              "joined A": true,
+              "joined": true,
+              "joinflag": true
             },
             "indexByName": {
               "#": 100,
@@ -6261,7 +6329,7 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 97
       },
@@ -6585,6 +6653,228 @@
       ],
       "title": "Fleet internals",
       "type": "row"
+    },
+    {
+      "id": 31,
+      "type": "table",
+      "title": "Latest joins",
+      "description": "Every validator wallet that has joined this network, newest first: when, with how much self stake, and its name from the portal when the portal knows it. Source: staking `ValidatorJoin` events since genesis (chain) + the portal roster for names. The public RPC rate-limits (429) when the whole board loads at once: if this reads empty with a red badge, refresh the panel.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 97
+      },
+      "targets": [
+        {
+          "refId": "J",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "jq-backend",
+          "format": "table",
+          "method": "POST",
+          "url": "https://rpc.testnet-chain.genlayer.com",
+          "url_options": {
+            "method": "POST",
+            "body_type": "raw",
+            "body_content_type": "application/json",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0x711d111510Af2Bb35c3929b709677a1E9f8ffce2\",\"fromBlock\":\"0xae3dc\",\"toBlock\":\"latest\",\"topics\":[\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}"
+          },
+          "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end)); [.result[] | {node: (\"0x\" + (.data[90:130] | ascii_downcase)), joined_ms: ((.blockTimestamp | ltrimstr(\"0x\") | h2i) * 1000), stake_gen: ((.data[130:194] | h2i) / 1e18 | round)}]",
+          "filters": [],
+          "columns": []
+        },
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "parser": "jq-backend",
+          "refId": "R",
+          "root_selector": "[.[] | select((.status != \"missing\" and ((.node // \"\") | startswith(\"0x\")))) | {node: (.node | ascii_downcase), name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else .name end)}]",
+          "source": "url",
+          "type": "json",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=clarke",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "node",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "config": {
+                  "id": "isNotNull",
+                  "options": {}
+                },
+                "fieldName": "joined_ms J"
+              }
+            ],
+            "match": "all",
+            "type": "include"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "node_last",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "node"
+              ],
+              "reducer": "firstNotNull"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Validator",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "name R",
+                "name",
+                "node_last"
+              ],
+              "reducer": "firstNotNull"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "joined_ms J"
+              },
+              {
+                "destinationType": "string",
+                "targetField": "Validator"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": true,
+                "field": "joined_ms J"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "name R": true,
+              "name": true,
+              "node_last": true
+            },
+            "indexByName": {
+              "joined_ms J": 0,
+              "Validator": 1,
+              "stake_gen J": 2,
+              "node": 3
+            },
+            "renameByName": {
+              "joined_ms J": "Joined",
+              "stake_gen J": "Self stake (GEN)",
+              "node": "Address"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "No validator has joined Clarke yet"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Joined"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Self stake (GEN)"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": []
+      }
     }
   ],
   "refresh": "1m",

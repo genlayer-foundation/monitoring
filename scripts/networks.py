@@ -81,6 +81,8 @@ NETWORKS = {
         "genesis_block": 713692,           # AddressManager first has code, 2026-11-26 10:28:41 UTC
         "appeal_window_s": None,           # TODO: measure via <explorer>/api/v1/transactions/consensus-steps/<hash>
         "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
+        "joined_label": "Joined, waiting for epoch 0 to end",  # lists joined-but-not-selectable validators (build_network
+                                           # show_joined); epoch 0 cannot end before 2026-12-10. Reword or drop after it
         "roster_no_missing_rows": True,    # the portal lists joined wallets only (1 row 2026-11-26), no "missing" rows:
                                            # the not-joined panel says so instead of "every graduated validator is on
                                            # this network". Drop when the portal adds them

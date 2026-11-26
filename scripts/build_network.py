@@ -46,6 +46,104 @@ def swap(text, old, new, what):
     return text.replace(old, new)
 
 
+JOIN_TOPIC = "0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782"  # ValidatorJoin(operator, validator, amount)
+H2I = 'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end)); '
+
+
+def join_target(p, ref, jq):
+    """An Infinity target over every ValidatorJoin this network's Staking emitted since genesis.
+
+    Data words: operator, validator, amount (none indexed). The chain, not the portal or the
+    explorer, so it works on a network with neither and on the public share."""
+    call = {"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs",
+            "params": [{"address": p["staking"], "fromBlock": hex(p["genesis_block"]), "toBlock": "latest", "topics": [JOIN_TOPIC]}]}
+    return {"refId": ref, "datasource": {"type": "yesoreyeram-infinity-datasource", "uid": "grafanacloud-infinity"},
+            "type": "json", "source": "url", "parser": "jq-backend", "format": "table", "method": "POST",
+            "url": p["rpc"], "url_options": {"method": "POST", "body_type": "raw", "body_content_type": "application/json",
+                                             "data": json.dumps(call, separators=(",", ":"))},
+            "root_selector": H2I + jq, "filters": [], "columns": []}
+
+
+def show_joined(dash, p):
+    """Profile `joined_label` set: list every validator that has joined, not only the current set.
+
+    While nobody is selectable (Clarke's epoch 0) the current-set table is empty although
+    validators have registered. Joined = a portal roster row with a real wallet (status not
+    `missing`; the portal syncs these from the Staking contract). The roster, not the chain, because
+    the public RPC answers 429 when a full board loads and the portal endpoint is cached. Adds a
+    Joined count on the Validator set stat, every joined wallet in the Validators table (portal
+    health replaced by `joined_label` while the portal says `inactive`), and a Latest joins table
+    (chain ValidatorJoin events: the only source with a join time)."""
+    panels = {x["id"]: x for x in nw._panels(dash["panels"])}
+    real = '(.status != "missing" and ((.node // "") | startswith("0x")))'
+    roster = panels[24]["targets"][0]
+    # 1. Validator set stat: + Joined (roster)
+    vs = panels[1]
+    rj = json.loads(json.dumps(roster))
+    rj.update(refId="J", columns=[], root_selector=f'[{{Joined: ([.[] | select({real}) | .node | ascii_downcase] | unique | length)}}]')
+    vs["targets"].append(rj)
+    vs["fieldConfig"]["overrides"].append({"matcher": {"id": "byName", "options": "Joined"},
+                                           "properties": [{"id": "displayName", "value": "Joined"}, {"id": "color", "value": {"fixedColor": "text", "mode": "fixed"}}]})
+    vs["description"] += " Joined = every validator wallet the portal roster lists on this network (synced from the Staking contract), active or not."
+    # 2. Validators table: every joined wallet passes the filter
+    vt = panels[24]
+    rs = roster["root_selector"]
+    for old, new in (("health_txt: (", f'joined: (if {real} then 1 else 0 end), health_txt: (if .status == "inactive" and ((.node // "") | startswith("0x")) then "yellow|{p["joined_label"]}" else ('),
+                     (", hrank: (", " end), hrank: (")):
+        assert rs.count(old) == 1, old
+        rs = rs.replace(old, new, 1)
+    roster["root_selector"] = rs
+    roster["columns"].append({"selector": "joined", "text": "joined", "type": "number"})  # Infinity emits listed columns only
+    for o in vt["fieldConfig"]["overrides"]:  # room for the label
+        if o["matcher"] == {"id": "byName", "options": "Health"}:
+            for prop in o["properties"]:
+                if prop["id"] == "custom.width":
+                    prop["value"] = max(prop["value"], 7 * len(p["joined_label"]) + 30)
+    tr = vt["transformations"]
+    for x in tr:
+        o = x["options"]
+        if o.get("alias") == "universalone":  # field names lose their " A" suffix when RPC frames are missing (429)
+            o["reduce"]["include"] += ["rone", "joined A", "joined"]
+        if o.get("alias") == "shown":
+            x["options"] = {"alias": "shown", "replaceFields": False, "mode": "reduceRow",
+                            "reduce": {"include": ["live1", "pendflag", "joinflag"], "reducer": "sum"}}
+            i = tr.index(x)
+        if x["id"] == "organize":
+            o["excludeByName"].update({"joined A": True, "joined": True, "joinflag": True})
+    tr.insert(i, {"id": "calculateField", "options": {"alias": "joinflag", "replaceFields": False, "mode": "reduceRow",
+                                                     "reduce": {"include": ["joined A", "joined", "zeroU"], "reducer": "sum"}}})
+    vt["description"] = (f"[{p['name']}: also lists every validator the portal roster has on this network but that is not "
+                         f"in the set yet, marked \"{p['joined_label']}\" in Health.] " + vt.get("description", ""))
+    # 3. Latest joins, beside the not-on-this-network panel
+    nj = panels[30]
+    nj["gridPos"]["w"] = 12
+    rost = json.loads(json.dumps(roster))
+    rost.update(refId="R", columns=[], root_selector=f'[.[] | select({real}) | {{node: (.node | ascii_downcase), name: (if (.account_name // "") != "" then .account_name elif (.moniker // "") != "" then .moniker else .name end)}}]')
+    logs = join_target(p, "J", '[.result[] | {node: ("0x" + (.data[90:130] | ascii_downcase)), joined_ms: ((.blockTimestamp | ltrimstr("0x") | h2i) * 1000), stake_gen: ((.data[130:194] | h2i) / 1e18 | round)}]')
+    dash["panels"].append({
+        "id": max(panels) + 1, "type": "table", "title": "Latest joins",
+        "description": "Every validator wallet that has joined this network, newest first: when, with how much self stake, and its name from the portal when the portal knows it. Source: staking `ValidatorJoin` events since genesis (chain) + the portal roster for names. The public RPC rate-limits (429) when the whole board loads at once: if this reads empty with a red badge, refresh the panel.",
+        "datasource": {"type": "yesoreyeram-infinity-datasource", "uid": "grafanacloud-infinity"},
+        "gridPos": {"h": nj["gridPos"]["h"], "w": 12, "x": 12, "y": nj["gridPos"]["y"]},
+        "targets": [logs, rost],
+        "transformations": [
+            {"id": "joinByField", "options": {"byField": "node", "mode": "outer"}},
+            {"id": "filterByValue", "options": {"filters": [{"config": {"id": "isNotNull", "options": {}}, "fieldName": "joined_ms J"}], "match": "all", "type": "include"}},
+            # firstNotNull walks fields in frame order, not include order: copy the address to the end first
+            {"id": "calculateField", "options": {"alias": "node_last", "mode": "reduceRow", "reduce": {"include": ["node"], "reducer": "firstNotNull"}, "replaceFields": False}},
+            {"id": "calculateField", "options": {"alias": "Validator", "mode": "reduceRow", "reduce": {"include": ["name R", "name", "node_last"], "reducer": "firstNotNull"}, "replaceFields": False}},
+            {"id": "convertFieldType", "options": {"conversions": [{"destinationType": "time", "targetField": "joined_ms J"}, {"destinationType": "string", "targetField": "Validator"}], "fields": {}}},
+            {"id": "sortBy", "options": {"fields": {}, "sort": [{"desc": True, "field": "joined_ms J"}]}},
+            {"id": "organize", "options": {"excludeByName": {"name R": True, "name": True, "node_last": True},
+                                           "indexByName": {"joined_ms J": 0, "Validator": 1, "stake_gen J": 2, "node": 3},
+                                           "renameByName": {"joined_ms J": "Joined", "stake_gen J": "Self stake (GEN)", "node": "Address"}}}],
+        "fieldConfig": {"defaults": {"custom": {"align": "left", "cellOptions": {"type": "auto"}, "filterable": True},
+                                     "noValue": f"No validator has joined {p['name']} yet"},
+                        "overrides": [{"matcher": {"id": "byName", "options": "Joined"}, "properties": [{"id": "unit", "value": "dateTimeAsIso"}, {"id": "custom.width", "value": 170}]},
+                                      {"matcher": {"id": "byName", "options": "Self stake (GEN)"}, "properties": [{"id": "decimals", "value": 0}, {"id": "custom.width", "value": 130}]}]},
+        "options": {"cellHeight": "sm", "footer": {"countRows": True, "fields": "", "reducer": ["count"], "show": True}, "showHeader": True, "sortBy": []}})
+
+
 def build(text, t, p):
     """The board for profile `p`, from the template text that carries profile `t`."""
     text = swap(text, nw.explorer_api(t), nw.explorer_api(p), "explorer API")
@@ -73,6 +171,8 @@ def build(text, t, p):
                                      "toBlock": "latest", "topics": [topic]}
                 target["url_options"]["data"] = json.dumps(call, separators=(",", ":"))
 
+    if p.get("joined_label"):
+        show_joined(dash, p)
     missing = nw.stub_unavailable(dash, p)
     if p.get("roster_no_missing_rows"):  # the portal does not list who is absent: an empty panel is not good news
         for panel in nw._panels(dash["panels"]):
