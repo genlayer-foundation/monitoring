@@ -57,7 +57,7 @@
       "type": "text",
       "title": "",
       "gridPos": {
-        "h": 3,
+        "h": 2,
         "w": 24,
         "x": 0,
         "y": 2
@@ -65,7 +65,7 @@
       "transparent": true,
       "options": {
         "mode": "markdown",
-        "content": "**Clarke has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate.\n\n**The portal roster for Clarke is empty so far**: nobody has joined yet, so the validator panels and Open issues read zero or \"No data\"; they fill in as validators join."
+        "content": "**Clarke has no GenLayer explorer yet.** Panels that need it read \"No data\"; chain and node-telemetry panels are live. Set the value in `scripts/networks.py` and regenerate."
       }
     },
     {
@@ -152,7 +152,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 5
+        "y": 4
       },
       "id": 1,
       "options": {
@@ -407,7 +407,7 @@
         "h": 5,
         "w": 9,
         "x": 6,
-        "y": 5
+        "y": 4
       },
       "id": 2,
       "options": {
@@ -688,7 +688,7 @@
         "h": 5,
         "w": 9,
         "x": 15,
-        "y": 5
+        "y": 4
       },
       "id": 3,
       "options": {
@@ -851,7 +851,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 10
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -1056,7 +1056,7 @@
         "h": 9,
         "w": 10,
         "x": 8,
-        "y": 10
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -1190,7 +1190,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 10
+        "y": 9
       },
       "id": 6,
       "options": {
@@ -1238,7 +1238,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 18
       },
       "id": 7,
       "panels": [],
@@ -1342,7 +1342,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 20
+        "y": 19
       },
       "id": 8,
       "options": {
@@ -1628,7 +1628,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 20
+        "y": 19
       },
       "id": 9,
       "options": {
@@ -1979,7 +1979,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 20
+        "y": 19
       },
       "id": 10,
       "options": {
@@ -2149,7 +2149,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 28
       },
       "id": 11,
       "panels": [],
@@ -2294,7 +2294,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 29
       },
       "id": 12,
       "options": {
@@ -2513,7 +2513,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 34
+        "y": 33
       },
       "id": 13,
       "options": {
@@ -2628,7 +2628,7 @@
         "h": 8,
         "w": 9,
         "x": 9,
-        "y": 34
+        "y": 33
       },
       "id": 14,
       "options": {
@@ -2771,7 +2771,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 34
+        "y": 33
       },
       "id": 15,
       "options": {
@@ -2818,7 +2818,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 41
       },
       "id": 16,
       "panels": [],
@@ -3055,7 +3055,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 42
       },
       "id": 17,
       "options": {
@@ -3181,7 +3181,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 47
+        "y": 46
       },
       "id": 18,
       "options": {
@@ -3269,7 +3269,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 47
+        "y": 46
       },
       "id": 19,
       "options": {
@@ -3312,7 +3312,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 57
       },
       "id": 20,
       "panels": [],
@@ -3466,7 +3466,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 58
       },
       "id": 21,
       "options": {
@@ -3766,7 +3766,7 @@
         "h": 10,
         "w": 10,
         "x": 0,
-        "y": 63
+        "y": 62
       },
       "id": 22,
       "options": {
@@ -3997,7 +3997,7 @@
         "h": 10,
         "w": 14,
         "x": 10,
-        "y": 63
+        "y": 62
       },
       "id": 23,
       "options": {
@@ -4343,7 +4343,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 72
       },
       "id": 25,
       "panels": [],
@@ -5170,7 +5170,7 @@
         "h": 24,
         "w": 24,
         "x": 0,
-        "y": 74
+        "y": 73
       },
       "id": 24,
       "options": {
@@ -6189,7 +6189,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "[The portal roster for Clarke is empty so far: no validator has joined and the portal does not list who is missing yet.] Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
+      "description": "[The portal roster for Clarke has no `missing` rows yet, so this panel cannot say who has not joined.] Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -6199,7 +6199,7 @@
             },
             "filterable": true
           },
-          "noValue": "The portal lists nobody for Clarke yet"
+          "noValue": "The portal does not list who is missing on Clarke yet"
         },
         "overrides": [
           {
@@ -6263,7 +6263,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 98
+        "y": 97
       },
       "id": 30,
       "options": {
@@ -6326,7 +6326,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 108
+        "y": 107
       },
       "id": 29,
       "panels": [
@@ -6592,7 +6592,8 @@
   "tags": [
     "foundation",
     "testnet",
-    "network"
+    "network",
+    "public"
   ],
   "templating": {
     "list": []

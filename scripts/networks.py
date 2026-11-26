@@ -81,9 +81,10 @@ NETWORKS = {
         "genesis_block": 713692,           # AddressManager first has code, 2026-11-26 10:28:41 UTC
         "appeal_window_s": None,           # TODO: measure via <explorer>/api/v1/transactions/consensus-steps/<hash>
         "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
-        "roster_empty": True,              # portal key answers [] (nobody joined, no "missing" rows): say so on the
-                                           # board instead of "every graduated validator is on this network". Drop when it fills
-        "public_token": None,              # TODO: Ivan asked for a public share 2026-11-26; set its token once created
+        "roster_no_missing_rows": True,    # the portal lists joined wallets only (1 row 2026-11-26), no "missing" rows:
+                                           # the not-joined panel says so instead of "every graduated validator is on
+                                           # this network". Drop when the portal adds them
+        "public_token": "8ce16ef9604c446d8f78714dae6def95",  # public share of gl-testnet-network-clarke, 2026-11-26 (Ivan)
         "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26
         "foundation_node": "0x80f49656ba8640f213c803a307e6924b60f64c32",  # joined 2026-11-26, block 715656
         "idleness": "0x86e53f1775BdC173468D4fA2d87154dbbB0889F2",       # reference only (emits ValidatorReceivedStrike)

@@ -74,21 +74,12 @@ def build(text, t, p):
                 target["url_options"]["data"] = json.dumps(call, separators=(",", ":"))
 
     missing = nw.stub_unavailable(dash, p)
-    if p.get("roster_empty"):  # the roster key exists but lists nobody yet: an empty panel is not good news
+    if p.get("roster_no_missing_rows"):  # the portal does not list who is absent: an empty panel is not good news
         for panel in nw._panels(dash["panels"]):
             if panel.get("fieldConfig", {}).get("defaults", {}).get("noValue") == "Every graduated validator is on this network":
-                panel["fieldConfig"]["defaults"]["noValue"] = f"The portal lists nobody for {p['name']} yet"
-                panel["description"] = (f"[The portal roster for {p['name']} is empty so far: no validator has joined and "
-                                        "the portal does not list who is missing yet.] " + panel.get("description", ""))
-        note = (f"**The portal roster for {p['name']} is empty so far**: nobody has joined yet, so the validator panels "
-                "and Open issues read zero or \"No data\"; they fill in as validators join.")
-        banner = next((x for x in dash["panels"] if x["type"] == "text" and x["gridPos"]["y"] == 0), None)
-        if banner:
-            banner["options"]["content"] += "\n\n" + note
-            banner["gridPos"]["h"] = 3
-            for x in dash["panels"]:
-                if x is not banner:
-                    x["gridPos"]["y"] += 1
+                panel["fieldConfig"]["defaults"]["noValue"] = f"The portal does not list who is missing on {p['name']} yet"
+                panel["description"] = (f"[The portal roster for {p['name']} has no `missing` rows yet, so this panel "
+                                        "cannot say who has not joined.] " + panel.get("description", ""))
     # the boards of the other networks running in parallel (team-only boards: a link from the
     # public board needs a login; public dashboards do not show dashboard links anyway)
     dash["links"] = nw.board_links(p, "gl-testnet-network", "{name} board") + dash.get("links", [])
