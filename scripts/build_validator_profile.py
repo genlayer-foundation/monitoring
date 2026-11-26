@@ -268,6 +268,7 @@ panel("stat", "Chain",
       [inf_rpc([(STAKING, "0x900cf0cf"), (STAKING, SEL), (STAKING, "0x090d60bd000000000000000000000000${node_hex}"),
                 (STAKING, "0xb83f5b39000000000000000000000000${node_hex}")],
                'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
+               'if "${node_hex}" == "" then [] else\n'  # no validator picked (empty roster): No data, not a jq error
                '(map(select(.id==1))[0].result | ltrimstr("0x") | h2i) as $ep\n'
                '| (map(select(.id==2))[0].result | ltrimstr("0x") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n'
                '| (map(select(.id==3))[0].result | ltrimstr("0x")) as $b\n'
@@ -275,7 +276,7 @@ panel("stat", "Chain",
                + PENDING_JQ +
                '| [{chain: (if $perm > 0 then "red|No longer participating" elif $until > $ep then "orange|Quarantined until epoch \\($until)" '
                'elif ($sel | index("${node_hex}")) != null then "green|Active (epoch \\($ep))" '
-               'elif $pending then "yellow|Stake pending activation (live at epoch \\($live))" else "red|Not participating" end)}]')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
+               'elif $pending then "yellow|Stake pending activation (live at epoch \\($live))" else "red|Not participating" end)}] end')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
 panel("stat", "Version",
       "The node's version, and whether it is the newest version running on the network. Source: `genlayer_node_info` labels.",
       [prom(f'label_replace(max by (version)(genlayer_node_info{{{N}, version="$latest_version"}}), "disp", "$1 — up to date", "version", "(.*)") '
@@ -342,7 +343,7 @@ panel("stat", "Stake now (chain, live)",
       "Live `validatorView` on the staking contract: self stake and pending deposits/withdrawals, in GEN. The chain is the authority.",
       [inf_rpc([(STAKING, "0xb83f5b39000000000000000000000000${node_hex}")],
                'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
-               '.[0].result | ltrimstr("0x") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)}')],
+               'if .[0].result == null then [] else .[0].result | ltrimstr("0x") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)} end')],
       8, 4, options=stat_opts("/.*/", mode="value", text="value_and_name"), defaults={"decimals": 0, "color": {"mode": "fixed", "fixedColor": "text"}})
 panel("stat", "Rewards earned (node counter)",
       "Validator rewards the node has seen paid to it since the node process started — highest value in the selected range (GEN). Resets when the node restarts. Source: `genlayer_node_fees_earned_wei_total{type=\"validator_rewards\"}`.",
@@ -532,11 +533,15 @@ dash = {
     "time": {"from": "now-24h", "to": "now"}, "refresh": "1m", "graphTooltip": 1,
     "description": "One validator: who it is, whether it is OK and what to fix, earnings, work done, why it went wrong, and node internals. Design: VALIDATOR-PROFILE-PLAN.md",
     "links": [{"title": "Open in explorer", "type": "link", "url": SITE + "/address/${node}", "targetBlank": True},
-              {"title": "Validator Status", "type": "link", "url": "/d/gl-validator-status", "targetBlank": False}],
+              {"title": "Validator Status", "type": "link", "url": "/d/gl-validator-status", "targetBlank": False},
+              {"title": NET["name"] + " network board", "type": "link", "icon": "dashboard",
+               "url": "/d/" + nw.uid("gl-testnet-network", NET), "targetBlank": False},
+              *nw.board_links(NET, "gl-validator-profile", "{name} validator profile")],
     "templating": {"list": [
         {"name": "network", "type": "custom", "query": NET["label"], "current": {"text": NET["label"], "value": NET["label"]}, "hide": 2},
         {"name": "node", "label": "Validator", "type": "query", "datasource": INF, "query": roster_var_q, "refresh": 1,
-         "current": {"text": "GenLayer Foundation — 0xb0dab7fc", "value": "0xb0dab7fc62e276f5be045b7ec3674f7168623342"}, "sort": 0},
+         "current": ({"text": "GenLayer Foundation — " + NET["foundation_node"][:10], "value": NET["foundation_node"]}
+                     if NET["foundation_node"] else {}), "sort": 0},
         {"name": "node_hex", "type": "query", "datasource": INF, "query": hex_var_q, "refresh": 1, "hide": 2},
         *[{"name": n, "type": "query", "datasource": INF, "refresh": 1, "hide": 2,
            "query": {"queryType": "infinity", "refId": "variable", "infinityQuery": {"refId": "variable", "type": "json", "source": "url", "parser": "jq-backend",

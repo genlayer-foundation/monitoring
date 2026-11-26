@@ -39,6 +39,8 @@ NETWORKS = {
         "genesis_block": 47930,            # AddressManager deployment block: eth_getLogs start
         "appeal_window_s": 60,             # accepted -> finalized gap; "time to acceptance" = finalization - this
         "appeal_window_note": "measured 60-66s on this testnet), so it can read up to ~6s high",
+        "boards": False,                   # True = its boards are live in Grafana: the others link to them
+        "foundation_node": "0xb0dab7fc62e276f5be045b7ec3674f7168623342",  # validator-profile default; None = no default
         # reference only, no board reads them:
         "address_manager": "0x3F71AE080BD6270A91dBcc7960d88797828538E0",
         "consensus_main": "0x2E2766cbc3E5e61Ce93bBcdCBb3eAcB82082A019",
@@ -58,25 +60,38 @@ NETWORKS = {
         "genesis_block": 694191,           # found by eth_getCode bisection, 2026-11-24 17:03 UTC
         "appeal_window_s": 1800,           # the `decided` timeout; accepted -> finalized measured 1811s on 11 txs, 2026-11-25
         "appeal_window_note": "measured 1811s on this testnet), so it can read up to ~11s high",
+        "boards": True,
+        "public_token": "71f94ef49b8340cc8a6707aa00cd68d9",  # public share of its network board (gl-testnet-network)
+        "foundation_node": "0xe04bb8b6766dd7baaeacf38a41b1338216e631b7",  # joined 2026-11-25, block 706253
         "address_manager": "0x0192C6C9482251790965B7136352B26234d81d79",
         "consensus_main": "0x0f4F0e05475723790E4a2ed0598370783C300926",
     },
-    # Clarke: epoch 0 starts 2026-11-26 and runs alongside Phase 3. Nothing is known here yet.
+    # Clarke: epoch 0 started 2026-11-26 13:05 UTC and runs alongside Phase 3, on the same
+    # chain (4221). Source: genlayerlabs/genlayer-networks clarke/ (consensus v0.6.1).
     "clarke": {
         "name": "Clarke",
         "slug": "clarke",
-        "label": None,                     # TODO: count by (network)(genlayer_node_info)
-        "portal_key": None,                # TODO: ask the portal
-        "rpc": None,                       # TODO
-        "chain_explorer": None,            # TODO
-        "explorer": None,                  # TODO
-        "staking": None,                   # TODO: deployment book, key "Staking"
-        "fees_processor": None,            # TODO: deployment book, key "FeesProcessor"
-        "genesis_block": None,             # TODO: AddressManager deployment block
+        "label": "clarke",                 # our choice, 2026-11-26 (NETWORK_NAME=clarke); nothing reports it yet
+        "portal_key": "clarke",            # exists since 2026-11-26 (answers 200 []); no Grafana label set in the portal yet
+        "rpc": "https://rpc.testnet-chain.genlayer.com",
+        "chain_explorer": "https://scan.testnet-chain.genlayer.com",
+        "explorer": None,                  # TODO: none yet (explorer PR genlayerlabs #527 open)
+        "staking": "0x711d111510Af2Bb35c3929b709677a1E9f8ffce2",
+        "fees_processor": "0x7e226Fe81eF152b7eF249404a7877Be8f83FBdcF",
+        "genesis_block": 713692,           # AddressManager first has code, 2026-11-26 10:28:41 UTC
         "appeal_window_s": None,           # TODO: measure via <explorer>/api/v1/transactions/consensus-steps/<hash>
         "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
-        "address_manager": None,
-        "consensus_main": None,
+        "joined_label": "Joined, waiting for epoch 0 to end",  # lists joined-but-not-selectable validators (build_network
+                                           # show_joined); epoch 0 cannot end before 2026-12-10. Reword or drop after it
+        "roster_no_missing_rows": True,    # the portal lists joined wallets only (1 row 2026-11-26), no "missing" rows:
+                                           # the not-joined panel says so instead of "every graduated validator is on
+                                           # this network". Drop when the portal adds them
+        "public_token": "8ce16ef9604c446d8f78714dae6def95",  # public share of gl-testnet-network-clarke, 2026-11-26 (Ivan)
+        "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26
+        "foundation_node": "0x80f49656ba8640f213c803a307e6924b60f64c32",  # joined 2026-11-26, block 715656
+        "idleness": "0x86e53f1775BdC173468D4fA2d87154dbbB0889F2",       # reference only (emits ValidatorReceivedStrike)
+        "address_manager": "0xA79dA7c238905fD0F10298cD579B0733ad1B1d0E",
+        "consensus_main": "0xa44222E0beDaB12329557499ae6E555b1c9D02ee",
     },
 }
 
@@ -116,6 +131,28 @@ def uid(base, p):
 
 def filename(base, p):
     return f"{base}.json" if p["key"] == CURRENT else f"{base}_{p['slug']}.json"
+
+
+def board_links(p, base, label="{name}"):
+    """Dashboard links from `p`'s board to the `base` board of every other network with live boards."""
+    others = [dict(v, key=k) for k, v in NETWORKS.items() if v.get("boards") and k != p["key"]]
+    return [{"title": label.format(name=q["name"]), "type": "link", "icon": "dashboard",
+             "url": f"/d/{uid(base, q)}", "targetBlank": False} for q in others]
+
+
+PUBLIC_BASE = "https://genlayerfoundation.grafana.net/public-dashboards/"
+
+
+def public_links_markdown(p):
+    """Markdown linking the public network boards of the other networks, or None.
+
+    Public dashboards hide the dashboard link bar, so a cross-network link a public viewer can
+    follow has to be a text panel, and has to target the other board's public URL (/d/<uid>
+    needs a login)."""
+    others = [v for k, v in NETWORKS.items() if v.get("public_token") and k != p["key"]]
+    if not others:
+        return None
+    return "Also live: " + " · ".join(f"[{q['name']} network board]({PUBLIC_BASE}{q['public_token']})" for q in others)
 
 
 def _panels(panels):
