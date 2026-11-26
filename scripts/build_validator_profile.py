@@ -1,16 +1,25 @@
-"""Generate dashboards/foundation/validator_profile.json (uid gl-validator-profile).
+"""Generate the per-validator board for one network (profiles: scripts/networks.py).
 
-Usage, from the repo root:  python3 scripts/build_validator_profile.py dashboards/foundation/validator_profile.json
-Then upload the file to Grafana (folder fkpd6m). Design + data sources: VALIDATOR-PROFILE-PLAN.md.
+Usage, from the repo root:  python3 scripts/build_validator_profile.py [network]
+  no argument or networks.CURRENT -> dashboards/foundation/validator_profile.json, uid gl-validator-profile
+  any other network               -> dashboards/foundation/validator_profile_<slug>.json, uid gl-validator-profile-<slug>
+Then upload the file it names to Grafana (folder fkpd6m). Design + data sources: VALIDATOR-PROFILE-PLAN.md.
 """
 import json, sys
+
+sys.path.insert(0, __file__.rsplit("/", 1)[0])
+import networks as nw
+
+NET = nw.profile(sys.argv[1] if len(sys.argv) > 1 else nw.CURRENT)
 
 PROM = {"type": "prometheus", "uid": "grafanacloud-prom"}
 LOKI = {"type": "loki", "uid": "grafanacloud-logs"}
 INF = {"type": "yesoreyeram-infinity-datasource", "uid": "grafanacloud-infinity"}
-EXP = "https://scan.bradbury.genlayer.com/api/v1"
-ROSTER = "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2"
-RPC = "https://rpc.testnet-chain.genlayer.com"
+EXP = nw.explorer_api(NET)
+SITE = nw.explorer_site(NET)
+ROSTER = nw.roster_url(NET)
+RPC = NET["rpc"]
+STAKING = NET["staking"]
 N = 'network="$network", node=~"(?i)$node"'
 LSEL = '{job="genlayer-node"} | json | __error__="" | network="$network" | node=~"(?i)$node"'
 LSEL_RAW = '{job="genlayer-node"} | json | network="$network" | node=~"(?i)$node"'
@@ -128,11 +137,10 @@ GEN = "(tonumber / 1e18)"
 # ---------------------------------------------------------------- Row 1
 addr = f"{EXP}/address/${{node}}"
 roster_me = f'[.[] | select(.node == {NODE_LC})]'
-STAKING = "0xD8fBa96C0dBB0257028dBc0107060b958e5c7113"
 
 JOIN_TOPIC = "0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782"
 def join_logs(jq, ref="J"):
-    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": [{"address": STAKING, "fromBlock": "0xbb3a", "toBlock": "latest", "topics": [JOIN_TOPIC]}]})
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "eth_getLogs", "params": [{"address": STAKING, "fromBlock": hex(NET["genesis_block"]), "toBlock": "latest", "topics": [JOIN_TOPIC]}]})
     t = inf_rpc([], "", ref=ref)
     t["url_options"]["data"] = body
     t["root_selector"] = ('def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
@@ -260,6 +268,7 @@ panel("stat", "Chain",
       [inf_rpc([(STAKING, "0x900cf0cf"), (STAKING, SEL), (STAKING, "0x090d60bd000000000000000000000000${node_hex}"),
                 (STAKING, "0xb83f5b39000000000000000000000000${node_hex}")],
                'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
+               'if "${node_hex}" == "" then [] else\n'  # no validator picked (empty roster): No data, not a jq error
                '(map(select(.id==1))[0].result | ltrimstr("0x") | h2i) as $ep\n'
                '| (map(select(.id==2))[0].result | ltrimstr("0x") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n'
                '| (map(select(.id==3))[0].result | ltrimstr("0x")) as $b\n'
@@ -267,7 +276,7 @@ panel("stat", "Chain",
                + PENDING_JQ +
                '| [{chain: (if $perm > 0 then "red|No longer participating" elif $until > $ep then "orange|Quarantined until epoch \\($until)" '
                'elif ($sel | index("${node_hex}")) != null then "green|Active (epoch \\($ep))" '
-               'elif $pending then "yellow|Stake pending activation (live at epoch \\($live))" else "red|Not participating" end)}]')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
+               'elif $pending then "yellow|Stake pending activation (live at epoch \\($live))" else "red|Not participating" end)}] end')], 5, 3, options=stat_opts("/^chain$/"), defaults={"mappings": HEALTH_MAP})
 panel("stat", "Version",
       "The node's version, and whether it is the newest version running on the network. Source: `genlayer_node_info` labels.",
       [prom(f'label_replace(max by (version)(genlayer_node_info{{{N}, version="$latest_version"}}), "disp", "$1 — up to date", "version", "(.*)") '
@@ -330,12 +339,11 @@ panel("stat", "Stake now (explorer)",
       "Self stake and delegated stake, in GEN. Source: explorer `/address` (indexed at the last epoch boundary — a slash enacted since may not be in it yet).",
       [inf_get(addr, f'.validator | {{self_stake: (.self_stake | {GEN}), delegated: (.delegated_stake | {GEN}), delegators: (.delegators | length)}}')],
       8, 4, options=stat_opts("/.*/", mode="value", text="value_and_name"), defaults={"decimals": 0, "unit": "none", "color": {"mode": "fixed", "fixedColor": "text"}})
-STAKING = "0xD8fBa96C0dBB0257028dBc0107060b958e5c7113"
 panel("stat", "Stake now (chain, live)",
       "Live `validatorView` on the staking contract: self stake and pending deposits/withdrawals, in GEN. The chain is the authority.",
       [inf_rpc([(STAKING, "0xb83f5b39000000000000000000000000${node_hex}")],
                'def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n'
-               '.[0].result | ltrimstr("0x") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)}')],
+               'if .[0].result == null then [] else .[0].result | ltrimstr("0x") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)} end')],
       8, 4, options=stat_opts("/.*/", mode="value", text="value_and_name"), defaults={"decimals": 0, "color": {"mode": "fixed", "fixedColor": "text"}})
 panel("stat", "Rewards earned (node counter)",
       "Validator rewards the node has seen paid to it since the node process started — highest value in the selected range (GEN). Resets when the node restarts. Source: `genlayer_node_fees_earned_wei_total{type=\"validator_rewards\"}`.",
@@ -386,7 +394,7 @@ panel("timeseries", "Submissions that failed",
       12, 8, defaults={"decimals": 0, "color": {"mode": "palette-classic"}, "custom": {"drawStyle": "bars", "fillOpacity": 60}})
 part_jq = ('.participations | map({time: (.submission_timestamp * 1000), round: .round_label, role, outcome, color: .outcome_color, '
            'tx: .hash})')
-link_tx = [{"title": "Open in explorer", "url": "https://scan.bradbury.genlayer.com/tx/${__value.raw}", "targetBlank": True}]
+link_tx = [{"title": "Open in explorer", "url": SITE + "/tx/${__value.raw}", "targetBlank": True}]
 OUT_COLOR = regex_map([(r"^green$", "", "green"), (r"^red$", "", "red"), (r"^(yellow|orange)$", "", "orange")])
 tx_overrides = [
     {"matcher": {"id": "byName", "options": "time"}, "properties": [{"id": "unit", "value": "dateTimeAsIso"}, {"id": "custom.width", "value": 170}]},
@@ -520,16 +528,20 @@ PROFILE_VARS = [
                 '(if ($m.telegram // "") != "" then "Telegram: " + $m.telegram else empty end), (if ($m.email // "") != "" then $m.email else empty end)] | if length == 0 then "No links set" else join(" &nbsp;·&nbsp; ") end)}]'),
 ]
 dash = {
-    "uid": "gl-validator-profile", "title": "Testnet | Validator Profile",
+    "uid": nw.uid("gl-validator-profile", NET), "title": "Testnet | Validator Profile" + ("" if NET["key"] == nw.CURRENT else " | " + NET["name"]),
     "tags": ["validator", "profile"], "timezone": "browser", "editable": True, "schemaVersion": 39,
     "time": {"from": "now-24h", "to": "now"}, "refresh": "1m", "graphTooltip": 1,
     "description": "One validator: who it is, whether it is OK and what to fix, earnings, work done, why it went wrong, and node internals. Design: VALIDATOR-PROFILE-PLAN.md",
-    "links": [{"title": "Open in explorer", "type": "link", "url": "https://scan.bradbury.genlayer.com/address/${node}", "targetBlank": True},
-              {"title": "Validator Status", "type": "link", "url": "/d/gl-validator-status", "targetBlank": False}],
+    "links": [{"title": "Open in explorer", "type": "link", "url": SITE + "/address/${node}", "targetBlank": True},
+              {"title": "Validator Status", "type": "link", "url": "/d/gl-validator-status", "targetBlank": False},
+              {"title": NET["name"] + " network board", "type": "link", "icon": "dashboard",
+               "url": "/d/" + nw.uid("gl-testnet-network", NET), "targetBlank": False},
+              *nw.board_links(NET, "gl-validator-profile", "{name} validator profile")],
     "templating": {"list": [
-        {"name": "network", "type": "custom", "query": "bradbury-phase2", "current": {"text": "bradbury-phase2", "value": "bradbury-phase2"}, "hide": 2},
+        {"name": "network", "type": "custom", "query": NET["label"], "current": {"text": NET["label"], "value": NET["label"]}, "hide": 2},
         {"name": "node", "label": "Validator", "type": "query", "datasource": INF, "query": roster_var_q, "refresh": 1,
-         "current": {"text": "GenLayer Foundation — 0xb0dab7fc", "value": "0xb0dab7fc62e276f5be045b7ec3674f7168623342"}, "sort": 0},
+         "current": ({"text": "GenLayer Foundation — " + NET["foundation_node"][:10], "value": NET["foundation_node"]}
+                     if NET["foundation_node"] else {}), "sort": 0},
         {"name": "node_hex", "type": "query", "datasource": INF, "query": hex_var_q, "refresh": 1, "hide": 2},
         *[{"name": n, "type": "query", "datasource": INF, "refresh": 1, "hide": 2,
            "query": {"queryType": "infinity", "refId": "variable", "infinityQuery": {"refId": "variable", "type": "json", "source": "url", "parser": "jq-backend",
@@ -553,5 +565,7 @@ for p in allp():
     ds = p["targets"][0]["datasource"]["uid"] if p.get("targets") else ""
     nv = NOVAL.get(p["title"]) or ("No data from this node's telemetry" if ds in ("grafanacloud-prom", "grafanacloud-logs") else "No data")
     p["fieldConfig"]["defaults"].setdefault("noValue", nv)
-json.dump(dash, open(sys.argv[1], "w"), indent=1)
-print(len(panels), "top-level panels")
+missing = nw.stub_unavailable(dash, NET, keep_jq=("node_hex",))  # node_hex only lowercases $node: its jq reads no input
+out = nw.OUT + nw.filename("validator_profile", NET)
+json.dump(dash, open(out, "w"), indent=1)
+print(f"{NET['key']}: wrote {out} -> upload as uid {dash['uid']}" + (f" (empty for now: {', '.join(nw.SOURCE_NAMES[m] for m in missing)})" if missing else ""))

@@ -5,7 +5,209 @@ JSON file in this repo (unwrapped dashboard model, pretty-printed). Use the
 Grafana MCP server to manage Grafana resources; fall back to the Grafana API for
 anything the MCP doesn't support.
 
-## Current network — Bradbury Phase 2 (since 2026-10-20)
+## Networks — one profile each (since 2026-11-25)
+
+Every per-network fact the boards hard-code lives in **`scripts/networks.py`**: one
+profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
+`staking`, `fees_processor`, `genesis_block`, `appeal_window_s`, display `name`, uid
+`slug`). `None` = not known yet; never guess one. The two generators read nothing else:
+
+- `python3 scripts/build_network.py [network]` generates a network's copy of the network
+  board from **`scripts/network.template.json`** — the complete, hand-maintained board
+  with every panel's real query — by rewriting the literals it carries (frozen in
+  `TEMPLATE` in the script) to the profile. **Edit panels in the template, never in
+  `network.json` / `network_<slug>.json`**: all of those are generated. (A template is
+  needed because no single network has every source: see the table.)
+- `python3 scripts/build_validator_profile.py [network]` generates the per-validator board.
+
+`networks.CURRENT` (**`bradbury-phase3` since 2026-11-25**, Ivan's call) owns the **unsuffixed** uids
+`gl-testnet-network` (public) and `gl-validator-profile`. Every other network gets
+`gl-testnet-network-<slug>` / `gl-validator-profile-<slug>` in files
+`network_<slug>.json` / `validator_profile_<slug>.json`, team-only (no `public` tag).
+
+| Network | Profile | Boards | State |
+|---|---|---|---|
+| Bradbury Phase 3 | `bradbury-phase3` (CURRENT) | `gl-testnet-network` (**public**), `gl-validator-profile` | every source present: chain, explorer `scan.bradbury.genlayer.com`, roster key `bradbury3`, telemetry label. `gl-testnet-network-phase3` / `gl-validator-profile-phase3` (files `*_phase3.json`) are the pre-move team copies: now duplicates, no longer regenerated, left in place |
+| Bradbury Phase 2 | `bradbury-phase2` | none live; `network_phase2.json` / `validator_profile_phase2.json` are repo-only | halted, retired from the boards 2026-11-25: no roster (portal returns `[]`), no explorer; ~40 nodes still push the label |
+| Clarke | `clarke` | `gl-testnet-network-clarke` (**public**, token `8ce16ef9…`), `gl-validator-profile-clarke` (team-only), files `*_clarke.json` | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (joined wallets only), label `clarke` (Foundation node reports); **no explorer** |
+
+**Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
+and chain explorer) — networks are told apart by contract address only. Staking
+`0xcE16862EAf10B97A0619BeBb662991fb4a52e346`, FeesProcessor
+`0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4`, AddressManager deployed at block
+**694191** (2026-11-24 17:03 UTC, found by `eth_getCode` bisection). Source:
+`genlayerlabs/genlayer-networks` `bradbury-phase-3/`. What it lacks, verified 2026-11-25:
+
+- (**Portal roster**: key `bradbury3` exists since 2026-11-25 ~15:45 UTC; until then
+  the key answered 400 `Unknown network`. The row's `network` field is the Grafana label
+  `bradbury-phase3`.)
+- **Graduated validators with no wallet on the network** (roster `status: "missing"`,
+  portal health "Not deployed") are not part of the set: they stay out of the Validators
+  table and are listed in their own panel right below it, **"Graduated validators not on
+  this network yet"** (name, portal status, portal link, row count in the footer) — the
+  outreach list of who has not rejoined.
+- (It has an **explorer** since 2026-11-25 ~14:00 UTC: `scan.bradbury.genlayer.com`
+  — the host that was Phase 2's — switched to Phase 3 after a morning of 500/503s.
+  Same routes and shapes; all 11 `/validators` are the chain's selectable set.
+  `appeal_window_s` = **1800** (the `decided` timeout; accepted → finalized measured
+  1811 s on 11 txs via `/transactions/consensus-steps/{hash}`), not Phase 2's 60.)
+- ⚠️ **Phase 2 therefore has NO explorer any more** (`explorer: None` in its profile).
+  The repo's `network.json` / `validator_profile.json` are regenerated without explorer
+  queries, but **they are not uploaded**: live `gl-testnet-network` (the public URL)
+  and `gl-validator-profile` still run the 2026-11-22 version, whose explorer panels
+  now show **Phase 3** data (epoch 2, 33 txs, 462K GEN, "GenLayer Labs 1-11") next to
+  Phase 2's validator set, telemetry and roster — and its time to acceptance subtracts
+  60 s instead of 1800 (reads ~29 min). Owner's call: upload the regenerated Phase 2
+  files, or move `CURRENT` to Phase 3. Until then repo ≠ live for those two boards.
+- **Node telemetry**: no node pushes `network="bradbury-phase3"` (metrics or logs). The
+  label exists only on the Heartbeat monitors' series (`epoch_monitor_*`, `heartbeat_*`,
+  `ban_monitor_*`, `balance_monitor_*`). None of the 11 Phase 3 validators reports under
+  any label, so Reporting reads 0 and every table row reads `silent` — true, not a bug.
+
+**A missing source is generated as an empty inline Infinity query** (`source: inline`,
+`data: "[]"`, `root_selector: "[]"`), never a guessed URL: the panel reads "No <source>
+for <network> yet", gets an `[Incomplete: …]` description, and a note panel is added at
+the top (`networks.stub_unavailable`). An unknown roster key would otherwise 400 and
+error the panel. Links to a missing explorer are dropped.
+
+**Validator names without a roster (2026-11-25)**: the table's `Name` merge gained the
+explorer's `metadata.name` (`xname X`) as a fallback after the roster and metrics names,
+so a network with an explorer but no roster shows names ("GenLayer Labs 1"), not
+addresses. Order: portal name > metrics `validator_name` > explorer name > address.
+
+**Stake pending activation (2026-11-25)**: a validator that joined but whose deposit is
+not live yet is in `getValidatorsJoined` and NOT in `selectableValidators()`, so the
+"current set only" table hid it (the Foundation's Phase 3 node, joined in epoch 2, was
+the report). The table's explorer target `X` now emits `pend` (explorer
+`status == "inactive"` with a non-empty `pending_deposits`) and `pending_gen`; rows pass
+the final filter on `shown = live1 + pendflag` (was `live1`), and a yellow **Pending
+activation** column shows the GEN waiting. Missing metrics/logs stay gated on `live1`,
+so a pending validator is never counted as a problem: Telemetry reads its real state if
+it reports, `-` if not. **Validator set** gained a yellow **Pending** count (second
+target, explorer). Both need the explorer: a network without one (Phase 2) shows neither.
+Exited `inactive` wallets with no pending deposit still appear nowhere.
+
+**Red error badges on the four RPC panels at full-board load** (incentives, penalties
+per epoch, penalties by validator, Validators): present on the public Phase 2 board
+too, so not new. NOT the RPC rate limit as far as tested — 11 concurrent `eth_getLogs`
+through Grafana and each panel's own queries all return 200 with no error, and each
+panel is clean when rendered alone. Cause not found; read the badge tooltip in a browser.
+
+**Penalty events need an address filter (2026-11-25).** Chain 4221 hosts several
+deployments (Phase 2, Phase 3, Phantom Bradbury, Pre Phantom), so a topic-only
+`eth_getLogs` mixes them: since Phase 3 genesis every `ValidatorBannedIdleness` /
+`ValidatorSlash` came from Phantom Bradbury's staking and every
+`ValidatorPenaltyRecorded` from the Phase 2 and Phantom FeesProcessors. Emitters:
+**Staking** (`ValidatorSlash`, `ValidatorBannedIdleness`, `ValidatorJoin`) and
+**FeesProcessor** (`ValidatorPenaltyRecorded` — the `0x040a…a775` this file used to call
+"fee manager" is Phase 2's FeesProcessor). The generator writes
+`address` + `fromBlock = genesis_block` into every `eth_getLogs`. ⚠️ The public Phase 2
+board live in Grafana is still **topic-only**, so its penalty panels count Phantom
+Bradbury's events too, and the wide range now times out (504) at times. The regenerated
+`network.json` in the repo has the filter; it is not uploaded yet (see above).
+
+**The public URL moved to Phase 3 on 2026-11-25**: `network.json` (Phase 3) went to uid
+`gl-testnet-network` and `validator_profile.json` to `gl-validator-profile`, same uids,
+so the public token `71f94ef4…` and every old link kept working. The upload goes panel
+by panel, so the public board is incomplete for a few minutes while it runs.
+
+**Moving the public URL to another network** in general: set `CURRENT` to it, run both generators
+with no argument, upload `network.json` to uid `gl-testnet-network` (same uid, so the
+public share and token `71f94ef4…` stay) and `validator_profile.json` to
+`gl-validator-profile`; the old network comes out as `network_<slug>.json`. A source
+the network lacks shows as "No <source> for <network> yet" on the public board too —
+the generator says which when it writes the file.
+
+**Adding a network**: fill its profile (the generators list what is missing), set
+`boards: True`, run both generators for it **and for every other network with
+`boards: True`** (their link bars gain the new board), upload every file they name to
+folder `fkpd6m`, add a row above.
+
+**Clarke (2026-11-26)** runs in parallel with Phase 3 on the same chain (4221): Staking
+`0x711d111510Af2Bb35c3929b709677a1E9f8ffce2`, FeesProcessor
+`0x7e226Fe81eF152b7eF249404a7877Be8f83FBdcF`, genesis block **713692** (AddressManager
+`0xA79dA7c2…1d0E` first has code, 10:28 UTC), epoch 0 from 13:05 UTC (cannot end before
+2026-12-10). Source: `genlayerlabs/genlayer-networks` `clarke/`. Its boards are
+team-only; nothing about Phase 3 was re-pointed. What it lacks:
+
+- **No GenLayer explorer** (`explorer: None`; genlayerlabs explorer PR #527 open). Every
+  explorer panel is an empty inline query reading "No GenLayer explorer for Clarke yet"
+  (consensus health, epoch, rounds, votes, usage, txs, time to acceptance, stake, and on
+  the profile board strikes, primed, metadata). `appeal_window_s` is unknown too: set it
+  with the explorer.
+- **Roster**: key `clarke` lists joined wallets only (1 row 2026-11-26 ~16:00 UTC: the
+  Foundation, `inactive`), with no `missing` rows and no Grafana label set in the portal.
+  Profile flag `roster_no_missing_rows: True` makes "Graduated validators not on this
+  network yet" read "The portal does not list who is missing on Clarke yet" instead of
+  "Every graduated validator is on this network". **Drop the flag and regenerate once
+  the portal adds `missing` rows for Clarke.**
+- **Joined validators are listed (2026-11-26, profile `joined_label`)**: in epoch 0 nobody
+  is selectable, so the current-set table would be empty although validators have
+  registered (Ivan wants the public Clarke board to show who is registering). For a profile
+  with `joined_label`, `build_network.show_joined` adds:
+  - **Validator set** gains **Joined**: roster rows with a real wallet (status not `missing`).
+  - **Validators** table: every such row passes the filter (`joinflag` from a roster field
+    `joined`, added to target A's `columns`, since Infinity emits listed columns only), and a
+    row the portal calls `inactive` reads Health "Joined, waiting for epoch 0 to end" (yellow).
+  - **Latest joins** (right of the not-joined panel): chain `ValidatorJoin` events since
+    genesis (time, self stake, address) with the portal name.
+  Joined comes from the **portal roster, not the chain**, on purpose: see the 429 note below.
+  Reword or drop `joined_label` once epoch 0 has ended (not before 2026-12-10). Phase 3
+  has no `joined_label`: its board is unchanged.
+- ⚠️ **The red badges are the public RPC rate-limiting (HTTP 429)**. With ~10 RPC targets
+  firing together at board load, `rpc.testnet-chain.genlayer.com` answers 429 to several
+  (reproduced 3/3 by querying every panel of the public Clarke board in parallel: incentives,
+  penalties, Validators E/Q, Latest joins). This explains the "cause not found" badges above
+  and they hit the Phase 3 public board too. A panel whose RPC target fails keeps its other
+  data, but only if its transformations do not depend on that frame: in the Validators
+  table, the joined rows are kept because the `universalone` include also lists the
+  unsuffixed names (`rone`, `joined`), and field names lose their ` A` suffix when frames are
+  missing. Real fix not done: fewer RPC calls (batch E into Q, fold panel 1's batch) or a
+  cached RPC source.
+- **Telemetry**: the Foundation's Clarke node reports `network="clarke"` since
+  2026-11-26 afternoon (the first and, at ~16:00 UTC, only one).
+- The validator profile opens on the Foundation's Clarke validator (`foundation_node`).
+  With no validator picked, the Chain and Stake-now stats read "No data" instead of a jq
+  error (their jq now guards an empty `${node_hex}` / null `eth_call` result).
+
+**Links between networks**: every network board's link bar starts with "<Name> board" for
+each other network whose profile has `boards: True` (`networks.board_links`); each
+validator profile links to its own network board and to the other networks' profiles.
+The public board carries the "Clarke board" link too, but it needs a login and public
+dashboards do not render the link bar anyway.
+
+**Links public viewers can follow**: a profile's `public_token` is the public share token
+of its network board. Every network board gets a 2-row text panel at the top, "Also live:
+[<Name> network board](https://genlayerfoundation.grafana.net/public-dashboards/<token>)",
+for each OTHER network with a `public_token` (`networks.public_links_markdown`), and a
+board whose own profile has a token keeps the `public` tag.
+
+**Two public boards since 2026-11-26** (Ivan: Clarke public "because we can see who's
+registering"; Phase 3's URL unchanged):
+- Bradbury Phase 3: `gl-testnet-network` →
+  `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`
+- Clarke: `gl-testnet-network-clarke` →
+  `https://genlayerfoundation.grafana.net/public-dashboards/8ce16ef9604c446d8f78714dae6def95`
+  (time selection on, annotations off)
+
+Each links to the other at the top. Every panel of both was queried anonymously through
+`/api/public/dashboards/<token>/panels/<id>/query`: no errors. The Validators-table link
+to the per-validator board needs a login on both (that board cannot be shared publicly).
+
+**Uploading**: the Grafana MCP `update_dashboard` takes the JSON inline, which for these
+100 kB boards means pasting it panel by panel (create with the first panels, then
+`add $.panels/-`). ⚠️ Every patch-mode save strips EMPTY values (`"options": {}`,
+`"targets": []`, nested panels of rows it did not touch) from content already on the
+board; re-send the affected panels in the same call, then compare. Grafana normalises on save (schemaVersion, drops `value: null` and
+empty `transformations`); compare after normalising. An Editor token + the README's
+`curl` is one call instead. **2026-11-26: the MCP's own service-account token can
+save** (`canSave: true`): `POST /api/dashboards/db` with `{"dashboard": <file minus
+id/version>, "folderUid": "fkpd6m", "overwrite": true}` and the token from the local MCP
+config uploads a whole board in one call (used for the Clarke boards and the Phase 3
+re-upload). Re-uploading `gl-testnet-network` this way keeps its public share (token and
+settings unchanged, checked before/after).
+
+## Bradbury Phase 2 — on the public board 2026-10-20 → 2026-11-25 (history)
 
 The testnet restarted on **Arbitrum Orbit (Conduit)**, replacing ZKsync. **Asimov
 (`asimov-phase5`) and Bradbury Phase 1 (`bradbury-phase1`) are sunset**; the only
@@ -44,6 +246,9 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   `node` join key is the **wallet**, never the owner.
 - Alerts (`grafana-alerts/`) are label-agnostic — no `network` filter in any expr,
   `network` is only carried through `by()` and templates — so they need no change.
+  Re-checked against live Grafana 2026-11-25 for Phase 3: still 9 rules, none names a
+  network, so Phase 3 nodes are covered the moment they push telemetry and Phase 2
+  nodes keep alerting until they stop pushing.
 
 ## Grafana instance & datasources
 
@@ -81,8 +286,9 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
 
 ## Our Foundation dashboards (uid → file in `dashboards/foundation/`)
 
-- `gl-testnet-network` → `network.json` — display title **"GenLayer Testnet |
-  Network"**, built 2026-10-27 as the ONE general board that replaces
+- `gl-testnet-network` → `network.json` (GENERATED since 2026-11-25 from
+  `scripts/network.template.json` — the notes below describe the template) — display
+  title **"GenLayer Testnet | Network"**, built 2026-10-27 as the ONE general board that replaces
   `gl-testnets-index`, `gl-network-status`, `gl-validator-status` and
   `gl-validator-status-public` (all four deleted 2026-10-27; their JSON is in git
   history). Its Validators table IS the old Validator Status table pipeline, so the
@@ -439,7 +645,8 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
 - **RETIRED 2026-10-27** `gl-network-status` → `network_status.json` — per-network fleet health
   (metrics-only).
 - `gl-llm-providers` → `llm_providers.json` — **"GenLayer Foundation | LLM
-  Providers"** (2026-11-03), team-only. GENERATED: edit
+  Providers"** (2026-11-03), team-only, network-independent (it follows the Foundation
+  node by `validator_name`). GENERATED: edit
   `scripts/build_llm_providers.py`, never the JSON. What the Foundation node's
   LLM rotation (unhardcoded / morpheus / pearl, random lead per session) does:
   prompts vs attempts, answered %, first-try %, failures + timeouts, calls /
@@ -450,7 +657,14 @@ network on the Foundation dashboards is **Bradbury Phase 2**:
   served `profile:default`, from `node-llm-unhardcoded.log`, which a 5-min
   systemd timer on the node writes from the router's `/v1/usage` — the key stays
   on the node, Grafana never holds it. See INTEGRATIONS.md.
-- `gl-validator-profile` → `validator_profile.json` — per-validator drill-down;
+- `gl-testnet-network-phase3` → `network_phase3.json` — the network board for Bradbury
+  Phase 3, GENERATED by `scripts/build_network.py` (never edit it; edit
+  `scripts/network.template.json` or the profile). Team-only. See "Networks" at the top
+  for what is empty and why. `gl-validator-profile-phase3` →
+  `validator_profile_phase3.json` is its per-validator board (uploaded 2026-11-25).
+- `gl-validator-profile` → `validator_profile.json` (and `validator_profile_<slug>.json`
+  for other networks) — GENERATED by `scripts/build_validator_profile.py [network]`;
+  per-validator drill-down;
   select by **`validator_name`** (primary), node derives from it; ⚠️ both vars come
   from `genlayer_node_info`, so the profile cannot select a validator that does not
   push metrics (true of every Phase 2 validator as of 2026-10-20); has an
@@ -688,7 +902,20 @@ How the dynamic "latest" works:
 - `grafana-alerts/*.json` — 9 rules synced from live Grafana; multi-network via
   the `network` label; routing labels `component`/`severity`/`threshold` (legacy
   `asimov-alert` label was dropped). **Label-agnostic** (re-checked 2026-10-20 for
-  Phase 2): no expr filters on a `network` value, so a new label needs no change.
+  Phase 2, 2026-11-26 for Clarke): no expr filters on a `network` value, so a new label
+  needs no change, and every rule has `noDataState: OK`, so a network with no series
+  (Clarke today) cannot fire. They live in the **GenLayer Labs** folder: do not modify.
+- ⚠️ **Validator Down (`afa2validator-down`) is broken: health `error`, firing "Alerting
+  (Error)" since 2026-10-29.** Its expr joins `* on(validator_name) group_left(network)
+  (max by(validator_name, network)(genlayer_node_info) …)`: an operator whose node
+  reports on two networks under one `validator_name` (5 today: ITRocket, STAKEME,
+  Synergy_Nodes, Tecnodes, SenseiNode, Phase 2 + Phase 3) makes the right side
+  many-to-many, the query fails and `execErrState: Alerting` fires the "ignore this
+  notification" error alert. So no real node-down alert is delivered for any network.
+  Clarke adds more such operators. Fix belongs to the Labs owner: join on the series
+  identity, e.g. `on(instance, job, validator_name)` with `max by(instance, job,
+  validator_name, network)` on the right (verify `up` and `genlayer_node_info` share
+  `instance`/`job` first).
 
 ## Convention
 

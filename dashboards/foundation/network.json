@@ -2,11 +2,18 @@
   "annotations": {
     "list": []
   },
-  "description": "Bradbury Phase 2 at a glance: the validator set, consensus, transactions, stake, rewards & penalties, and every validator.",
+  "description": "Bradbury Phase 3 at a glance: the validator set, consensus, transactions, stake, rewards & penalties, and every validator.",
   "editable": true,
   "graphTooltip": 1,
   "id": 2995795961016320,
   "links": [
+    {
+      "title": "Clarke board",
+      "type": "link",
+      "icon": "dashboard",
+      "url": "/d/gl-testnet-network-clarke",
+      "targetBlank": false
+    },
     {
       "icon": "external link",
       "targetBlank": true,
@@ -38,7 +45,23 @@
   ],
   "panels": [
     {
-      "description": "Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts.",
+      "id": 31,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "transparent": true,
+      "options": {
+        "mode": "markdown",
+        "content": "Also live: [Clarke network board](https://genlayerfoundation.grafana.net/public-dashboards/8ce16ef9604c446d8f78714dae6def95)"
+      }
+    },
+    {
+      "description": "Validators in the current set, read live from the staking contract. Active = selectable for consensus; Quarantined = set aside by the network until their quarantine lifts. Pending = joined, with a deposit that is not live yet (stake pending activation; from the explorer).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -95,6 +118,25 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pending"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#fbbf24",
+                  "mode": "fixed"
+                }
+              }
+            ]
           }
         ]
       },
@@ -102,7 +144,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 1,
       "options": {
@@ -155,7 +197,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "[{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x2d2f135d\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":23,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
+            "data": "[{\"jsonrpc\":\"2.0\",\"id\":21,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x2d2f135d\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":22,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":23,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
             "headers": [
               {
                 "key": "Content-Type",
@@ -164,18 +206,48 @@
             ],
             "method": "POST"
           }
+        },
+        {
+          "columns": [
+            {
+              "selector": "Pending",
+              "text": "Pending",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "method": "GET",
+          "parser": "jq-backend",
+          "refId": "B",
+          "root_selector": "[{\"Pending\": ([.validators[] | select(.status == \"inactive\" and ((.pending_deposits // []) | length > 0))] | length)}]",
+          "source": "url",
+          "type": "json",
+          "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
         }
       ],
       "title": "Validator set",
       "transformations": [],
-      "type": "stat"
+      "type": "stat",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      }
     },
     {
       "datasource": {
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Over the latest 500 transactions. Agreement: share of consensus rounds that ended with a majority agreeing. Succeeded: transactions whose contract returned rather than erroring. Time to acceptance: average seconds from activation to the network accepting the result (derived as finalization minus the ~60s appeal window).",
+      "description": "Over the latest 500 transactions. Agreement: share of consensus rounds that ended with a majority agreeing. Succeeded: transactions whose contract returned rather than erroring. Time to acceptance: average seconds from activation to the network accepting the result (derived as finalization minus the ~1800s appeal window).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -339,7 +411,7 @@
         "h": 5,
         "w": 9,
         "x": 6,
-        "y": 0
+        "y": 2
       },
       "id": 2,
       "options": {
@@ -405,7 +477,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
+          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
@@ -456,7 +528,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
+          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
@@ -507,7 +579,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
+          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
@@ -558,7 +630,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
+          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
@@ -609,7 +681,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
+          "root_selector": "[.transactions | ([ .[] | ((.enrichment_data // {}).rounds // [])[] | .result ]) as $r | ([ .[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max) ]) as $acc | {rounds: ($r | length), agree: ($r | map(select(. == \"majority_agree\")) | length), done: (map(select(.execution_result != null)) | length), ok: (map(select(.execution_result == \"FINISHED_WITH_RETURN\")) | length), acc_sum: ($acc | add // 0), acc_n: ($acc | length)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
@@ -810,7 +882,7 @@
         "h": 5,
         "w": 9,
         "x": 15,
-        "y": 0
+        "y": 2
       },
       "id": 3,
       "options": {
@@ -840,7 +912,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"}) or on() vector(0)",
+          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase3\"}) or on() vector(0)",
           "format": "time_series",
           "instant": true,
           "legendFormat": "",
@@ -853,7 +925,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "100 * count(genlayer_node_synced{network=\"bradbury-phase2\"} == 1) / count(genlayer_node_synced{network=\"bradbury-phase2\"})",
+          "expr": "100 * count(genlayer_node_synced{network=\"bradbury-phase3\"} == 1) / count(genlayer_node_synced{network=\"bradbury-phase3\"})",
           "format": "time_series",
           "instant": true,
           "legendFormat": "",
@@ -866,7 +938,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max(genlayer_node_blocks_behind{network=\"bradbury-phase2\"}) or on() vector(0)",
+          "expr": "max(genlayer_node_blocks_behind{network=\"bradbury-phase3\"}) or on() vector(0)",
           "format": "time_series",
           "instant": true,
           "legendFormat": "",
@@ -973,7 +1045,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 5
+        "y": 7
       },
       "id": 4,
       "options": {
@@ -1038,7 +1110,7 @@
           "root_selector": "def bad($s; $t): [ $s[] | select((((.health | objects) // {}).findings // []) | any(.type == $t)) ] | length; [ .[] | select(.status == \"active\" or .status == \"quarantined\") ] as $s | [{ \"Not reporting metrics\": bad($s; \"no_metrics\"), \"Not shipping logs\": bad($s; \"no_logs\"), \"Behind target version\": bad($s; \"version_behind\"), \"Profile incomplete\": bad($s; \"identity_incomplete\"), \"Not linked to portal\": bad($s; \"not_linked\") }]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -1064,7 +1136,7 @@
           "root_selector": "[{\"total\": ([ .[] | select(.status == \"active\" or .status == \"quarantined\") ] | length)}]",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -1178,7 +1250,7 @@
         "h": 9,
         "w": 10,
         "x": 8,
-        "y": 5
+        "y": 7
       },
       "id": 5,
       "options": {
@@ -1203,7 +1275,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"}) or on() vector(0)",
+          "expr": "count(genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase3\"}) or on() vector(0)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "Reporting",
@@ -1216,7 +1288,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "count(genlayer_node_synced{network=\"bradbury-phase2\"} == 1) or on() vector(0)",
+          "expr": "count(genlayer_node_synced{network=\"bradbury-phase3\"} == 1) or on() vector(0)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "Synced",
@@ -1229,7 +1301,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase2\" [5m]))) or on() vector(0)",
+          "expr": "count(sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase3\" [5m]))) or on() vector(0)",
           "format": "time_series",
           "instant": false,
           "legendFormat": "Shipping logs",
@@ -1311,7 +1383,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 5
+        "y": 7
       },
       "id": 6,
       "options": {
@@ -1382,7 +1454,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 16
       },
       "id": 7,
       "panels": [],
@@ -1485,7 +1557,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 17
       },
       "id": 8,
       "options": {
@@ -1935,7 +2007,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 15
+        "y": 17
       },
       "id": 9,
       "options": {
@@ -2475,7 +2547,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 15
+        "y": 17
       },
       "id": 10,
       "options": {
@@ -2903,7 +2975,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 26
       },
       "id": 11,
       "panels": [],
@@ -2915,7 +2987,7 @@
         "type": "yesoreyeram-infinity-datasource",
         "uid": "grafanacloud-infinity"
       },
-      "description": "Network totals from the explorer since Bradbury Phase 2 genesis; success rate over the latest 500 transactions (a contract that returned vs one that ended in an error).",
+      "description": "Network totals from the explorer since Bradbury Phase 3 genesis; success rate over the latest 500 transactions (a contract that returned vs one that ended in an error).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3047,7 +3119,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 27
       },
       "id": 12,
       "options": {
@@ -3523,7 +3595,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 29
+        "y": 31
       },
       "id": 13,
       "options": {
@@ -3609,7 +3681,7 @@
       "type": "timeseries"
     },
     {
-      "description": "Each dot is one of the latest 500 transactions. Accepted: seconds from activation until the network accepted the result. Queue: seconds it waited before activation. Acceptance is derived as finalization minus the 60s appeal window (measured 60-66s on this testnet), so it can read up to ~6s high; the explorer does not publish an accepted timestamp in bulk.",
+      "description": "Each dot is one of the latest 500 transactions. Accepted: seconds from activation until the network accepted the result. Queue: seconds it waited before activation. Acceptance is derived as finalization minus the 1800s appeal window (measured 1811s on this testnet), so it can read up to ~11s high; the explorer does not publish an accepted timestamp in bulk.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3673,7 +3745,7 @@
         "h": 8,
         "w": 9,
         "x": 9,
-        "y": 29
+        "y": 31
       },
       "id": 14,
       "options": {
@@ -3719,7 +3791,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A1",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
+          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 1800), accept: ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=1",
@@ -3755,7 +3827,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A2",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
+          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 1800), accept: ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=2",
@@ -3791,7 +3863,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A3",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
+          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 1800), accept: ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=3",
@@ -3827,7 +3899,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A4",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
+          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 1800), accept: ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=4",
@@ -3863,7 +3935,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "A5",
-          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 60), accept: ([(.finalization_timestamp - .activation_timestamp - 60), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
+          "root_selector": "[.transactions[] | select((.finalization_timestamp // 0) > 0 and (.activation_timestamp // 0) > 0 and (.submission_timestamp // 0) > 0 and .finalization_timestamp >= .activation_timestamp and .activation_timestamp >= .submission_timestamp and (([(.enrichment_data // {}) | .. | objects | .appeal_bond? // empty] | length > 0) | not)) | {time: (.finalization_timestamp - 1800), accept: ([(.finalization_timestamp - .activation_timestamp - 1800), 0] | max), queue: (.activation_timestamp - .submission_timestamp)}] | sort_by(.time)",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/transactions?page_size=100&page=5",
@@ -3930,7 +4002,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 29
+        "y": 31
       },
       "id": 15,
       "options": {
@@ -3995,7 +4067,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 39
       },
       "id": 16,
       "panels": [],
@@ -4231,7 +4303,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 40
       },
       "id": 17,
       "options": {
@@ -4407,7 +4479,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 42
+        "y": 44
       },
       "id": 18,
       "options": {
@@ -4517,7 +4589,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 42
+        "y": 44
       },
       "id": 19,
       "options": {
@@ -4578,7 +4650,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 55
       },
       "id": 20,
       "panels": [],
@@ -4732,7 +4804,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 56
       },
       "id": 21,
       "options": {
@@ -4856,7 +4928,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":51,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":51,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -4915,7 +4987,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":52,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":52,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -4974,7 +5046,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":53,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":53,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5070,7 +5142,7 @@
         "h": 10,
         "w": 10,
         "x": 0,
-        "y": 58
+        "y": 60
       },
       "id": 22,
       "options": {
@@ -5122,7 +5194,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":54,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":54,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5161,7 +5233,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":55,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":55,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5301,7 +5373,7 @@
         "h": 10,
         "w": 14,
         "x": 10,
-        "y": 58
+        "y": 60
       },
       "id": 23,
       "options": {
@@ -5364,7 +5436,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":56,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":56,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0x0c74AC5e70E07C5E10EC8c8fC6D852F36F944Ea4\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0xb53a9a4243f44525ba76af0beaa6c0feaf0d4531da91814112747f4c60313fa9\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5428,7 +5500,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":57,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":57,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0xa627246e5775111863fbcde9461dd14307b2830d3cbe4c384728da5bb175fbe0\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5492,7 +5564,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":58,\"method\":\"eth_getLogs\",\"params\":[{\"fromBlock\":\"0xbb3a\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":58,\"method\":\"eth_getLogs\",\"params\":[{\"address\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"fromBlock\":\"0xa97af\",\"toBlock\":\"latest\",\"topics\":[\"0x46cda53c301fdcf68b170f57e98b59fbc32ad0d522bdd36278d635e4750ac520\"]}]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -5690,7 +5762,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 68
+        "y": 70
       },
       "id": 25,
       "panels": [],
@@ -5702,7 +5774,7 @@
         "type": "datasource",
         "uid": "-- Mixed --"
       },
-      "description": "One row per validator in the current set (on-chain active + quarantined). Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
+      "description": "One row per validator in the current set (on-chain active + quarantined), plus validators that joined and whose deposit is not live yet: those show the GEN waiting under Pending activation and are not counted as a problem. Sorted worst first by portal health. Chain and Telemetry are read live; Health and Issues are the portal's verdict.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -6466,6 +6538,55 @@
                 "value": true
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pending activation"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 150
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "#9ca3af",
+                        "index": 99,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#fbbf24",
+                  "mode": "fixed"
+                }
+              }
+            ]
           }
         ]
       },
@@ -6473,7 +6594,7 @@
         "h": 24,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 71
       },
       "id": 24,
       "options": {
@@ -6575,7 +6696,7 @@
           "root_selector": "[ .[] ]\n| group_by(if (.account // \"\") != \"\" then \"a:\" + .account elif (.name // \"\") != \"\" then \"n:\" + .name else \"x:\" + .node end)\n| map( ([ .[] | select(.status != \"inactive\") ]) as $live | if ($live | length) > 0 then $live else [ .[-1] ] end )\n| (add // [])\n| map(. + {profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) elif ((.node // \"\") | startswith(\"user-\")) then \"https://portal.genlayer.foundation/participant/\" + (.node | ltrimstr(\"user-\")) else \"\" end), issues: ((((.health | objects) // {}).findings // []) | .[1:] | map(select(.type as $t | [\"quarantined\", \"no_metrics\", \"no_logs\"] | index($t) | not)) | map(if .type == \"version_behind\" then (if .severity == \"red\" then \"Upgrade overdue\" else \"Version behind\" end) else ({\"identity_incomplete\": \"Profile incomplete\", \"not_linked\": \"Not linked to portal\", \"stake_below_minimum\": \"Stake below minimum\", \"activation_pending\": \"Stake pending activation\", \"not_deployed\": \"Not deployed\", \"source_unavailable\": \"Monitoring delayed\", \"blocks_behind\": \"Behind on blocks\", \"inactive\": \"Not participating\", \"permanently_quarantined\": \"No longer participating\"}[.type] // (.type | gsub(\"_\"; \" \"))) end) | if length == 0 then null else join(\" · \") end), rone: 1, misone: (if .status == \"missing\" then 1 else 0 end), linked_txt: (if .linked == null then \"-\" elif .linked then \"linked\" else \"NOT LINKED\" end), pref_name: (if (.account_name // \"\") != \"\" then .account_name elif (.moniker // \"\") != \"\" then .moniker else null end), identity: (if (.moniker == null and .logo_uri == null and .has_description == null) then \"-\" else ([ (if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end) ] | if length == 0 then \"OK\" else (\"missing: \" + join(\", \")) end) end), health_txt: (((.health | objects) // {}) as $h | (($h.color // \"\") | tostring) as $c | if $c == \"\" then \"-\" else ($c + \"|\" + ((($h.label // \"\") | tostring) | if . == \"\" then $c else . end)) end), hrank: ({\"red\": 5, \"orange\": 4, \"yellow\": 3, \"gray\": 2, \"grey\": 2, \"green\": 1}[(((.health | objects) // {}).color // \"\") | tostring] // 0)} | del(.linked, .moniker, .logo_uri, .has_description, .health))",
           "source": "url",
           "type": "json",
-          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -6587,7 +6708,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by (node) (genlayer_node_blocks_behind{network=\"bradbury-phase2\"})",
+          "expr": "max by (node) (genlayer_node_blocks_behind{network=\"bradbury-phase3\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -6600,7 +6721,7 @@
             "uid": "grafanacloud-logs"
           },
           "editorMode": "code",
-          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase2\" [5m]))",
+          "expr": "sum by (node) (count_over_time({job=\"genlayer-node\"} | json | __error__=\"\" | network=\"bradbury-phase3\" [5m]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -6614,7 +6735,7 @@
             "uid": "grafanacloud-prom"
           },
           "editorMode": "code",
-          "expr": "max by (node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"}) * 0 - 1",
+          "expr": "max by (node, version, validator_name) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase3\"}) * 0 - 1",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -6650,7 +6771,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
+            "data": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x2d2f135d\"},\"latest\"]}",
             "headers": [
               {
                 "key": "Content-Type",
@@ -6694,7 +6815,7 @@
           "url_options": {
             "body_content_type": "application/json",
             "body_type": "raw",
-            "data": "[{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
+            "data": "[{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x900cf0cf\"},\"latest\"]},{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"eth_call\",\"params\":[{\"to\":\"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\",\"data\":\"0x510a6f2600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064\"},\"latest\"]}]",
             "headers": [
               {
                 "key": "Content-Type",
@@ -6740,6 +6861,21 @@
               "selector": "txs",
               "text": "txs",
               "type": "number"
+            },
+            {
+              "selector": "xname",
+              "text": "xname",
+              "type": "string"
+            },
+            {
+              "selector": "pend",
+              "text": "pend",
+              "type": "number"
+            },
+            {
+              "selector": "pending_gen",
+              "text": "pending_gen",
+              "type": "number"
             }
           ],
           "datasource": {
@@ -6751,7 +6887,7 @@
           "method": "GET",
           "parser": "jq-backend",
           "refId": "X",
-          "root_selector": "[.validators[] | {node: (.validator_address | ascii_downcase), stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18), idle: ((.idle_pct_7d // 0) / 100), minority: ((.minority_pct_7d // 0) / 100), rotation: (if .rotation_pct_7d == null then null else .rotation_pct_7d / 100 end), appeals: (.successful_appeals_7d // 0), txs: (.transaction_count // 0)}]",
+          "root_selector": "[.validators[] | {node: (.validator_address | ascii_downcase), stake: (((.self_stake | tonumber) + (.delegated_stake | tonumber)) / 1e18), idle: ((.idle_pct_7d // 0) / 100), minority: ((.minority_pct_7d // 0) / 100), rotation: (if .rotation_pct_7d == null then null else .rotation_pct_7d / 100 end), appeals: (.successful_appeals_7d // 0), txs: (.transaction_count // 0), xname: ((.metadata | objects | .name) // null | if . == \"\" then null else . end), pend: (if .status == \"inactive\" and ((.pending_deposits // []) | length > 0) then 1 else null end), pending_gen: (([(.pending_deposits // [])[] | (.input | tonumber)] | add // 0) / 1e18 | if . == 0 then null else . end)}]",
           "source": "url",
           "type": "json",
           "url": "https://scan.bradbury.genlayer.com/api/v1/validators?page_size=100",
@@ -6800,7 +6936,8 @@
                 "onchain_active E",
                 "repone",
                 "rone A",
-                "onchain_quarantined Q"
+                "onchain_quarantined Q",
+                "pend X"
               ],
               "reducer": "max"
             },
@@ -7308,6 +7445,7 @@
               "include": [
                 "pref_name A",
                 "validator_name",
+                "xname X",
                 "addr_last",
                 "node_last"
               ],
@@ -7341,6 +7479,34 @@
           }
         },
         {
+          "id": "calculateField",
+          "options": {
+            "alias": "pendflag",
+            "replaceFields": false,
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "pend X",
+                "zeroU"
+              ],
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "shown",
+            "replaceFields": false,
+            "mode": "binary",
+            "binary": {
+              "left": "live1",
+              "operator": "+",
+              "right": "pendflag"
+            }
+          }
+        },
+        {
           "id": "filterByValue",
           "options": {
             "filters": [
@@ -7351,7 +7517,7 @@
                     "value": 1
                   }
                 },
-                "fieldName": "live1"
+                "fieldName": "shown"
               }
             ],
             "match": "all",
@@ -7431,7 +7597,11 @@
               "status A": true,
               "universalone": true,
               "validator_name": true,
-              "zeroU": true
+              "zeroU": true,
+              "xname X": true,
+              "pend X": true,
+              "pendflag": true,
+              "shown": true
             },
             "indexByName": {
               "#": 100,
@@ -7441,20 +7611,21 @@
               "PartCode": 107,
               "TelCode": 2,
               "Value #B": 4,
-              "appeals X": 10,
+              "appeals X": 11,
               "health_txt A": 0,
               "identity A": 103,
-              "idle X": 7,
-              "issues A": 11,
+              "idle X": 8,
+              "issues A": 12,
               "linked_txt A": 104,
-              "minority X": 8,
+              "minority X": 9,
               "network A": 106,
-              "node": 12,
-              "rotation X": 9,
-              "severity": 13,
+              "node": 13,
+              "rotation X": 10,
+              "severity": 14,
               "stake X": 5,
-              "txs X": 6,
-              "version": 3
+              "txs X": 7,
+              "version": 3,
+              "pending_gen X": 6
             },
             "renameByName": {
               "LogsCode": "Logs",
@@ -7475,7 +7646,8 @@
               "severity": "Sev",
               "stake X": "Stake",
               "txs X": "Transactions",
-              "version": "Version"
+              "version": "Version",
+              "pending_gen X": "Pending activation"
             }
           }
         },
@@ -7495,12 +7667,148 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "grafanacloud-infinity"
+      },
+      "description": "Graduated validators (portal Validator role) with no validator wallet on this network: they have not joined, or not rejoined after a restart. They are not part of the set, so they are listed here and nowhere above. Source: the portal roster's `missing` rows.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          },
+          "noValue": "Every graduated validator is on this network"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Validator"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open portal profile",
+                    "url": "${__data.fields.profile_url}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Portal status"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#ef4444",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "profile_url"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 95
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": true,
+          "fields": "",
+          "reducer": [
+            "count"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "Validator",
+              "text": "Validator",
+              "type": "string"
+            },
+            {
+              "selector": "Portal status",
+              "text": "Portal status",
+              "type": "string"
+            },
+            {
+              "selector": "profile_url",
+              "text": "profile_url",
+              "type": "string"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "grafanacloud-infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "method": "GET",
+          "parser": "jq-backend",
+          "refId": "A",
+          "root_selector": "[ .[] | select(.status == \"missing\") | {\"Validator\": ((.account_name // \"\") | if . == \"\" then null else . end) // .name, \"Portal status\": ((((.health | objects) // {}).label // \"\") | if . == \"\" then \"Not deployed\" else . end), profile_url: (if .account_id != null then \"https://portal.genlayer.foundation/participant/\" + (.account_id | tostring) else \"\" end)} ] | sort_by(.Validator | ascii_downcase)",
+          "source": "url",
+          "type": "json",
+          "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Graduated validators not on this network yet",
+      "type": "table"
+    },
+    {
       "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 93
+        "y": 105
       },
       "id": 29,
       "panels": [
@@ -7561,7 +7869,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 94
+            "y": 104
           },
           "id": 26,
           "options": {
@@ -7586,7 +7894,7 @@
                 "uid": "grafanacloud-prom"
               },
               "editorMode": "code",
-              "expr": "max(genlayer_node_blocks_behind{network=\"bradbury-phase2\"})",
+              "expr": "max(genlayer_node_blocks_behind{network=\"bradbury-phase3\"})",
               "format": "time_series",
               "instant": false,
               "legendFormat": "worst node",
@@ -7599,7 +7907,7 @@
                 "uid": "grafanacloud-prom"
               },
               "editorMode": "code",
-              "expr": "avg(genlayer_node_blocks_behind{network=\"bradbury-phase2\"})",
+              "expr": "avg(genlayer_node_blocks_behind{network=\"bradbury-phase3\"})",
               "format": "time_series",
               "instant": false,
               "legendFormat": "average",
@@ -7636,7 +7944,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 94
+            "y": 104
           },
           "id": 27,
           "options": {
@@ -7660,7 +7968,7 @@
                 "uid": "grafanacloud-prom"
               },
               "editorMode": "code",
-              "expr": "quantile(0.95, genlayer_node_cpu_usage_percent{network=\"bradbury-phase2\"})",
+              "expr": "quantile(0.95, genlayer_node_cpu_usage_percent{network=\"bradbury-phase3\"})",
               "format": "time_series",
               "instant": false,
               "legendFormat": "CPU %",
@@ -7673,7 +7981,7 @@
                 "uid": "grafanacloud-prom"
               },
               "editorMode": "code",
-              "expr": "quantile(0.95, genlayer_node_memory_percent{network=\"bradbury-phase2\"})",
+              "expr": "quantile(0.95, genlayer_node_memory_percent{network=\"bradbury-phase3\"})",
               "format": "time_series",
               "instant": false,
               "legendFormat": "Memory %",
@@ -7698,7 +8006,7 @@
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 102
+            "y": 112
           },
           "id": 28,
           "options": {
@@ -7712,7 +8020,7 @@
                 "uid": "grafanacloud-prom"
               },
               "editorMode": "code",
-              "expr": "count by (version, commit, genvm_version) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase2\"})",
+              "expr": "count by (version, commit, genvm_version) (genlayer_node_info{job=\"prometheus.scrape.genlayer_node\", network=\"bradbury-phase3\"})",
               "format": "table",
               "instant": true,
               "legendFormat": "",

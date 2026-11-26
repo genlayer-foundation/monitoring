@@ -27,6 +27,20 @@
    "type": "link",
    "url": "/d/gl-validator-status",
    "targetBlank": false
+  },
+  {
+   "title": "Bradbury Phase 3 network board",
+   "type": "link",
+   "icon": "dashboard",
+   "url": "/d/gl-testnet-network",
+   "targetBlank": false
+  },
+  {
+   "title": "Clarke validator profile",
+   "type": "link",
+   "icon": "dashboard",
+   "url": "/d/gl-validator-profile-clarke",
+   "targetBlank": false
   }
  ],
  "templating": {
@@ -34,10 +48,10 @@
    {
     "name": "network",
     "type": "custom",
-    "query": "bradbury-phase2",
+    "query": "bradbury-phase3",
     "current": {
-     "text": "bradbury-phase2",
-     "value": "bradbury-phase2"
+     "text": "bradbury-phase3",
+     "value": "bradbury-phase3"
     },
     "hide": 2
    },
@@ -58,7 +72,7 @@
       "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
       "url_options": {
        "method": "GET",
        "data": ""
@@ -68,8 +82,8 @@
     },
     "refresh": 1,
     "current": {
-     "text": "GenLayer Foundation \u2014 0xb0dab7fc",
-     "value": "0xb0dab7fc62e276f5be045b7ec3674f7168623342"
+     "text": "GenLayer Foundation \u2014 0xe04bb8b6",
+     "value": "0xe04bb8b6766dd7baaeacf38a41b1338216e631b7"
     },
     "sort": 0
    },
@@ -89,7 +103,7 @@
       "source": "url",
       "parser": "jq-backend",
       "format": "table",
-      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+      "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
       "url_options": {
        "method": "GET",
        "data": ""
@@ -289,7 +303,7 @@
       "method": "POST",
       "body_type": "raw",
       "body_content_type": "application/json",
-      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"fromBlock\": \"0xbb3a\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
+      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"fromBlock\": \"0xa97af\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
       "headers": [
        {
         "key": "Content-Type",
@@ -325,7 +339,7 @@
      "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
      "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map([{fact: \"Portal\", value: (if .linked == true then (\"linked\" + (if (.account_name // \"\") != \"\" then \" \u2014 \" + .account_name else \"\" end)) elif .linked == false then \"NOT LINKED\" else \"-\" end)}, {fact: \"On-chain identity\", value: ([(if (.moniker // \"\") == \"\" then \"moniker\" else empty end), (if (.logo_uri // \"\") == \"\" then \"logo\" else empty end), (if .has_description == true then empty else \"description\" end)] | if length == 0 then \"complete\" else \"missing: \" + join(\", \") end)}]) | add // []",
      "url_options": {
       "method": "GET",
@@ -442,7 +456,7 @@
       "method": "POST",
       "body_type": "raw",
       "body_content_type": "application/json",
-      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"fromBlock\": \"0xbb3a\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
+      "data": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_getLogs\", \"params\": [{\"address\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"fromBlock\": \"0xa97af\", \"toBlock\": \"latest\", \"topics\": [\"0x2b7297b31452d0a13e57c605870ec3c9b4ac6ef33e5cbae7a0f00bc2a3e96782\"]}]}",
       "headers": [
        {
         "key": "Content-Type",
@@ -753,7 +767,7 @@
      "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
      "root_selector": "[.[] | select(.node == (\"${node}\" | ascii_downcase))] | map({health: ((.health.color // \"gray\") + \"|\" + (.health.label // .health.color // \"not checked\"))})",
      "url_options": {
       "method": "GET",
@@ -869,7 +883,7 @@
      "source": "url",
      "parser": "jq-backend",
      "format": "table",
-     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury2",
+     "url": "https://portal-admin.genlayer.foundation/api/v1/validators/wallets/grafana/?network=bradbury3",
      "root_selector": "{\"quarantined\": {problem: \"Quarantined\", fix: \"Keep the node up and responsive until the quarantine lifts; see 'Why did it go wrong?' for the cause.\"}, \"permanently_quarantined\": {problem: \"No longer participating\", fix: \"Permanently quarantined: restake with a new validator wallet.\"}, \"inactive\": {problem: \"Not participating\", fix: \"Check self stake is at the minimum and the node is primed for the next epoch.\"}, \"not_deployed\": {problem: \"Not deployed\", fix: \"Deploy a validator wallet and node on this network.\"}, \"stake_below_minimum\": {problem: \"Stake below minimum\", fix: \"Top up self stake to the minimum.\"}, \"activation_pending\": {problem: \"Stake pending activation\", fix: \"Nothing to fix: a deposit goes live 2 epochs after it is made. Keep the node running and synced.\"}, \"no_metrics\": {problem: \"Not sending metrics\", fix: \"Enable metrics push \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"no_logs\": {problem: \"Not sending logs\", fix: \"Enable log shipping \\u2014 docs.genlayer.com/validators/monitoring.\"}, \"version_behind\": {problem: \"Version behind\", fix: \"Upgrade the node to the latest release.\"}, \"identity_incomplete\": {problem: \"Profile incomplete\", fix: \"Set the missing on-chain identity fields (moniker, logo, description) on the validator wallet.\"}, \"not_linked\": {problem: \"Not linked to portal\", fix: \"Link this validator wallet to your portal account.\"}, \"blocks_behind\": {problem: \"Behind on blocks\", fix: \"The node lags the chain head: check its RPC provider, disk and CPU (Sync & connectivity).\"}, \"source_unavailable\": {problem: \"Monitoring delayed\", fix: \"Monitoring has not checked this node recently \\u2014 nothing to do on your side.\"}} as $fix | [.[] | select(.node == (\"${node}\" | ascii_downcase))] | [.[] | (.health.findings // [])[] | {severity, problem: ($fix[.type].problem // (.type | gsub(\"_\"; \" \"))), details: .detail, fix: ($fix[.type].fix // \"\"), from: \"Portal\"}]",
      "url_options": {
       "method": "GET",
@@ -1121,12 +1135,12 @@
      "parser": "jq-backend",
      "format": "table",
      "url": "https://rpc.testnet-chain.genlayer.com",
-     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n(map(select(.id==1))[0].result | ltrimstr(\"0x\") | h2i) as $ep\n| (map(select(.id==2))[0].result | ltrimstr(\"0x\") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n| (map(select(.id==3))[0].result | ltrimstr(\"0x\")) as $b\n| ($b[64:128] | if . == \"\" then 0 else h2i end) as $until | (($b[128:192] // \"\") | if . == \"\" then 0 else h2i end) as $perm\n| ((map(select(.id==4))[0].result // \"\") | ltrimstr(\"0x\")) as $v\n| ($v[0:64] | if . == \"\" then 0 else h2i end) as $eb | ($v[64:128] | if . == \"\" then 0 else h2i end) as $primed\n| ($v[128:192] | if . == \"\" then 0 else h2i end) as $vstake | ($v[384:448] | if . == \"\" then 0 else h2i end) as $vdep\n| ($ep > 0 and ($vstake + $vdep) >= 42000000000000000000000 and (($vdep > 0 and $vstake < 42000000000000000000000) or ($eb == 0 and $primed == $ep))) as $pending\n| (if $vdep > 0 and $vstake < 42000000000000000000000 then $ep + 2 else $ep + 1 end) as $live\n| [{chain: (if $perm > 0 then \"red|No longer participating\" elif $until > $ep then \"orange|Quarantined until epoch \\($until)\" elif ($sel | index(\"${node_hex}\")) != null then \"green|Active (epoch \\($ep))\" elif $pending then \"yellow|Stake pending activation (live at epoch \\($live))\" else \"red|Not participating\" end)}]",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\nif \"${node_hex}\" == \"\" then [] else\n(map(select(.id==1))[0].result | ltrimstr(\"0x\") | h2i) as $ep\n| (map(select(.id==2))[0].result | ltrimstr(\"0x\") | .[128:] | [range(0; length/64) as $i | .[$i*64+24:$i*64+64]]) as $sel\n| (map(select(.id==3))[0].result | ltrimstr(\"0x\")) as $b\n| ($b[64:128] | if . == \"\" then 0 else h2i end) as $until | (($b[128:192] // \"\") | if . == \"\" then 0 else h2i end) as $perm\n| ((map(select(.id==4))[0].result // \"\") | ltrimstr(\"0x\")) as $v\n| ($v[0:64] | if . == \"\" then 0 else h2i end) as $eb | ($v[64:128] | if . == \"\" then 0 else h2i end) as $primed\n| ($v[128:192] | if . == \"\" then 0 else h2i end) as $vstake | ($v[384:448] | if . == \"\" then 0 else h2i end) as $vdep\n| ($ep > 0 and ($vstake + $vdep) >= 42000000000000000000000 and (($vdep > 0 and $vstake < 42000000000000000000000) or ($eb == 0 and $primed == $ep))) as $pending\n| (if $vdep > 0 and $vstake < 42000000000000000000000 then $ep + 2 else $ep + 1 end) as $live\n| [{chain: (if $perm > 0 then \"red|No longer participating\" elif $until > $ep then \"orange|Quarantined until epoch \\($until)\" elif ($sel | index(\"${node_hex}\")) != null then \"green|Active (epoch \\($ep))\" elif $pending then \"yellow|Stake pending activation (live at epoch \\($live))\" else \"red|Not participating\" end)}] end",
      "url_options": {
       "method": "POST",
       "body_type": "raw",
       "body_content_type": "application/json",
-      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x900cf0cf\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x2d2f135d\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0x090d60bd000000000000000000000000${node_hex}\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 4, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0xb83f5b39000000000000000000000000${node_hex}\"}, \"latest\"]}]",
+      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"data\": \"0x900cf0cf\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"data\": \"0x2d2f135d\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"data\": \"0x090d60bd000000000000000000000000${node_hex}\"}, \"latest\"]}, {\"jsonrpc\": \"2.0\", \"id\": 4, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"data\": \"0xb83f5b39000000000000000000000000${node_hex}\"}, \"latest\"]}]",
       "headers": [
        {
         "key": "Content-Type",
@@ -2077,12 +2091,12 @@
      "parser": "jq-backend",
      "format": "table",
      "url": "https://rpc.testnet-chain.genlayer.com",
-     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\n.[0].result | ltrimstr(\"0x\") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)}",
+     "root_selector": "def h2i: ascii_downcase | reduce (explode[]) as $c (0; .*16 + (if $c>=97 then $c-87 else $c-48 end));\nif .[0].result == null then [] else .[0].result | ltrimstr(\"0x\") | {self_stake: (.[128:192] | h2i / 1e18), delegated: (.[256:320] | h2i / 1e18), quarantined_until_epoch: (.[0:64] | h2i)} end",
      "url_options": {
       "method": "POST",
       "body_type": "raw",
       "body_content_type": "application/json",
-      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xD8fBa96C0dBB0257028dBc0107060b958e5c7113\", \"data\": \"0xb83f5b39000000000000000000000000${node_hex}\"}, \"latest\"]}]",
+      "data": "[{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0xcE16862EAf10B97A0619BeBb662991fb4a52e346\", \"data\": \"0xb83f5b39000000000000000000000000${node_hex}\"}, \"latest\"]}]",
       "headers": [
        {
         "key": "Content-Type",
