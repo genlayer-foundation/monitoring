@@ -34,6 +34,13 @@
    "icon": "dashboard",
    "url": "/d/gl-testnet-network",
    "targetBlank": false
+  },
+  {
+   "title": "Clarke validator profile",
+   "type": "link",
+   "icon": "dashboard",
+   "url": "/d/gl-validator-profile-clarke",
+   "targetBlank": false
   }
  ],
  "templating": {

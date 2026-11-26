@@ -8,6 +8,13 @@
   "id": 2995795961016320,
   "links": [
     {
+      "title": "Clarke board",
+      "type": "link",
+      "icon": "dashboard",
+      "url": "/d/gl-testnet-network-clarke",
+      "targetBlank": false
+    },
+    {
       "icon": "external link",
       "targetBlank": true,
       "title": "Chain Explorer",

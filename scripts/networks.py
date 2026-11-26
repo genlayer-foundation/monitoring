@@ -65,22 +65,28 @@ NETWORKS = {
         "address_manager": "0x0192C6C9482251790965B7136352B26234d81d79",
         "consensus_main": "0x0f4F0e05475723790E4a2ed0598370783C300926",
     },
-    # Clarke: epoch 0 starts 2026-11-26 and runs alongside Phase 3. Nothing is known here yet.
+    # Clarke: epoch 0 started 2026-11-26 13:05 UTC and runs alongside Phase 3, on the same
+    # chain (4221). Source: genlayerlabs/genlayer-networks clarke/ (consensus v0.6.1).
     "clarke": {
         "name": "Clarke",
         "slug": "clarke",
-        "label": None,                     # TODO: count by (network)(genlayer_node_info)
-        "portal_key": None,                # TODO: ask the portal
-        "rpc": None,                       # TODO
-        "chain_explorer": None,            # TODO
-        "explorer": None,                  # TODO
-        "staking": None,                   # TODO: deployment book, key "Staking"
-        "fees_processor": None,            # TODO: deployment book, key "FeesProcessor"
-        "genesis_block": None,             # TODO: AddressManager deployment block
+        "label": "clarke",                 # our choice, 2026-11-26 (NETWORK_NAME=clarke); nothing reports it yet
+        "portal_key": "clarke",            # exists since 2026-11-26 (answers 200 []); no Grafana label set in the portal yet
+        "rpc": "https://rpc.testnet-chain.genlayer.com",
+        "chain_explorer": "https://scan.testnet-chain.genlayer.com",
+        "explorer": None,                  # TODO: none yet (explorer PR genlayerlabs #527 open)
+        "staking": "0x711d111510Af2Bb35c3929b709677a1E9f8ffce2",
+        "fees_processor": "0x7e226Fe81eF152b7eF249404a7877Be8f83FBdcF",
+        "genesis_block": 713692,           # AddressManager first has code, 2026-11-26 10:28:41 UTC
         "appeal_window_s": None,           # TODO: measure via <explorer>/api/v1/transactions/consensus-steps/<hash>
         "appeal_window_note": None,        # TODO: "measured <n>s on this testnet), so it can read up to ~<m>s high"
-        "address_manager": None,
-        "consensus_main": None,
+        "roster_empty": True,              # portal key answers [] (nobody joined, no "missing" rows): say so on the
+                                           # board instead of "every graduated validator is on this network". Drop when it fills
+        "boards": True,                    # gl-testnet-network-clarke / gl-validator-profile-clarke, team-only, 2026-11-26
+        "foundation_node": None,           # TODO: the Foundation's Clarke validator wallet, once it has joined
+        "idleness": "0x86e53f1775BdC173468D4fA2d87154dbbB0889F2",       # reference only (emits ValidatorReceivedStrike)
+        "address_manager": "0xA79dA7c238905fD0F10298cD579B0733ad1B1d0E",
+        "consensus_main": "0xa44222E0beDaB12329557499ae6E555b1c9D02ee",
     },
 }
 
