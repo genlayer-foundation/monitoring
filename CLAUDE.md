@@ -29,7 +29,7 @@ profile per network (`label`, `portal_key`, `rpc`, `chain_explorer`, `explorer`,
 |---|---|---|---|
 | Bradbury Phase 3 | `bradbury-phase3` (CURRENT) | `gl-testnet-network` (**public**), `gl-validator-profile` | every source present: chain, explorer `scan.bradbury.genlayer.com`, roster key `bradbury3`, telemetry label. `gl-testnet-network-phase3` / `gl-validator-profile-phase3` (files `*_phase3.json`) are the pre-move team copies: now duplicates, no longer regenerated, left in place |
 | Bradbury Phase 2 | `bradbury-phase2` | none live; `network_phase2.json` / `validator_profile_phase2.json` are repo-only | halted, retired from the boards 2026-11-25: no roster (portal returns `[]`), no explorer; ~40 nodes still push the label |
-| Clarke | `clarke` | `gl-testnet-network-clarke` (public share decided, not yet created; see below), `gl-validator-profile-clarke` (team-only), files `*_clarke.json` | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (answers `[]`), label `clarke` (nothing reports it yet); **no explorer** |
+| Clarke | `clarke` | `gl-testnet-network-clarke` (**public**, token `8ce16ef9…`), `gl-validator-profile-clarke` (team-only), files `*_clarke.json` | live since 2026-11-26, alongside Phase 3: chain, roster key `clarke` (joined wallets only), label `clarke` (Foundation node reports); **no explorer** |
 
 **Bradbury Phase 3** is a fresh consensus deployment on the SAME chain (4221, same RPC
 and chain explorer) — networks are told apart by contract address only. Staking
@@ -135,16 +135,20 @@ team-only; nothing about Phase 3 was re-pointed. What it lacks:
   (consensus health, epoch, rounds, votes, usage, txs, time to acceptance, stake, and on
   the profile board strikes, primed, metadata). `appeal_window_s` is unknown too: set it
   with the explorer.
-- **Empty roster**: key `clarke` answers `200 []` (nobody joined, and the portal lists no
-  `missing` rows for it yet; no Grafana label set in the portal either). Profile flag
-  `roster_empty: True` makes the generator say so: a second line in the top banner, and
-  "Graduated validators not on this network yet" reads "The portal lists nobody for
-  Clarke yet" instead of "Every graduated validator is on this network". **Drop the flag
-  and regenerate once the roster fills.** Validator set / Open issues read 0 (true: 0 of 0).
-- **No telemetry**: no series carries `network="clarke"` yet (2026-11-26 15:00 UTC).
-  Node panels read "No data" / 0 until the first node reports.
-- The validator profile's `node` variable has no default on Clarke (`foundation_node:
-  None` in the profile; set it to the Foundation's Clarke validator wallet once joined).
+- **Roster**: key `clarke` lists joined wallets only (1 row 2026-11-26 ~16:00 UTC: the
+  Foundation, `inactive`), with no `missing` rows and no Grafana label set in the portal.
+  Profile flag `roster_no_missing_rows: True` makes "Graduated validators not on this
+  network yet" read "The portal does not list who is missing on Clarke yet" instead of
+  "Every graduated validator is on this network". **Drop the flag and regenerate once
+  the portal adds `missing` rows for Clarke.**
+- **Validators table hides joined-but-pending validators**: in epoch 0 the selectable set
+  is empty, and the "pending activation" row state needs the explorer, so the
+  Foundation's validator (`0x80f49656…`, joined, reporting) is NOT in the table yet. It
+  shows in Node health (1 reporting, 100 % synced), Nodes online, Blocks behind, CPU and
+  Builds. It appears in the table once it is selectable or Clarke has an explorer.
+- **Telemetry**: the Foundation's Clarke node reports `network="clarke"` since
+  2026-11-26 afternoon (the first and, at ~16:00 UTC, only one).
+- The validator profile opens on the Foundation's Clarke validator (`foundation_node`).
   With no validator picked, the Chain and Stake-now stats read "No data" instead of a jq
   error (their jq now guards an empty `${node_hex}` / null `eth_call` result).
 
@@ -158,16 +162,19 @@ dashboards do not render the link bar anyway.
 of its network board. Every network board gets a 2-row text panel at the top, "Also live:
 [<Name> network board](https://genlayerfoundation.grafana.net/public-dashboards/<token>)",
 for each OTHER network with a `public_token` (`networks.public_links_markdown`), and a
-board whose own profile has a token keeps the `public` tag. Phase 3 has `71f94ef4…`.
-**Clarke: Ivan decided 2026-11-26 to make `gl-testnet-network-clarke` public (its own
-share, Phase 3's URL unchanged), but the share is NOT created yet**: the agent's attempt
-was refused by the permission system. To finish: create the share (Grafana UI → Share →
-Public dashboard, or `POST /api/dashboards/uid/gl-testnet-network-clarke/public-dashboards`
-with `{"isEnabled": true, "share": "public", "timeSelectionEnabled": true,
-"annotationsEnabled": false}`), set `public_token` in the Clarke profile, regenerate
-both network boards, upload both (`gl-testnet-network` gains the link to Clarke). The
-Clarke board already links to Phase 3's public URL. Its Validators-table link to
-`gl-validator-profile-clarke` needs a login, the same as on Phase 3's public board.
+board whose own profile has a token keeps the `public` tag.
+
+**Two public boards since 2026-11-26** (Ivan: Clarke public "because we can see who's
+registering"; Phase 3's URL unchanged):
+- Bradbury Phase 3: `gl-testnet-network` →
+  `https://genlayerfoundation.grafana.net/public-dashboards/71f94ef49b8340cc8a6707aa00cd68d9`
+- Clarke: `gl-testnet-network-clarke` →
+  `https://genlayerfoundation.grafana.net/public-dashboards/8ce16ef9604c446d8f78714dae6def95`
+  (time selection on, annotations off)
+
+Each links to the other at the top. Every panel of both was queried anonymously through
+`/api/public/dashboards/<token>/panels/<id>/query`: no errors. The Validators-table link
+to the per-validator board needs a login on both (that board cannot be shared publicly).
 
 **Uploading**: the Grafana MCP `update_dashboard` takes the JSON inline, which for these
 100 kB boards means pasting it panel by panel (create with the first panels, then
